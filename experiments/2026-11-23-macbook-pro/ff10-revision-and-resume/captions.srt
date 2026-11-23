@@ -1,0 +1,11 @@
+1
+00:00:01,500 --> 00:00:04,400
+La salle Érable est choisie parmi les trois salles.
+
+2
+00:00:05,400 --> 00:00:07,800
+L'option vidéoprojecteur est cochée.
+
+3
+00:00:09,000 --> 00:00:14,380
+La réservation est envoyée. Un message confirme la salle Érable et le vidéoprojecteur.

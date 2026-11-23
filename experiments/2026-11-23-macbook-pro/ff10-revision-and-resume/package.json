@@ -1,0 +1,1 @@
+{"name":"ff04-room-booking-film","private":true,"type":"module","scripts":{"render":"python3 -B render_guarded.py","publish":"echo Publication interdite && exit 2"}}
