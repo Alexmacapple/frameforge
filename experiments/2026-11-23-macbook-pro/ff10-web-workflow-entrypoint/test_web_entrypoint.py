@@ -79,6 +79,24 @@ class WebEntrypointTests(unittest.TestCase):
         import json
         pkg=json.loads((L/'package.json').read_text())
         self.assertEqual(pkg['scripts']['render'],'python3 render_guarded.py')
+    def test_real_v5_output_accepted(self):
+        self.assertTrue(mod.validate_output(L/'guarded-web-demo.mp4'))
+    def test_short_silent_video_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'short.mp4'
+            subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',
+                'color=s=64x64:r=10:d=0.5','-c:v','libx264','-pix_fmt',
+                'yuv420p',str(path)],check=True)
+            with self.assertRaisesRegex(ValueError,'output_duration_invalid'):
+                mod.validate_output(path)
+    def test_normal_duration_without_audio_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'silent.mp4'
+            subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',
+                'color=s=1920x1080:r=30:d=16.166667','-c:v','libx264',
+                '-preset','ultrafast','-pix_fmt','yuv420p',str(path)],check=True)
+            with self.assertRaisesRegex(ValueError,'output_audio_missing_or_short'):
+                mod.validate_output(path)
     def test_rendered_mp4_integrity(self):
         path=L/'guarded-web-demo.mp4'
         self.assertTrue(path.exists())

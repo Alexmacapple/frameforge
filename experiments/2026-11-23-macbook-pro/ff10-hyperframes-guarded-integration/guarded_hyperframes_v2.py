@@ -36,7 +36,7 @@ def interrupted(signum, frame):
     stop_child()
     raise KeyboardInterrupt("guarded render interrupted")
 
-def run(args, preflight_fn=None, media=None, config=None):
+def run(args, preflight_fn=None, media=None, config=None, output_validator=None):
     preflight_fn = preflight_fn or preflight
     media = MEDIA if media is None else tuple(media)
     config = CONFIG if config is None else tuple(config)
@@ -87,6 +87,10 @@ def run(args, preflight_fn=None, media=None, config=None):
             child=None
         subprocess.run(["ffmpeg","-v","error","-i",str(rendered),"-f","null","-"],
                        check=True,stdout=subprocess.DEVNULL)
+        # A project-specific validator must inspect the temporary media before
+        # it can acquire the final output name. This remains opt-in for old pilots.
+        if output_validator is not None:
+            output_validator(rendered)
         # The source may have changed concurrently; this is reported, but the
         # render itself used an isolated, validated snapshot.
         changed=[str(p) for p in sources if digest(p)!=hashes[str(p)]]
