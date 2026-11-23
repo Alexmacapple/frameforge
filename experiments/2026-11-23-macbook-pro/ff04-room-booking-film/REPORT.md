@@ -4,14 +4,14 @@
 
 ## Verdict
 
-**PASS technique** : le film existe, rendu par le garde, avec une fiche sans échec. **En attente** : écoute de la nouvelle narration et visionnage par l'approbateur. **NO-GO** : toute diffusion.
+**PASS technique** : le film existe, rendu par le garde, avec une fiche sans échec. **Approbation éditoriale** consignée après coup dans EDITORIAL-APPROVAL.md. **NO-GO** : toute diffusion.
 
 ## Film produit
 
 - `media/room-booking.mp4`, local, non versionné. SHA-256 `9c834228ae4db81dda154f5bf62e3bfc8fd3ac4012f9f64bbfddfcc29dfbf543`.
 - 15,000 s, 450 images à cadence constante, H.264 1920×1080, AAC 48 kHz stéréo, niveau intégré −19,6 LUFS. Décodage intégral : PASS.
 - Page filmée : `booking.html`, fixture locale à données fictives. Trois gestes : choisir la salle Érable, cocher le vidéoprojecteur, réserver.
-- Statut : DRAFT.
+- Statut : DRAFT au moment du rendu, REVIEWED après approbation.
 
 ## Ordre de fabrication
 

@@ -13,12 +13,10 @@
     "output_ref": "media/room-booking.mp4",
     "output_sha256": "9c834228ae4db81dda154f5bf62e3bfc8fd3ac4012f9f64bbfddfcc29dfbf543",
     "approval": {
-      "status": "DRAFT",
-      "ref": null
+      "status": "REVIEWED",
+      "ref": "EDITORIAL-APPROVAL.md"
     },
     "open_checks": [
-      "Écoute humaine de la nouvelle narration Kokoro",
-      "Visionnage humain du film",
       "Compréhension du film sans l'image",
       "Conformité de la voix au texte de narration"
     ]
