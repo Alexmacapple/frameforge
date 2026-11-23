@@ -1,0 +1,3 @@
+Une première tâche apparaît dans la liste.
+Une deuxième tâche apparaît. Les deux tâches sont visibles.
+La première tâche est cochée et barrée. La deuxième reste à faire.
