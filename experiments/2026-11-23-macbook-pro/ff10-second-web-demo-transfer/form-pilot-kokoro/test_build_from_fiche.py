@@ -11,6 +11,7 @@ from unittest import mock
 
 D = Path(__file__).resolve().parent
 sys.path.insert(0, str(D))
+sys.path.insert(0, str(D.parents[1] / "film-chain"))
 b = importlib.import_module("build_from_fiche")
 g = importlib.import_module("render_guarded")
 FICHE = json.loads((D / "provenance-manifest.json").read_text())

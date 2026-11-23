@@ -363,7 +363,7 @@ def main():
     path = (
         Path(sys.argv[1])
         if len(sys.argv) > 1
-        else Path(__file__).resolve().parent / "provenance-manifest.json"
+        else Path.cwd() / "provenance-manifest.json"
     )
     results = check_data(json.loads(path.read_text()), path.resolve().parent)
     for r in results:

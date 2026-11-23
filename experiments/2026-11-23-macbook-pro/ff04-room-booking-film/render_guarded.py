@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent
 # Le wrapper V2 est réutilisé tel quel ; il importe lui-même son voisin guarded_hyperframes.
 sys.path.insert(0, str(ROOT.parent / "ff10-hyperframes-guarded-integration"))
 wrapper = importlib.import_module("guarded_hyperframes_v2")
-sys.path.insert(0, str(ROOT.parent / "ff10-second-web-demo-transfer/form-pilot-kokoro"))
+sys.path.insert(0, str(ROOT.parent / "film-chain"))
 fiche_check = importlib.import_module("check_manifest")
 fiche_build = importlib.import_module("build_from_fiche")
 

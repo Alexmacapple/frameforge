@@ -11,7 +11,6 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
 HEAD = (
     '<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>*{box-sizing:border-box}'
     "html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#111;color:white;"
@@ -99,9 +98,9 @@ def stale_files(fiche, root):
 
 
 def main():
-    # Sans chemin, la fiche de ce dossier ; avec un chemin, celle d'un autre film.
+    # Sans chemin, la fiche du dossier courant ; avec un chemin, celle du film visé.
     paths = [a for a in sys.argv[1:] if not a.startswith("--")]
-    path = Path(paths[0]).resolve() if paths else ROOT / "provenance-manifest.json"
+    path = Path(paths[0]).resolve() if paths else Path.cwd() / "provenance-manifest.json"
     fiche, root = json.loads(path.read_text()), path.parent
     stale = stale_files(fiche, root)
     if "--check" in sys.argv[1:]:
