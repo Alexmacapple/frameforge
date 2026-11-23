@@ -10,6 +10,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
 
 from guarded_hyperframes import preflight
 
@@ -20,17 +21,68 @@ child = None
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
+def process_table():
+    """Rend {pid: ppid} pour tous les processus, lu par ps ; vide si ps échoue."""
+    out = subprocess.run(["ps", "-A", "-o", "pid=,ppid="], capture_output=True, text=True, check=False).stdout
+    table = {}
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+            table[int(parts[0])] = int(parts[1])
+    return table
+
+def descendants(pid):
+    """PID de tous les descendants de pid, quel que soit leur groupe de processus."""
+    table = process_table()
+    found, todo = [], [pid]
+    while todo:
+        parent = todo.pop()
+        for candidate, its_parent in table.items():
+            if its_parent == parent and candidate not in found:
+                found.append(candidate)
+                todo.append(candidate)
+    return found
+
+def stop_descendants(tree):
+    """Arrête les descendants relevés avant l'arrêt et encore en vie.
+
+    Le navigateur lancé par le rendu vit dans un autre groupe de processus : arrêter le groupe de
+    la commande ne l'atteint pas, et il survit, rattaché au processus 1. Un PID n'est visé que
+    s'il est toujours rattaché au processus 1 ou à un autre membre de l'arbre relevé, pour ne pas
+    toucher un processus étranger qui aurait repris ce numéro.
+    """
+    family = set(tree)
+    for sig, pause in ((signal.SIGTERM, 3.0), (signal.SIGKILL, 1.0)):
+        table = process_table()
+        targets = [p for p in tree if table.get(p) in family | {1}]
+        if not targets:
+            return
+        for target in targets:
+            try:
+                os.kill(target, sig)
+            except (ProcessLookupError, PermissionError):
+                pass
+        deadline = time.time() + pause
+        while time.time() < deadline and any(p in process_table() for p in targets):
+            time.sleep(0.1)
+
 def stop_child():
     global child
     if child is not None and child.poll() is None:
+        # Relevé avant tout signal : après, les orphelins ne se distinguent plus des autres.
+        tree = descendants(child.pid)
         try:
             os.killpg(child.pid, signal.SIGTERM)
             child.wait(timeout=8)
         except subprocess.TimeoutExpired:
+            # Pendant ce délai de grâce, le rendu peut relancer un navigateur : second relevé,
+            # tant que la commande est encore en vie pour qu'on puisse suivre sa descendance.
+            tree += [p for p in descendants(child.pid) if p not in tree]
             os.killpg(child.pid, signal.SIGKILL)
             child.wait(timeout=8)
         except ProcessLookupError:
             pass
+        stop_descendants(tree)
 
 def interrupted(signum, frame):
     stop_child()
