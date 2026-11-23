@@ -23,3 +23,12 @@ Durées mesurées : Thomas **9,112 s** ; Jacques **9,198 s** ; Eddy **9,198 s**.
 ## Décision
 
 **UNVERIFIED — choix de voix en attente de l'écoute humaine.** Aucun échantillon n'est déclaré meilleur sans écoute. Si aucun ne convient, étudier une solution TTS neuronale locale, mais vérifier d'abord les solutions et modèles déjà présents sur la machine. Ne pas installer de moteur ou dépendance sans bénéfice démontré et accord.
+
+## Second essai — débit réduit à 145 mots/minute
+
+Retour humain : les premiers échantillons à 185 mots/minute sont jugés trop rapides. Deux nouveaux échantillons ont été générés **sans changer le texte** et sans modifier le film V4 :
+
+- `eddy-145.m4a` : Eddy (Français de France), `say -r 145`.
+- `jacques-145.m4a` : Jacques (Français de France), `say -r 145`.
+
+Les pauses de ponctuation sont celles du moteur `say` ; **aucune pause interphrase supplémentaire n'a été insérée** dans ces fichiers de comparaison. Évaluer le débit, la diction et le naturel avant toute intégration vidéo. Durées et appréciation à constater sur les fichiers ; aucune préférence de voix n'est présumée.
