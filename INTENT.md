@@ -31,3 +31,10 @@
 
 ## Orientation produit confirmée (23 novembre 2026)
 FrameForge est un studio vidéo généraliste. Le premier prototype est une démonstration web de 30 secondes ; montage de rushes et vidéos pédagogiques sont des extensions futures, non incluses dans le MVP.
+
+## Décisions métier validées — grill-with-docs D1 à D16 (23 novembre 2026)
+- **Exploration et preuves (D1, D4, D7, D8, D11, D14)** : une production peut commencer par l'exploration ; chaque affirmation filmée est reliée au geste, au résultat observable, à la source et au contexte. Une capture historique ne prouve pas l'état actuel ; vérifier sa pertinence avant validation sans recapture systématique. Un manifeste minimal référence les preuves originales. Statuts de preuve et de validation sont indépendants.
+- **Échecs et temporalité (D2, D5, D9, D12, D15)** : exclure toute scène invérifiable du rendu validé ; conserver les scènes valides en brouillon si le film est incomplet, avec rapport d'échec. Reprendre les étapes invalides et revérifier les dépendances affectées. Adapter le montage à la durée réelle des gestes et des phrases, sans coupe ou accélération silencieuse. Tout repli technique est documenté et soumis aux mêmes garanties.
+- **Validation et livraison (D3, D6, D10, D13, D16)** : vérifier les scènes puis le film ; l'approbation humaine explicite porte sur une version déterminée. Réévaluer les contrôles affectés et demander une nouvelle approbation après tout changement significatif. Le MVP complet comprend MP4, sous-titres, transcription, provenance et rapport de recette. Un rendu techniquement réussi n'autorise jamais à lui seul la diffusion.
+
+Le vocabulaire métier est défini dans [GLOSSARY.md](GLOSSARY.md). Ces décisions ne prouvent pas la faisabilité technique.
