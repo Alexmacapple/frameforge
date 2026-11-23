@@ -1,0 +1,3 @@
+Nous ajoutons une première tâche.
+Nous ajoutons ensuite une deuxième tâche.
+Enfin, nous terminons la première tâche.
