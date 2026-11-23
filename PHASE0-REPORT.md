@@ -1,6 +1,6 @@
 # FrameForge — Phase 0, état des essais et décisions
 
-Date : 23 novembre 2026. Revue en lecture seule des documents de cadrage et vérification des outils disponibles dans cet environnement isolé. Aucune modification GitHub lors de cette revue initiale.
+Date : 23 novembre 2026. Revue en lecture seule des documents de cadrage et vérification des outils disponibles dans cet environnement isolé. Aucune modification GitHub.
 
 ## Observations mesurées
 - Node.js : v22.16.0, présent.
