@@ -1,0 +1,15 @@
+{
+  "index.html": "eb3f022f4f8f9c71439b9dcd5974d5893ec8f34f773a20a439ef66fa689b97b7",
+  "hyperframes.json": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+  "package.json": "e6c25d4adeb5767d1ce3a7e8c8ac6e6e9429b82bd3a3f58e91c78d5ded832e49",
+  "captions.srt": "ebc5b1907f9857578d57ad27353df22f8f63ee928023b53524f1cae8e766a59e",
+  "captions.vtt": "9d27776cfd9da6e14fd8ee75308ce2fb4beceb0912184ce54ecb4844b0f7e29d",
+  "transcript.txt": "a3e3eef2df14827464f7ea1f013668f6425244bdf970de79bb2747d4d4026754",
+  "capture.mp4": "f87c007780517b568855b9f9b3b6123d0fcfbb0b0bf248f31099eef1176b9cfd",
+  "voice1.wav": "10c69ddb54580ac9e1e44a49961ca5db012b6b38042dc7e4f1067500bcb35b64",
+  "voice2.wav": "ee1b9e02084fc5492ee28abc80f90002b35cce1f329e9d16765385ad0b337384",
+  "voice3.wav": "e210ca0c6071c80ae2b7c78481b91593a90cba25846d39b68b7293329d888f10",
+  "voice4.wav": "1f36c8bc118b054e28cdfbb0d8bb10100a4ef23d6e5d6a1657e38143dafebd9f",
+  "capture-events.json": "720c9cfb9948d02b08ddb68aaba5dcd110bb6fe71741fa0a897ebe84edbacf56",
+  "provenance-manifest.json": "5a23a9ca09641f717fe666f9ef8de73acf4384a8834fb11d4d506e053d29fa56"
+}

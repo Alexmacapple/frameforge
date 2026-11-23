@@ -1,0 +1,1 @@
+{"name":"ff06-slow-gesture","private":true,"type":"module","scripts":{"render":"python3 -B render_guarded.py","publish":"echo Publication interdite && exit 2"}}
