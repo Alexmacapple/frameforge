@@ -17,6 +17,9 @@ Sortie : premier film, pas seulement des captures.
 ## Phase 2 : preuves et robustesse
 - Contrôles déterministes des fichiers et de la timeline.
 - Vérification de confidentialité et revue humaine.
+- **Revue éditoriale du film complet**, distincte des contrôles FFmpeg : continuité des actions et résultats, rythme, cadrage et lisibilité dans le format cible, fidélité au scénario et aux sources, intelligibilité de la narration et compréhension des informations essentielles sans vision. Vérifier aussi que les sous-titres ne masquent pas les gestes.
+- Pour chaque défaut, consigner l'horodatage ou le plan concerné, l'observation, le statut **bloquant / tolérable / non vérifié**, la justification et les contrôles à refaire après correction. Une appréciation humaine ne remplace pas une mesure déterministe, et inversement.
+- Tester les corrections localisées sur une version déterminée, sans écraser les ajustements humains déjà approuvés ; revérifier les dépendances affectées avant toute validation ou diffusion.
 - Échec/reprise, cache et second rendu comparé.
 Sortie : rapport de recette avec résultats observés.
 
