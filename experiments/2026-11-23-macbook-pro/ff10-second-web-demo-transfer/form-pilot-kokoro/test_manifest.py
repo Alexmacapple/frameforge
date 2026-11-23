@@ -152,14 +152,16 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("approval", failed(mutated(change)))
 
     def test_second_film_fits_with_declared_gaps(self):
-        # Film V5 : source publique sans empreinte, capture ralentie, journal dans un autre format.
+        # Film V5 : source publique sans empreinte, capture ralentie, journal dans un autre format,
+        # et approbation jamais rattachée aux entrées du film (aucune empreinte d'entrées).
         path = D.parents[1] / "ff10-web-workflow-entrypoint/local/provenance-manifest.json"
         results = m.check_data(json.loads(path.read_text()), path.parent)
         self.assertEqual(failed(results), [])
         got = statuses(results)
-        for check in ("source", "gestures", "results"):
+        for check in ("source", "gestures", "results", "approval"):
             self.assertEqual(got[check], "UNVERIFIED", check)
-        for check in ("schema", "texts", "captions", "composition", "timeline", "approval"):
+        for check in ("schema", "texts", "captions", "composition", "timeline",
+        ):
             self.assertEqual(got[check], "PASS", check)
 
     def test_draft_film_not_yet_rendered_is_unverified_not_failed(self):

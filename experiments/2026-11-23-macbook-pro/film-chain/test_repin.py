@@ -185,6 +185,24 @@ class RealGuardTests(unittest.TestCase):
         self.assertEqual(r.record_output(self.film), [])
         self.assertEqual(r.stale(self.film), [])
 
+    def test_recording_the_film_also_records_the_inputs_it_came_from(self):
+        r.record_output(self.film)
+        fiche = json.loads((self.film / "provenance-manifest.json").read_text())
+        pins = json.loads((self.film / "input-pins.json").read_text())
+        self.assertEqual(fiche["film"]["inputs_sha256"], r.inputs_fingerprint(pins))
+
+    def test_changed_input_makes_the_approval_stale_before_any_render(self):
+        # Une entrée change puis les empreintes sont refigées, sans toucher à l'approbation.
+        with (self.film / "transcript.txt").open("a") as handle:
+            handle.write("Phrase ajoutée.\n")
+        r.refresh(self.film)
+        check = importlib.import_module("check_manifest")
+        fiche = json.loads((self.film / "provenance-manifest.json").read_text())
+        found = {x["check"]: (x["status"], x["detail"]) for x in check.check_data(fiche, self.film)
+                 if x["check"] != "open_check"}
+        self.assertEqual(found["approval"][0], "FAIL", found["approval"])
+        self.assertIn("les entrées ont changé", found["approval"][1])
+
     def test_text_file_in_place_of_the_film_is_refused_and_nothing_is_written(self):
         fiche = (self.film / "provenance-manifest.json").read_bytes()
         (self.film / "media/room-booking.mp4").write_text("ceci n'est pas un film\n")

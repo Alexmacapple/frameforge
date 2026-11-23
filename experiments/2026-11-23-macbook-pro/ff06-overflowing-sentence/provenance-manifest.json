@@ -12,6 +12,7 @@
     ],
     "output_ref": "media/overflowing-sentence.mp4",
     "output_sha256": "84d866e70687252cb9ee180535d50203749d863aa504756a02d4e28688151fa8",
+    "inputs_sha256": "c22524e810e3f05df08e759cfeea515aa147cff8a57ccd74999800e6a332b967",
     "approval": {
       "status": "DRAFT",
       "ref": null

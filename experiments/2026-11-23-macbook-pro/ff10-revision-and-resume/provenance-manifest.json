@@ -12,6 +12,7 @@
     ],
     "output_ref": "media/revised.mp4",
     "output_sha256": "070167a84b7d282202cd4fe3ccec94d0537a72850f29bef337d48fbbec9a347e",
+    "inputs_sha256": "5dcb4eb7619ac489a682649d9c59fe2241bc1162229d78f9edf4c761cabdf43a",
     "approval": {
       "status": "DRAFT",
       "ref": null
