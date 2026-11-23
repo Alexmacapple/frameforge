@@ -1,0 +1,66 @@
+[
+  {
+    "event": "record_start_request",
+    "mono_ns": 354531818456000
+  },
+  {
+    "event": "record_start_return",
+    "mono_ns": 354533004824791
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354533964012791,
+    "index": 1
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354534003122125,
+    "index": 1
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354534008839208,
+    "index": 1,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354535852838250,
+    "index": 2
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354535878509375,
+    "index": 2
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354535885866416,
+    "index": 2,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354537734649000,
+    "index": 3
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354537754471708,
+    "index": 3
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354537761755208,
+    "index": 3,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":true},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "record_stop_request",
+    "mono_ns": 354539627057250
+  },
+  {
+    "event": "record_stop_return",
+    "mono_ns": 354539924011750
+  }
+]
