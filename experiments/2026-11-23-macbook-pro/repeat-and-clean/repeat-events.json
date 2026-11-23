@@ -1,0 +1,163 @@
+[
+  {
+    "event": "record_start_request",
+    "mono_ns": 354436182305541,
+    "utc": "2026-11-23T05:42:43.526498+00:00"
+  },
+  {
+    "event": "record_start_return",
+    "mono_ns": 354437373169875,
+    "utc": "2026-11-23T05:42:44.717372+00:00"
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354438120078708,
+    "utc": "2026-11-23T05:42:45.464279+00:00",
+    "stage": "before-1",
+    "color": "#ff0000"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354438130710875,
+    "utc": "2026-11-23T05:42:45.474904+00:00",
+    "stage": "before-1",
+    "color": "#ff0000"
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354438713114666,
+    "utc": "2026-11-23T05:42:46.057318+00:00",
+    "index": 1
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354438765211250,
+    "utc": "2026-11-23T05:42:46.109410+00:00",
+    "index": 1
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354438771184083,
+    "utc": "2026-11-23T05:42:46.115380+00:00",
+    "index": 1,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354438771219833,
+    "utc": "2026-11-23T05:42:46.115414+00:00",
+    "stage": "after-assertion-1",
+    "color": "#00ff00"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354438776372166,
+    "utc": "2026-11-23T05:42:46.120568+00:00",
+    "stage": "after-assertion-1",
+    "color": "#00ff00"
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354441506975458,
+    "utc": "2026-11-23T05:42:48.851192+00:00",
+    "stage": "before-2",
+    "color": "#0000ff"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354441520424125,
+    "utc": "2026-11-23T05:42:48.864637+00:00",
+    "stage": "before-2",
+    "color": "#0000ff"
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354442096802125,
+    "utc": "2026-11-23T05:42:49.441023+00:00",
+    "index": 2
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354442121661291,
+    "utc": "2026-11-23T05:42:49.465877+00:00",
+    "index": 2
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354442128693583,
+    "utc": "2026-11-23T05:42:49.472908+00:00",
+    "index": 2,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354442128733875,
+    "utc": "2026-11-23T05:42:49.472947+00:00",
+    "stage": "after-assertion-2",
+    "color": "#ffff00"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354442134591166,
+    "utc": "2026-11-23T05:42:49.478805+00:00",
+    "stage": "after-assertion-2",
+    "color": "#ffff00"
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354444875689958,
+    "utc": "2026-11-23T05:42:52.219923+00:00",
+    "stage": "before-3",
+    "color": "#ff00ff"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354444885294125,
+    "utc": "2026-11-23T05:42:52.229525+00:00",
+    "stage": "before-3",
+    "color": "#ff00ff"
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354445471449458,
+    "utc": "2026-11-23T05:42:52.815698+00:00",
+    "index": 3
+  },
+  {
+    "event": "action_return",
+    "mono_ns": 354445496955125,
+    "utc": "2026-11-23T05:42:52.841192+00:00",
+    "index": 3
+  },
+  {
+    "event": "assertion",
+    "mono_ns": 354445507142916,
+    "utc": "2026-11-23T05:42:52.851379+00:00",
+    "index": 3,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":true},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "mono_ns": 354445507202375,
+    "utc": "2026-11-23T05:42:52.851435+00:00",
+    "stage": "after-assertion-3",
+    "color": "#00ffff"
+  },
+  {
+    "event": "marker_return",
+    "mono_ns": 354445514824916,
+    "utc": "2026-11-23T05:42:52.859060+00:00",
+    "stage": "after-assertion-3",
+    "color": "#00ffff"
+  },
+  {
+    "event": "record_stop_request",
+    "mono_ns": 354448235275791,
+    "utc": "2026-11-23T05:42:55.579532+00:00"
+  },
+  {
+    "event": "record_stop_return",
+    "mono_ns": 354448381515708,
+    "utc": "2026-11-23T05:42:55.725769+00:00"
+  }
+]
