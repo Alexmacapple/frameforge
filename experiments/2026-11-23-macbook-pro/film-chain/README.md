@@ -5,13 +5,14 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 ## Contenu
 
 - `check_manifest.py` : confronte la fiche d'un film (`provenance-manifest.json`) aux fichiers qu'elle cite. Code de sortie 0, 1 (au moins un FAIL) ou 2 (des UNVERIFIED).
-- `build_from_fiche.py` : génère depuis la fiche la composition, les sous-titres SRT et VTT et la transcription. L'habillage est en dur, commun aux deux films.
+- `build_from_fiche.py` : génère depuis la fiche la composition, les sous-titres SRT et VTT et la transcription. L'habillage est en dur et dépend de `manifest_version` : la version 1 garde le bandeau d'origine, octet pour octet ; la version 2 demande deux champs de plus dans `film`, `title` (titre d'ouverture, affiché sans être dit, repris en tête de la transcription) et `capture_zoom` (de 1 à 1,5, capture agrandie depuis le haut, le reste est rogné), et met les sous-titres en cartouche.
 - `film_guard.py` : garde de rendu. Précontrôle des entrées figées, contrôle de la fiche, validation du film avant dépôt.
 - `repin.py` : refige les empreintes d'un film après un changement voulu. `--check` n'écrit rien.
 - `capture_lib.cjs` : navigateur, pointeur visible, horloge, journal et conversion des captures.
 - `test_repin.py` : tests de `repin.py`.
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
+- `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
 - `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. À relancer après tout ajout de contrôle ; il dure quelques minutes et ne modifie rien dans le dépôt.
 
 Les tests propres à un film (gestes, fichiers générés) restent dans son dossier.

@@ -33,7 +33,10 @@ COPIED = (
     "ff10-web-workflow-entrypoint",
 )
 SUITES = (
-    ("film-chain", ("test_film_guard", "test_repin", "test_fiche_checks")),
+    (
+        "film-chain",
+        ("test_film_guard", "test_repin", "test_fiche_checks", "test_habillage_v2"),
+    ),
     (
         "ff10-second-web-demo-transfer/form-pilot-kokoro",
         (

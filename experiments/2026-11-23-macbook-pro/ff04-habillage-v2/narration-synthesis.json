@@ -1,0 +1,26 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice1.wav",
+      "text": "La salle Érable est choisie parmi les trois salles.",
+      "duration_s": 2.775,
+      "sha256": "10c69ddb54580ac9e1e44a49961ca5db012b6b38042dc7e4f1067500bcb35b64"
+    },
+    {
+      "audio_ref": "voice2.wav",
+      "text": "L'option vidéoprojecteur est cochée.",
+      "duration_s": 2.25,
+      "sha256": "ee1b9e02084fc5492ee28abc80f90002b35cce1f329e9d16765385ad0b337384"
+    },
+    {
+      "audio_ref": "voice3.wav",
+      "text": "La réservation est envoyée. Un message confirme la salle et l'option.",
+      "duration_s": 4.025,
+      "sha256": "1bb7975f4f7e0d92a103454cc6beb5d9767c591122dde81da72e78a481467a66"
+    }
+  ]
+}
