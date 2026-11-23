@@ -1,0 +1,9 @@
+{
+  "name": "ff10-web-guarded-pilot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "python3 render_guarded.py",
+    "publish": "echo Publication interdite : approbation humaine requise && exit 2"
+  }
+}
