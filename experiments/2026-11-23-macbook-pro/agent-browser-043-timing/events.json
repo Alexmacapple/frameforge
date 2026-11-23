@@ -1,0 +1,138 @@
+[
+  {
+    "event": "record_start_request",
+    "monotonic_ns": 354737241818708
+  },
+  {
+    "event": "record_start_return",
+    "monotonic_ns": 354737669529416
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354738300175875,
+    "stage": "before-1",
+    "color": "#ff0000"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354738582767458,
+    "stage": "before-1",
+    "color": "#ff0000"
+  },
+  {
+    "event": "action_begin",
+    "monotonic_ns": 354738997758125,
+    "index": 1
+  },
+  {
+    "event": "action_return",
+    "monotonic_ns": 354739564766250,
+    "index": 1
+  },
+  {
+    "event": "assertion",
+    "monotonic_ns": 354739836499166,
+    "index": 1,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354739836539166,
+    "stage": "after-1",
+    "color": "#00ff00"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354740084935000,
+    "stage": "after-1",
+    "color": "#00ff00"
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354740731193208,
+    "stage": "before-2",
+    "color": "#0000ff"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354741009979750,
+    "stage": "before-2",
+    "color": "#0000ff"
+  },
+  {
+    "event": "action_begin",
+    "monotonic_ns": 354741425302416,
+    "index": 2
+  },
+  {
+    "event": "action_return",
+    "monotonic_ns": 354741964916375,
+    "index": 2
+  },
+  {
+    "event": "assertion",
+    "monotonic_ns": 354742221150375,
+    "index": 2,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354742221179375,
+    "stage": "after-2",
+    "color": "#ffff00"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354742477409875,
+    "stage": "after-2",
+    "color": "#ffff00"
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354743029587750,
+    "stage": "before-3",
+    "color": "#ff00ff"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354743303295750,
+    "stage": "before-3",
+    "color": "#ff00ff"
+  },
+  {
+    "event": "action_begin",
+    "monotonic_ns": 354743633275458,
+    "index": 3
+  },
+  {
+    "event": "action_return",
+    "monotonic_ns": 354743901761708,
+    "index": 3
+  },
+  {
+    "event": "assertion",
+    "monotonic_ns": 354744162821625,
+    "index": 3,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":true},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "marker_request",
+    "monotonic_ns": 354744162850000,
+    "stage": "after-3",
+    "color": "#00ffff"
+  },
+  {
+    "event": "marker_return",
+    "monotonic_ns": 354744419216000,
+    "stage": "after-3",
+    "color": "#00ffff"
+  },
+  {
+    "event": "record_stop_request",
+    "monotonic_ns": 354744942657166
+  },
+  {
+    "event": "record_stop_return",
+    "monotonic_ns": 354745262711375
+  }
+]
