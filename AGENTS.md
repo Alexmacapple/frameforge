@@ -13,7 +13,8 @@ Construire le plus petit système permettant de produire une vidéo réelle, nar
 ## Pendant la production
 - Séparer capture observée, média simulé et proposition éditoriale.
 - Journaliser provenance, paramètres, versions et erreurs.
-- Ne pas publier de vidéo, de données ou de modifications distantes sans approbation explicite.
+- Les brouillons vidéo peuvent être produits et testés localement ; aucune diffusion ou transmission du média sans accord humain explicite sur la version et la destination. Voir [PUBLICATION-POLICY.md](PUBLICATION-POLICY.md).
+- Ne pas publier de données, de code ou de modifications distantes sans approbation explicite spécifique.
 - Ne jamais cacher un échec en sautant un geste, en raccourcissant une scène ou en modifiant le résultat attendu.
 - Ne pas ajouter de framework, orchestrateur ou contrôle redondant sans preuve d'un manque.
 

@@ -21,3 +21,7 @@ Voir WHY.md, INTENT.md, SPEC.md, PLAN.md et AGENTS.md.
 ## Licence
 
 FrameForge est distribué sous licence [MIT](LICENSE). Copyright © 2026 Alexandra Guiderdoni.
+
+## Brouillons et publication
+
+Les agents peuvent produire des brouillons vidéo locaux. La diffusion exige un accord humain explicite sur la version et la destination ; un PASS technique ou éditorial ne vaut pas autorisation. Voir [PUBLICATION-POLICY.md](PUBLICATION-POLICY.md).

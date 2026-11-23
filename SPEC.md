@@ -42,5 +42,6 @@ Utiliser `sg-pre-review` avant tout ajout, `sg-logic-audit` pour les invariants 
 - **Temps et montage** : respecter les durées observées des gestes et des phrases ; signaler les raccords qui raccourcissent une attente et montrer le résultat réel.
 - **Repli** : documenter l'échec du chemin principal, la méthode de repli et ses différences ; vérifier les mêmes garanties de décodage, audio, sous-titres, temporalité et fidélité avant d'en conclure l'équivalence.
 - **Livraison et approbation** : MP4, sous-titres, transcription, provenance et rapport de recette constituent le lot MVP ; validation des scènes puis du film, suivie d'une approbation humaine portant sur une version précise. Toute modification significative entraîne les revérifications affectées et une réapprobation.
+- **Diffusion séparée de la recette** : la validation éditoriale d'un brouillon ne vaut pas autorisation de publication. L'accord explicite doit viser une version et une destination précises. Voir [PUBLICATION-POLICY.md](PUBLICATION-POLICY.md).
 
 Ces règles sont fonctionnelles, pas des implémentations démontrées. Aucun nouvel orchestrateur ni ADR n'est retenu à ce stade. Voir [GLOSSARY.md](GLOSSARY.md).
