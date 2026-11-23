@@ -1,0 +1,16 @@
+{
+  "allowed": {
+    "accepted": true,
+    "reason": "accepted",
+    "output_created": true
+  },
+  "adversarial": {
+    "accepted": false,
+    "reason": "protected_cue_2_changed",
+    "output_created": false
+  },
+  "baseline_unchanged": true,
+  "approved_video_unchanged": true,
+  "protected_cue_sha256": "033472629e28af1a32a0d9d0ab671457ad5a5c374253557fdcd5de790c2b9fe5",
+  "scope": "standalone preflight and conditional remux, not integrated into FrameForge"
+}
