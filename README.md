@@ -17,3 +17,7 @@ Produire des démonstrations web narrées, puis étendre aux rushes et vidéos p
 - CLI et rapports textuels utilisables avec lecteur d'écran.
 
 Voir WHY.md, INTENT.md, SPEC.md, PLAN.md et AGENTS.md.
+
+## Licence
+
+FrameForge est distribué sous licence [MIT](LICENSE). Copyright © 2026 Alexandra Guiderdoni.
