@@ -1,0 +1,95 @@
+[
+  {
+    "event": "record_start_request",
+    "mono_ns": 354059474728208,
+    "utc": "2026-11-23T05:36:26.820941+00:00"
+  },
+  {
+    "event": "record_start_return",
+    "mono_ns": 354060684678583,
+    "utc": "2026-11-23T05:36:28.030914+00:00"
+  },
+  {
+    "event": "sync_flash_request",
+    "mono_ns": 354061634404208,
+    "utc": "2026-11-23T05:36:28.980657+00:00"
+  },
+  {
+    "event": "sync_flash_return",
+    "mono_ns": 354061651429166,
+    "utc": "2026-11-23T05:36:28.997660+00:00"
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354063255097125,
+    "utc": "2026-11-23T05:36:30.601347+00:00",
+    "index": 1,
+    "action": "add",
+    "label": "Première tâche"
+  },
+  {
+    "event": "action_command_return",
+    "mono_ns": 354063307396541,
+    "utc": "2026-11-23T05:36:30.653641+00:00",
+    "index": 1
+  },
+  {
+    "event": "dom_assertion",
+    "mono_ns": 354063314059250,
+    "utc": "2026-11-23T05:36:30.660303+00:00",
+    "index": 1,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354067459381125,
+    "utc": "2026-11-23T05:36:34.805679+00:00",
+    "index": 2,
+    "action": "add",
+    "label": "Deuxième tâche"
+  },
+  {
+    "event": "action_command_return",
+    "mono_ns": 354067482172250,
+    "utc": "2026-11-23T05:36:34.828458+00:00",
+    "index": 2
+  },
+  {
+    "event": "dom_assertion",
+    "mono_ns": 354067488977750,
+    "utc": "2026-11-23T05:36:34.835263+00:00",
+    "index": 2,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":false},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "action_begin",
+    "mono_ns": 354071614327041,
+    "utc": "2026-11-23T05:36:38.960656+00:00",
+    "index": 3,
+    "action": "complete",
+    "label": "Première tâche"
+  },
+  {
+    "event": "action_command_return",
+    "mono_ns": 354071676641458,
+    "utc": "2026-11-23T05:36:39.022969+00:00",
+    "index": 3
+  },
+  {
+    "event": "dom_assertion",
+    "mono_ns": 354071684025625,
+    "utc": "2026-11-23T05:36:39.030352+00:00",
+    "index": 3,
+    "state": "\"[{\\\"text\\\":\\\"Première tâche\\\",\\\"done\\\":true},{\\\"text\\\":\\\"Deuxième tâche\\\",\\\"done\\\":false}]\""
+  },
+  {
+    "event": "record_stop_request",
+    "mono_ns": 354075833700083,
+    "utc": "2026-11-23T05:36:43.180072+00:00"
+  },
+  {
+    "event": "record_stop_return",
+    "mono_ns": 354076216411833,
+    "utc": "2026-11-23T05:36:43.562784+00:00"
+  }
+]
