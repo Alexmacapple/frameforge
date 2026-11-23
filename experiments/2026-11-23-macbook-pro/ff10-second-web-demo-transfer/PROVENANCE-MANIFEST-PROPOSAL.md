@@ -78,10 +78,22 @@ Décidé par Alex le 23 novembre 2026. Le précontrôle de `form-pilot-kokoro/re
 
 Portée : ce pilote seulement. Le pilote V5 a une fiche mais son rendu ne la lit pas. La fiche est relue dans le projet d'origine même quand le précontrôle est rejoué sur la copie isolée, parce qu'elle renvoie à des documents voisins ; les empreintes garantissent que la copie porte la même fiche.
 
+## La fiche comme seule source des fichiers texte
+
+Décidé par Alex le 23 novembre 2026, sur plan soumis. `form-pilot-kokoro/build_from_fiche.py` génère depuis la fiche la composition `index.html`, `captions.srt`, `captions.vtt` et `transcript.txt`. Le précontrôle du rendu refuse si un de ces fichiers n'est pas celui que la fiche génère (`kokoro_files_not_generated_from_fiche`).
+
+- **Rien ne change pour le film approuvé** : les quatre fichiers générés ont exactement les empreintes relevées avant l'écriture du générateur (`4fd5bd62…`, `9124ff26…`, `8e78df3d…`, `9d60690f…`). Le rendu gardé redonne le film `ab040730…7125`.
+- **Une modification de la fiche se propage** : phrase changée dans une copie de la fiche, les quatre fichiers générés portent la nouvelle phrase ; repère changé, SRT, VTT et composition suivent.
+- **Refus sur le chemin réel** : taille du texte des sous-titres retouchée à la main dans `index.html`, empreintes remises à jour, puis `python3 render_guarded.py` : `kokoro_files_not_generated_from_fiche:index.html`, code 2, aucun film déposé. État restauré ensuite. Le contrôle de cohérence seul ne voyait pas cette retouche, qui ne touche ni texte ni repère.
+- **Tests** : 6 dans `test_build_from_fiche.py`, 38 avec le garde, les gestes et la fiche. Le refus neutralisé fait échouer un test.
+
+Hors de cette étape : le plan de capture (instants des clics) reste écrit à la main dans `capture.cjs` ; l'habillage du film reste dans le générateur, propre à ce film ; le pilote V5 n'est pas concerné.
+
 ## Limites
 
 - Le format est tiré de deux démonstrations web. Il n'a pas été essayé sur un montage de rushes.
 - Les statuts de preuve des scènes V5 sont déclarés `observed` d'après le journal d'origine, que le contrôle ne relit pas.
 - Les repères des gestes viennent de l'horloge du script de capture, pas d'une mesure sur l'image ; l'écart constaté sur cette prise est d'environ 0,01 s.
 - L'autorisation est un texte libre : le contrôle vérifie qu'elle est renseignée, pas qu'elle est vraie.
-- La fiche est contrôlée avant le rendu, mais elle ne produit rien : la composition, les sous-titres et le plan de capture restent écrits à la main, et la fiche les recopie. Générer ces fichiers depuis la fiche est une décision distincte, non prise.
+- La fiche génère les fichiers texte du film du formulaire, pas sa capture : les instants des gestes restent écrits à la main dans `capture.cjs`, et la fiche ne les contient pas.
+- Le générateur n'a été essayé que sur ce film. Son habillage est en dur ; un second film demanderait de le dupliquer ou de le paramétrer, ce qui n'est pas décidé.

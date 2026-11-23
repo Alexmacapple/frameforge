@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT.parents[1] / "ff10-hyperframes-guarded-integration")
 wrapper = importlib.import_module("guarded_hyperframes_v2")
 sys.path.insert(0, str(ROOT))
 fiche_check = importlib.import_module("check_manifest")
+fiche_build = importlib.import_module("build_from_fiche")
 
 MEDIA = ("capture.mp4", "kokoro1.wav", "kokoro2.wav", "kokoro3.wav")
 CONFIG = (
@@ -64,6 +65,10 @@ def preflight(reference, candidate):
     failures = fiche_failures()
     if failures:
         raise ValueError("kokoro_fiche_incoherent:" + ",".join(failures))
+    # La fiche est la seule source des fichiers texte : ceux du projet doivent être ceux qu'elle génère.
+    stale = fiche_build.stale_files(load_fiche(), ROOT)
+    if stale:
+        raise ValueError("kokoro_files_not_generated_from_fiche:" + ",".join(stale))
     return True
 
 
