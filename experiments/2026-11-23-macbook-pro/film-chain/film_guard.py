@@ -61,9 +61,40 @@ def packets_hash(path):
     images sont décalées dans le temps, ou qui porte un flux de plus, change cette empreinte-ci.
     """
     out = subprocess.check_output(
-        ["ffmpeg", "-v", "error", "-i", str(path), "-map", "0", "-c", "copy", "-f", "framemd5", "-"]
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-i",
+            str(path),
+            "-map",
+            "0",
+            "-c",
+            "copy",
+            "-f",
+            "framemd5",
+            "-",
+        ]
     )
     return hashlib.sha256(out).hexdigest()
+
+
+def receipt_path(output):
+    """Reçu de rendu, posé à côté du film : de quelles entrées ce fichier-là est sorti."""
+    return Path(str(output) + ".receipt.json")
+
+
+def write_receipt(output, inputs_sha256):
+    """Écrit le reçu en une fois : un reçu à moitié écrit ne doit pas pouvoir être lu."""
+    target = receipt_path(output)
+    partial = target.with_name(target.name + ".partial")
+    partial.write_text(
+        json.dumps(
+            {"output_sha256": sha(output), "inputs_sha256": inputs_sha256}, indent=2
+        )
+        + "\n"
+    )
+    partial.replace(target)
 
 
 REFERENCE_KEYS = (
@@ -141,6 +172,13 @@ class FilmGuard:
 
     def validate_output(self, path, load_fiche=None):
         """load_fiche permet au fichier du film de fournir sa fiche, comme pour le précontrôle."""
+        try:
+            return self.validate_probed_output(path, load_fiche)
+        except (KeyError, IndexError, TypeError) as exc:
+            # Sortie de ffprobe ou référence de forme inattendue : un refus nommé, pas une trace.
+            raise self.refuse("output_unreadable") from exc
+
+    def validate_probed_output(self, path, load_fiche=None):
         reference = json.loads((self.root / self.reference_ref).read_text())
         # Une référence incomplète ne vaut pas « contrôle non demandé » : elle est refusée.
         if any(key not in reference for key in REFERENCE_KEYS):
@@ -168,11 +206,10 @@ class FilmGuard:
         # Une vidéo et un son, rien d'autre : ni sous-titres ajoutés, ni piste de données.
         if len(data["streams"]) != 2 or len(video) != 1 or len(audio) != 1:
             raise self.refuse("output_streams_invalid")
-        if (
-            len(video) != 1
-            or video[0].get("codec_name") != "h264"
-            or (video[0].get("width"), video[0].get("height")) != (1920, 1080)
-        ):
+        if video[0].get("codec_name") != "h264" or (
+            video[0].get("width"),
+            video[0].get("height"),
+        ) != (1920, 1080):
             raise self.refuse("output_video_invalid")
         # Le fichier ne doit rien dire au lecteur qui change l'affichage des images : ni rotation
         # ou miroir (données annexes du flux), ni format d'affichage différent de celui des images.
@@ -190,8 +227,7 @@ class FilmGuard:
         ):
             raise self.refuse("output_framerate_invalid")
         if (
-            len(audio) != 1
-            or audio[0].get("codec_name") != "aac"
+            audio[0].get("codec_name") != "aac"
             or float(audio[0].get("duration") or 0) < duration - 0.1
         ):
             raise self.refuse("output_audio_invalid")
@@ -239,6 +275,10 @@ class FilmGuard:
             output=self.output,
         )
         try:
+            # Relevé avant le rendu : le précontrôle refuse si ce fichier ou une entrée a changé.
+            inputs = fiche_check.inputs_fingerprint(
+                json.loads((self.root / self.pins_ref).read_text())
+            )
             result = wrapper.run(
                 args,
                 preflight_fn=preflight,
@@ -246,11 +286,14 @@ class FilmGuard:
                 config=self.config,
                 output_validator=validate_output,
             )
+            # Le film est en place : on note de quelles entrées il sort, pour repin.py.
+            write_receipt(self.output, inputs)
         except (
             ValueError,
             OSError,
             RuntimeError,
-            subprocess.CalledProcessError,
+            # Recouvre un outil en échec et un outil qui dépasse son délai.
+            subprocess.SubprocessError,
             KeyboardInterrupt,
         ) as exc:
             print(json.dumps({"status": "BLOCKED_OR_INTERRUPTED", "reason": str(exc)}))

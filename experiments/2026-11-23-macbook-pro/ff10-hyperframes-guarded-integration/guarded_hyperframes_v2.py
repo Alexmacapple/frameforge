@@ -11,80 +11,92 @@ import subprocess
 import sys
 import tempfile
 import time
+import uuid
 
 from guarded_hyperframes import preflight
 
 MEDIA = ("capture.webm", "voice1.m4a", "voice2.m4a", "voice3.m4a")
 CONFIG = ("index.html", "hyperframes.json", "package.json", "captions.srt", "captions.vtt", "transcript.txt")
 child = None
+# Jeton du rendu en cours : voir token_holders.
+TOKEN_NAME = "FF_RENDER_TOKEN"
+token = None
+# Fermer le terminal (SIGHUP) arrête le rendu comme Ctrl-C.
+HANDLED_SIGNALS = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
+TERM_GRACE, STOP_DEADLINE = 3.0, 15.0
+# Un rendu de film court dure une à deux minutes : au-delà de ce délai, il est tenu pour bloqué.
+RENDER_TIMEOUT = float(os.environ.get("FF_RENDER_TIMEOUT_S", "1800"))
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
-def process_table():
-    """Rend {pid: ppid} pour tous les processus, lu par ps ; vide si ps échoue."""
-    out = subprocess.run(["ps", "-A", "-o", "pid=,ppid="], capture_output=True, text=True, check=False).stdout
-    table = {}
-    for line in out.splitlines():
-        parts = line.split()
-        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
-            table[int(parts[0])] = int(parts[1])
-    return table
+def token_holders():
+    """PID des processus qui portent le jeton de ce rendu dans leur environnement.
 
-def descendants(pid):
-    """PID de tous les descendants de pid, quel que soit leur groupe de processus."""
-    table = process_table()
-    found, todo = [], [pid]
-    while todo:
-        parent = todo.pop()
-        for candidate, its_parent in table.items():
-            if its_parent == parent and candidate not in found:
-                found.append(candidate)
-                todo.append(candidate)
-    return found
-
-def stop_descendants(tree):
-    """Arrête les descendants relevés avant l'arrêt et encore en vie.
-
-    Le navigateur lancé par le rendu vit dans un autre groupe de processus : arrêter le groupe de
-    la commande ne l'atteint pas, et il survit, rattaché au processus 1. Un PID n'est visé que
-    s'il est toujours rattaché au processus 1 ou à un autre membre de l'arbre relevé, pour ne pas
-    toucher un processus étranger qui aurait repris ce numéro.
+    Le jeton est une valeur aléatoire, propre à ce rendu, donnée à la commande par son
+    environnement : tout ce qu'elle lance en hérite, quels que soient son groupe, sa session ou
+    son rattachement au processus 1 une fois son parent sorti. Chercher par le jeton plutôt que
+    par la parenté trouve aussi un processus lancé pendant l'arrêt, et ne peut pas désigner un
+    processus étranger qui aurait repris un numéro. Si ps échoue, on le dit : une table vide
+    passerait pour « plus personne à arrêter ».
     """
-    family = set(tree)
-    for sig, pause in ((signal.SIGTERM, 3.0), (signal.SIGKILL, 1.0)):
-        table = process_table()
-        targets = [p for p in tree if table.get(p) in family | {1}]
-        if not targets:
-            return
-        for target in targets:
+    if token is None:
+        return []
+    done = subprocess.run(["ps", "-A", "-wwE", "-o", "pid=,command="], capture_output=True,
+                          text=True, check=False, timeout=10)
+    if done.returncode != 0:
+        raise RuntimeError("process_table_unavailable")
+    mark = TOKEN_NAME + "=" + token
+    holders = []
+    for line in done.stdout.splitlines():
+        parts = line.split()
+        if parts and parts[0].isdigit() and mark in parts[1:] and int(parts[0]) != os.getpid():
+            holders.append(int(parts[0]))
+    return holders
+
+def stop_token_holders():
+    """Arrête tout porteur du jeton ; rend ceux qui vivent encore à l'échéance.
+
+    La liste est relue à chaque tour : un processus apparu entre deux tours est vu au suivant.
+    D'abord SIGTERM, puis SIGKILL après TERM_GRACE secondes.
+    """
+    start = time.time()
+    while True:
+        holders = token_holders()
+        if not holders or time.time() - start > STOP_DEADLINE:
+            return holders
+        sig = signal.SIGTERM if time.time() - start < TERM_GRACE else signal.SIGKILL
+        for pid in holders:
             try:
-                os.kill(target, sig)
+                os.kill(pid, sig)
             except (ProcessLookupError, PermissionError):
                 pass
-        deadline = time.time() + pause
-        while time.time() < deadline and any(p in process_table() for p in targets):
-            time.sleep(0.1)
+        time.sleep(0.1)
 
 def stop_child():
-    global child
+    """Arrête la commande de rendu si elle vit encore, puis tout ce qu'elle a lancé.
+
+    Appelé aussi après un rendu terminé : la commande est sortie, mais un navigateur peut rester.
+    """
     if child is not None and child.poll() is None:
-        # Relevé avant tout signal : après, les orphelins ne se distinguent plus des autres.
-        tree = descendants(child.pid)
-        try:
-            os.killpg(child.pid, signal.SIGTERM)
-            child.wait(timeout=8)
-        except subprocess.TimeoutExpired:
-            # Pendant ce délai de grâce, le rendu peut relancer un navigateur : second relevé,
-            # tant que la commande est encore en vie pour qu'on puisse suivre sa descendance.
-            tree += [p for p in descendants(child.pid) if p not in tree]
-            os.killpg(child.pid, signal.SIGKILL)
-            child.wait(timeout=8)
-        except ProcessLookupError:
-            pass
-        stop_descendants(tree)
+        for sig in (signal.SIGTERM, signal.SIGKILL):
+            try:
+                os.killpg(child.pid, sig)
+            except ProcessLookupError:
+                break
+            try:
+                child.wait(timeout=8)
+                break
+            except subprocess.TimeoutExpired:
+                continue
+    left = stop_token_holders()
+    if left:
+        raise RuntimeError("render_processes_left: " + ",".join(map(str, left)))
 
 def interrupted(signum, frame):
+    # Un second signal pendant l'arrêt ne doit pas interrompre le nettoyage en cours.
+    for s in HANDLED_SIGNALS:
+        signal.signal(s, signal.SIG_IGN)
     stop_child()
     raise KeyboardInterrupt("guarded render interrupted")
 
@@ -92,9 +104,16 @@ def run(args, preflight_fn=None, media=None, config=None, output_validator=None)
     preflight_fn = preflight_fn or preflight
     media = MEDIA if media is None else tuple(media)
     config = CONFIG if config is None else tuple(config)
-    global child
-    for s in (signal.SIGTERM, signal.SIGINT):
-        signal.signal(s, interrupted)
+    previous = {s: signal.signal(s, interrupted) for s in HANDLED_SIGNALS}
+    try:
+        return guarded_render(args, preflight_fn, media, config, output_validator)
+    finally:
+        # Les gestionnaires de qui nous appelle sont rendus tels quels.
+        for s, handler in previous.items():
+            signal.signal(s, handler)
+
+def guarded_render(args, preflight_fn, media, config, output_validator):
+    global child, token
     project, baseline, candidate, output = map(Path, (args.project,args.baseline,args.candidate,args.output))
     if output.exists() or output.is_symlink():
         raise ValueError("output_already_exists")
@@ -128,17 +147,24 @@ def run(args, preflight_fn=None, media=None, config=None, output_validator=None)
         rendered=work/"rendered.mp4"
         cmd=["npx","--yes","hyperframes@0.8.33","render",str(snapshot),
              "--output="+str(rendered),"--workers=2","--no-best-effort"]
+        token=uuid.uuid4().hex
         child=subprocess.Popen(cmd,start_new_session=True,stdout=subprocess.DEVNULL,
-                               stderr=subprocess.PIPE)
+                               stderr=subprocess.PIPE,env=dict(os.environ,**{TOKEN_NAME:token}))
         try:
-            _,err=child.communicate()
+            try:
+                _,err=child.communicate(timeout=RENDER_TIMEOUT)
+            except subprocess.TimeoutExpired:
+                raise RuntimeError("hyperframes_timeout") from None
             if child.returncode:
                 raise RuntimeError("hyperframes_failed: "+err.decode(errors="replace")[-700:])
         finally:
-            stop_child()
-            child=None
+            try:
+                stop_child()
+            finally:
+                child=None
+                token=None
         subprocess.run(["ffmpeg","-v","error","-i",str(rendered),"-f","null","-"],
-                       check=True,stdout=subprocess.DEVNULL)
+                       check=True,stdout=subprocess.DEVNULL,timeout=300)
         # A project-specific validator must inspect the temporary media before
         # it can acquire the final output name. This remains opt-in for old pilots.
         if output_validator is not None:
@@ -148,6 +174,10 @@ def run(args, preflight_fn=None, media=None, config=None, output_validator=None)
         changed=[str(p) for p in sources if digest(p)!=hashes[str(p)]]
         if changed:
             raise ValueError("source_changed_during_render")
+        # Le film va être déposé : une interruption à partir d'ici ne doit plus faire dire
+        # « bloqué » alors que le film est en place.
+        for s in HANDLED_SIGNALS:
+            signal.signal(s, signal.SIG_IGN)
         os.link(rendered,output)
     return {"status":"PASS","output":str(output),"sha256":digest(output)}
 
@@ -158,7 +188,7 @@ def main():
     args=parser.parse_args()
     try:
         print(json.dumps(run(args)))
-    except (ValueError,OSError,RuntimeError,subprocess.CalledProcessError,KeyboardInterrupt) as exc:
+    except (ValueError,OSError,RuntimeError,subprocess.SubprocessError,KeyboardInterrupt) as exc:
         print(json.dumps({"status":"BLOCKED_OR_INTERRUPTED","reason":str(exc)}))
         return 2
     return 0

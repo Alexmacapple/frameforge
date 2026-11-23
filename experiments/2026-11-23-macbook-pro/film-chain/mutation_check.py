@@ -35,7 +35,14 @@ COPIED = (
 SUITES = (
     (
         "film-chain",
-        ("test_film_guard", "test_repin", "test_fiche_checks", "test_habillage_v2"),
+        (
+            "test_film_guard",
+            "test_repin",
+            "test_fiche_checks",
+            "test_habillage_v2",
+            "test_guard_main",
+            "test_interruption",
+        ),
     ),
     (
         "ff10-second-web-demo-transfer/form-pilot-kokoro",
