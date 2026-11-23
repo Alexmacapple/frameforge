@@ -28,7 +28,7 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 4. Écrire `capture.cjs` et capturer.
 5. Écrire le fichier d'empreintes et le `render_guarded.py` du film, puis `python3 repin.py DOSSIER`.
 6. Rendre un brouillon témoin, le qualifier, écrire la référence de sortie, refiger.
-7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau : le second rendu doit redonner le même film.
+7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 
 ## Pièges constatés

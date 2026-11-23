@@ -56,7 +56,7 @@ def preflight(reference, candidate):
 
 
 def validate_output(path):
-    return GUARD.validate_output(path)
+    return GUARD.validate_output(path, load_fiche=load_fiche)
 
 
 if __name__ == "__main__":
