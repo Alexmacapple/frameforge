@@ -1,0 +1,14 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice3.wav",
+      "text": "La réservation est envoyée. Un message confirme la salle Érable et le vidéoprojecteur.",
+      "duration_s": 5.225,
+      "sha256": "891a1631c784d5ea8162cfb44cc4c46c1c69f1d5890b9fdeab97eb6397698ef3"
+    }
+  ]
+}
