@@ -1,0 +1,13 @@
+{
+  "purpose": "FF-11 isolated proof of two independent non-browser video sources",
+  "status": "synthetic_test_only",
+  "creation": "ffmpeg lavfi testsrc2 and sine; no third-party or real-world footage",
+  "sources": [
+    {"file": "media/rush-a-landscape-with-audio.mp4", "kind": "synthetic", "size": "1280x720", "fps": 24, "duration_seconds": 4, "audio_hz": 440, "selected_range_seconds": [0, 3.5], "sha256": "cced70556c74735d1c46c14ac579eb206eca80da3140f7776073c45aa1aad1be"},
+    {"file": "media/rush-b-portrait-with-audio.mp4", "kind": "synthetic", "size": "720x1280", "fps": 30, "duration_seconds": 4, "audio_hz": 660, "selected_range_seconds": [0, 3.5], "sha256": "cc9a763b8e28ccbc9bfd2c65c69b3dad95c71e508e363416ba2275d8747428a0"}
+  ],
+  "renderer": "hyperframes@0.8.33",
+  "rendered_sha256": "ab33b7712b97976db9fbbdf68e02ba1ad608e4b97ed3ce5bb192f3c8583c321c",
+  "license_note": "Synthetic FFmpeg test signals generated locally; check FFmpeg binary licensing separately before redistributing tooling.",
+  "no_browser_capture": true
+}

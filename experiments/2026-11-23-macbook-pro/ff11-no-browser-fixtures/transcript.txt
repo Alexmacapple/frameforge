@@ -1,0 +1,7 @@
+FF-11 — Transcription descriptive d'une séquence de test synthétique, sans parole.
+
+0 à 3,5 secondes : une mire animée au format paysage (source 1280 × 720, 24 images/s) est affichée avec le titre « Plan A : paysage, 24 images par seconde ». Un son continu de test à 440 Hz est audible.
+
+3,5 à 7 secondes : une mire animée au format portrait (source 720 × 1280, 30 images/s) remplace la première avec le titre « Plan B : portrait, 30 images par seconde ». Un son continu de test à 660 Hz est audible.
+
+Aucune narration vocale n'est présente. Ce fichier est une alternative descriptive de la fixture ; il ne constitue pas la transcription d'un dialogue.

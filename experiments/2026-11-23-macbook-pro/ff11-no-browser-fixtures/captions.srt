@@ -1,0 +1,7 @@
+1
+00:00:00,000 --> 00:00:03,500
+[Son continu de démonstration, tonalité grave de 440 Hz.]
+
+2
+00:00:03,500 --> 00:00:07,000
+[Son continu de démonstration, tonalité plus aiguë de 660 Hz.]
