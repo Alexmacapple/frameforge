@@ -18,3 +18,12 @@ __pycache__/
 
 # Brouillons de messages de commit
 .commit-drafts/
+
+# Dossiers de travail des essais : jamais publiés. Un fichier déjà suivi le reste ;
+# pour en ajouter un volontairement : git add -f.
+local/
+reconstructed-fixture/
+
+# Relevés intermédiaires d'essais, repris dans les rapports
+experiments/2026-11-23-macbook-pro/ff06-slow-gesture/media/naif-capture-events.json
+experiments/2026-11-23-macbook-pro/ff10-revision-and-resume/media/verrouilles-avant.txt
