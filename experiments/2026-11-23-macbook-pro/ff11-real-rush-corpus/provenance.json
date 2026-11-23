@@ -1,0 +1,85 @@
+{
+  "retrieval_date": "2026-11-23",
+  "provider": "NASA Image and Video Library",
+  "rights_note": "NASA imagery is generally usable for educational/informational purposes, subject to NASA media usage guidelines, third-party rights and non-endorsement. Not a blanket clearance; check each source before external redistribution.",
+  "items": [
+    {
+      "role": "relevant",
+      "filename": "earth-view.mp4",
+      "nasa_id": "Earth Views from the International Space Station",
+      "source_api": "https://images-api.nasa.gov/asset/Earth%20Views%20from%20the%20International%20Space%20Station",
+      "source_url": "https://images-assets.nasa.gov/video/Earth%20Views%20from%20the%20International%20Space%20Station/Earth%20Views%20from%20the%20International%20Space%20Station~preview.mp4",
+      "sha256": "aa3ce01c86b326aaa08279db5863f24a9aa3a3b2ea4ab73533f2ac203cac626b",
+      "bytes": 14736179,
+      "duration": "200.800000",
+      "streams": [
+        {
+          "type": "audio",
+          "codec": "aac",
+          "width": null,
+          "height": null,
+          "fps": "0/0"
+        },
+        {
+          "type": "video",
+          "codec": "h264",
+          "width": 480,
+          "height": 270,
+          "fps": "30/1"
+        }
+      ]
+    },
+    {
+      "role": "relevant",
+      "filename": "earth-nisar.mp4",
+      "nasa_id": "JPL-20240109-NISARf-0001-Tracking Earth's Changes from Space",
+      "source_api": "https://images-api.nasa.gov/asset/JPL-20240109-NISARf-0001-Tracking%20Earth%27s%20Changes%20from%20Space",
+      "source_url": "https://images-assets.nasa.gov/video/JPL-20240109-NISARf-0001-Tracking%20Earth%27s%20Changes%20from%20Space/JPL-20240109-NISARf-0001-Tracking%20Earth%27s%20Changes%20from%20Space~preview.mp4",
+      "sha256": "aa7278d01c1fb448c6d4f313f6861c9173bbc8010318bf1d08bb3ce145af2af2",
+      "bytes": 14189033,
+      "duration": "181.653016",
+      "streams": [
+        {
+          "type": "audio",
+          "codec": "aac",
+          "width": null,
+          "height": null,
+          "fps": "0/0"
+        },
+        {
+          "type": "video",
+          "codec": "h264",
+          "width": 480,
+          "height": 270,
+          "fps": "30/1"
+        }
+      ]
+    },
+    {
+      "role": "distractor",
+      "filename": "mars-distractor.mp4",
+      "nasa_id": "JPL-20210222-M2020f-0001-Perseverance Rover’s Descent and Touchdown on Mars",
+      "source_api": "https://images-api.nasa.gov/asset/JPL-20210222-M2020f-0001-Perseverance%20Rover%E2%80%99s%20Descent%20and%20Touchdown%20on%20Mars",
+      "source_url": "https://images-assets.nasa.gov/video/JPL-20210222-M2020f-0001-Perseverance%20Rover%E2%80%99s%20Descent%20and%20Touchdown%20on%20Mars/JPL-20210222-M2020f-0001-Perseverance%20Rover%E2%80%99s%20Descent%20and%20Touchdown%20on%20Mars~preview.mp4",
+      "sha256": "2795fd16ff9a203e913595e4ada9f0b4b5ee635b38a6507f3365953a342018e6",
+      "bytes": 17178583,
+      "duration": "205.034014",
+      "streams": [
+        {
+          "type": "audio",
+          "codec": "aac",
+          "width": null,
+          "height": null,
+          "fps": "0/0"
+        },
+        {
+          "type": "video",
+          "codec": "h264",
+          "width": 480,
+          "height": 270,
+          "fps": "30/1"
+        }
+      ]
+    }
+  ]
+}

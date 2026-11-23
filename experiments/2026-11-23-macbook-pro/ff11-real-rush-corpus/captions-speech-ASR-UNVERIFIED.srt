@@ -1,0 +1,8 @@
+1
+00:00:06,000 --> 00:00:08,800
+soil moisture and short length changes.
+
+2
+00:00:08,800 --> 00:00:13,000
+It's based on radar, so it has two different frequency radars and...
+

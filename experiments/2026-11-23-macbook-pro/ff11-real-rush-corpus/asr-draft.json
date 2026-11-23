@@ -1,0 +1,17 @@
+{
+  "model": "faster-whisper tiny.en",
+  "language": "en",
+  "status": "UNVERIFIED machine draft, not human-reviewed",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.8,
+      "text": "soil moisture and short length changes."
+    },
+    {
+      "start": 2.8,
+      "end": 7.0,
+      "text": "It's based on radar, so it has two different frequency radars and..."
+    }
+  ]
+}
