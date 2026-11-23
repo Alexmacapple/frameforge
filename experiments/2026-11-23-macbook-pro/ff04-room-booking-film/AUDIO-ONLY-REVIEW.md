@@ -38,6 +38,10 @@ Texte prononcé : « La salle Érable est choisie parmi les trois salles. L'opti
 
 Statut : **UNVERIFIED pour un auditeur qui ne connaît pas le film** ; retour positif partiel de l'approbateur. Le contrôle « Compréhension du film sans l'image » reste ouvert dans la fiche.
 
+## Décision de l'approbateur
+
+Après lecture de ce compte rendu, l'approbateur a répondu « c'est bon passe à la suite », puis « la narration est ok ». La narration est donc conservée telle quelle ; aucune réécriture n'est demandée. La réserve ci-dessus reste un fait de méthode, pas une demande de correction.
+
 ## Ce qui lèverait la réserve
 
 Faire écouter le même fichier à une personne qui n'a jamais vu le film, avec la même consigne, et noter sa réponse mot pour mot. Si le nom de la salle ou la nature de la page manquent encore, le texte de narration est à revoir, ce qui demande une nouvelle synthèse et une nouvelle approbation.
