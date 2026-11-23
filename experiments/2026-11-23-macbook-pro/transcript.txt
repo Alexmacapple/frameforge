@@ -1,0 +1,1 @@
+Voici une démonstration de trois interactions. Nous ajoutons une première tâche, puis une deuxième. Enfin, nous marquons la première tâche comme terminée. Les résultats ont été observés dans le navigateur.

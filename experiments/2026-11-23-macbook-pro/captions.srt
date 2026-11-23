@@ -1,0 +1,13 @@
+1
+00:00:00,000 --> 00:00:04,000
+Voici une démonstration de trois interactions.
+
+2
+00:00:04,000 --> 00:00:08,000
+Nous ajoutons une première tâche,
+puis une deuxième.
+
+3
+00:00:08,000 --> 00:00:13,638
+Enfin, nous marquons la première tâche comme terminée.
+Les résultats ont été observés dans le navigateur.
