@@ -134,9 +134,13 @@ class FilmGuard:
         stale = fiche_build.stale_files(load_fiche(), self.root)
         if stale:
             raise self.refuse("files_not_generated_from_fiche:" + ",".join(stale))
+        # Un film dont l'approbation a été retirée ne se rend pas sous ce statut.
+        if load_fiche()["film"]["approval"]["status"] == "REVOKED":
+            raise self.refuse("fiche_revoked")
         return True
 
-    def validate_output(self, path):
+    def validate_output(self, path, load_fiche=None):
+        """load_fiche permet au fichier du film de fournir sa fiche, comme pour le précontrôle."""
         reference = json.loads((self.root / self.reference_ref).read_text())
         # Une référence incomplète ne vaut pas « contrôle non demandé » : elle est refusée.
         if any(key not in reference for key in REFERENCE_KEYS):
@@ -219,6 +223,11 @@ class FilmGuard:
             raise self.refuse("output_packets_changed")
         if data["format"].get("tags", {}) != reference["expected_format_tags"]:
             raise self.refuse("output_tags_changed")
+        # Quand la fiche porte l'empreinte d'un film, le rendu doit redonner ce film-là, fichier
+        # entier. Un brouillon jamais rendu n'a pas d'empreinte : rien à comparer.
+        approved = (load_fiche or self.load_fiche)()["film"]["output_sha256"]
+        if approved and sha(path) != approved:
+            raise self.refuse("output_differs_from_approved_film")
         return True
 
     def main(self, preflight, validate_output):

@@ -11,6 +11,7 @@ import sys
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 CHAIN = Path(__file__).resolve().parent
@@ -266,6 +267,40 @@ class InvalidOutputTests(unittest.TestCase):
 
     def test_reencoded_sound_refused(self):
         self.refused("output_audio_changed", "-c:v", "copy", "-af", "volume=0.5", "-c:a", "aac")
+
+
+class ApprovedFilmTests(unittest.TestCase):
+    """Issue 15, constats 8 et 9 : film approuvé à reproduire, film révoqué à ne pas rendre."""
+
+    def test_render_must_reproduce_the_approved_film(self):
+        for name in FILMS:
+            with self.subTest(film=name):
+                module, draft = load(name)
+                fiche = module.load_fiche()
+                fiche["film"]["output_sha256"] = "0" * 64
+                with mock.patch.object(module, "load_fiche", return_value=fiche):
+                    with self.assertRaisesRegex(ValueError, "output_differs_from_approved_film"):
+                        module.validate_output(draft)
+
+    def test_draft_without_fingerprint_is_not_compared(self):
+        for name in FILMS:
+            with self.subTest(film=name):
+                module, draft = load(name)
+                fiche = module.load_fiche()
+                fiche["film"]["output_sha256"] = None
+                with mock.patch.object(module, "load_fiche", return_value=fiche):
+                    self.assertTrue(module.validate_output(draft))
+
+    def test_revoked_film_is_not_rendered(self):
+        for name in FILMS:
+            with self.subTest(film=name), tempfile.TemporaryDirectory() as tmp:
+                module, _ = load(name)
+                root = copied_inputs(module, tmp)
+                fiche = module.load_fiche()
+                fiche["film"]["approval"]["status"] = "REVOKED"
+                with mock.patch.object(module, "load_fiche", return_value=fiche):
+                    with self.assertRaisesRegex(ValueError, "fiche_revoked"):
+                        module.preflight(root / "baseline.html", root / "index.html")
 
 
 if __name__ == "__main__":
