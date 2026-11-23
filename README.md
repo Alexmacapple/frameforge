@@ -16,4 +16,4 @@ Produire des démonstrations web narrées, puis étendre aux rushes et vidéos p
 - Distinguer preuve observée, inférence, simulation et élément non vérifié.
 - CLI et rapports textuels utilisables avec lecteur d'écran.
 
-Voir [WHY.md](WHY.md), [INTENT.md](INTENT.md), [SPEC.md](SPEC.md), [PLAN.md](PLAN.md), [AGENTS.md](AGENTS.md) et [PHASE0-REPORT.md](PHASE0-REPORT.md).
+Voir WHY.md, INTENT.md, SPEC.md, PLAN.md et AGENTS.md.
