@@ -34,6 +34,33 @@ class WebEntrypointTests(unittest.TestCase):
             path.write_text((L/'index.html').read_text().replace('src="capture.webm"','src="other.webm"'))
             with self.assertRaises(ValueError):
                 mod.check(L/'baseline.html',path)
+    def test_manifest_tamper_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in (*mod.ASSET_PINS,'asset-pins.json'):
+                (root/name).write_bytes((L/name).read_bytes())
+            (root/'asset-pins.json').write_text((L/'asset-pins.json').read_text().replace('a','b',1))
+            with self.assertRaisesRegex(ValueError,'asset_manifest_changed'):
+                mod.check_assets(root)
+    def test_protected_srt_tamper_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in (*mod.ASSET_PINS,'asset-pins.json'):
+                (root/name).write_bytes((L/name).read_bytes())
+            p=root/'captions.srt'
+            p.write_text(p.read_text().replace('Les deux tâches sont visibles.','Toutes les tâches ont disparu.'))
+            with self.assertRaisesRegex(ValueError,'protected_asset_changed:captions.srt'):
+                mod.check_assets(root)
+    def test_protected_media_tamper_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in (*mod.ASSET_PINS,'asset-pins.json'):
+                (root/name).write_bytes((L/name).read_bytes())
+            (root/'voice2.m4a').write_bytes(b'altered')
+            with self.assertRaisesRegex(ValueError,'protected_asset_changed:voice2.m4a'):
+                mod.check_assets(root)
+    def test_assets_pinned(self):
+        self.assertTrue(mod.check_assets(L))
     def test_existing_output_not_overwritten(self):
         from types import SimpleNamespace
         with tempfile.TemporaryDirectory() as tmp:
