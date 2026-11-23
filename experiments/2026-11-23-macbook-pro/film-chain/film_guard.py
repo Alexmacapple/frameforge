@@ -54,6 +54,28 @@ def video_stream_hash(path):
     return out.decode().strip().split("=")[-1]
 
 
+def packets_hash(path):
+    """Empreinte de tous les paquets de tous les flux, avec leurs horodatages et l'en-tête des flux.
+
+    Complète l'empreinte du flux vidéo, qui ne porte que le contenu des paquets : un film dont les
+    images sont décalées dans le temps, ou qui porte un flux de plus, change cette empreinte-ci.
+    """
+    out = subprocess.check_output(
+        ["ffmpeg", "-v", "error", "-i", str(path), "-map", "0", "-c", "copy", "-f", "framemd5", "-"]
+    )
+    return hashlib.sha256(out).hexdigest()
+
+
+REFERENCE_KEYS = (
+    "expected_duration_s",
+    "expected_fps",
+    "expected_video_stream_sha256",
+    "expected_pcm_sha256",
+    "expected_packets_sha256",
+    "expected_format_tags",
+)
+
+
 class FilmGuard:
     """Précontrôle des entrées et validation de la sortie d'un film.
 
@@ -112,10 +134,17 @@ class FilmGuard:
         stale = fiche_build.stale_files(load_fiche(), self.root)
         if stale:
             raise self.refuse("files_not_generated_from_fiche:" + ",".join(stale))
+        # Un film dont l'approbation a été retirée ne se rend pas sous ce statut.
+        if load_fiche()["film"]["approval"]["status"] == "REVOKED":
+            raise self.refuse("fiche_revoked")
         return True
 
-    def validate_output(self, path):
+    def validate_output(self, path, load_fiche=None):
+        """load_fiche permet au fichier du film de fournir sa fiche, comme pour le précontrôle."""
         reference = json.loads((self.root / self.reference_ref).read_text())
+        # Une référence incomplète ne vaut pas « contrôle non demandé » : elle est refusée.
+        if any(key not in reference for key in REFERENCE_KEYS):
+            raise self.refuse("output_reference_incomplete")
         duration, fps = reference["expected_duration_s"], reference["expected_fps"]
         data = json.loads(
             subprocess.check_output(
@@ -124,7 +153,8 @@ class FilmGuard:
                     "-v",
                     "error",
                     "-show_entries",
-                    "format=duration:stream=codec_type,codec_name,width,height,nb_frames,avg_frame_rate,duration",
+                    "format=duration:format_tags:stream=codec_type,codec_name,width,height,nb_frames,avg_frame_rate,"
+                    "duration,sample_aspect_ratio,display_aspect_ratio:stream_side_data=side_data_type",
                     "-of",
                     "json",
                     str(path),
@@ -135,12 +165,23 @@ class FilmGuard:
             raise self.refuse("output_duration_invalid")
         video = [s for s in data["streams"] if s["codec_type"] == "video"]
         audio = [s for s in data["streams"] if s["codec_type"] == "audio"]
+        # Une vidéo et un son, rien d'autre : ni sous-titres ajoutés, ni piste de données.
+        if len(data["streams"]) != 2 or len(video) != 1 or len(audio) != 1:
+            raise self.refuse("output_streams_invalid")
         if (
             len(video) != 1
             or video[0].get("codec_name") != "h264"
             or (video[0].get("width"), video[0].get("height")) != (1920, 1080)
         ):
             raise self.refuse("output_video_invalid")
+        # Le fichier ne doit rien dire au lecteur qui change l'affichage des images : ni rotation
+        # ou miroir (données annexes du flux), ni format d'affichage différent de celui des images.
+        if (
+            any(s.get("side_data_list") for s in data["streams"])
+            or video[0].get("sample_aspect_ratio") != "1:1"
+            or video[0].get("display_aspect_ratio") != "16:9"
+        ):
+            raise self.refuse("output_display_altered")
         num, den = map(int, video[0].get("avg_frame_rate", "0/0").split("/"))
         if (
             den == 0
@@ -177,6 +218,16 @@ class FilmGuard:
         )
         if hashlib.sha256(pcm).hexdigest() != reference["expected_pcm_sha256"]:
             raise self.refuse("output_audio_changed")
+        # Mêmes images et même son ne suffisent pas : chaque paquet doit aussi tomber au même instant.
+        if packets_hash(path) != reference["expected_packets_sha256"]:
+            raise self.refuse("output_packets_changed")
+        if data["format"].get("tags", {}) != reference["expected_format_tags"]:
+            raise self.refuse("output_tags_changed")
+        # Quand la fiche porte l'empreinte d'un film, le rendu doit redonner ce film-là, fichier
+        # entier. Un brouillon jamais rendu n'a pas d'empreinte : rien à comparer.
+        approved = (load_fiche or self.load_fiche)()["film"]["output_sha256"]
+        if approved and sha(path) != approved:
+            raise self.refuse("output_differs_from_approved_film")
         return True
 
     def main(self, preflight, validate_output):

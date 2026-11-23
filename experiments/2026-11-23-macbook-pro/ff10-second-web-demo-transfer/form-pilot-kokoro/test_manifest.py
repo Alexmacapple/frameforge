@@ -178,5 +178,63 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("approval", failed(mutated(change)))
 
 
+def copied_film(tmp):
+    """Copie temporaire des fichiers texte du film, avec sa page source et son approbation."""
+    root = Path(tmp) / "pilot"
+    root.mkdir()
+    (Path(tmp) / "form-pilot").mkdir()
+    for name in TEXT_FILES:
+        shutil.copyfile(D / name, root / name)
+    shutil.copyfile(D.parent / "form-pilot/form.html", Path(tmp) / "form-pilot/form.html")
+    approval = Path(MANIFEST["film"]["approval"]["ref"]).name
+    shutil.copyfile(D.parent / approval, Path(tmp) / approval)
+    return root
+
+
+class ApprovalTests(unittest.TestCase):
+    """Issue 15, constat 4 : une fiche ne peut pas fabriquer sa propre approbation."""
+
+    def test_fiche_cannot_be_its_own_approval_document(self):
+        def change(d):
+            d["film"]["approval"]["ref"] = "provenance-manifest.json"
+
+        self.assertIn("approval", failed(mutated(change)))
+
+    def test_copy_of_the_fiche_cannot_be_the_approval_document(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = copied_film(t)
+            shutil.copyfile(root / "provenance-manifest.json", root / "approbation.md")
+            data = copy.deepcopy(MANIFEST)
+            data["film"]["approval"]["ref"] = "approbation.md"
+            self.assertIn("approval", failed(m.check_data(data, root)))
+
+    def test_file_cited_by_the_fiche_cannot_be_the_approval_document(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = copied_film(t)
+            fingerprint = MANIFEST["film"]["output_sha256"]
+            with (root / "transcript.txt").open("a") as handle:
+                handle.write(fingerprint + "\n")
+            data = copy.deepcopy(MANIFEST)
+            data["film"]["approval"]["ref"] = "transcript.txt"
+            results = m.check_data(data, root)
+            detail = [r["detail"] for r in results if r["check"] == "approval"][0]
+            self.assertIn("approval", failed(results))
+            self.assertIn("cité ou figé par la fiche", detail)
+
+    def test_release_status_is_refused_even_with_the_word_in_the_document(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = copied_film(t)
+            approval = Path(t) / Path(MANIFEST["film"]["approval"]["ref"]).name
+            with approval.open("a") as handle:
+                handle.write("\nCe film est APPROVED_FOR_RELEASE.\n")
+            data = copy.deepcopy(MANIFEST)
+            data["film"]["approval"]["status"] = "APPROVED_FOR_RELEASE"
+            self.assertIn("approval", failed(m.check_data(data, root)))
+
+    def test_reviewed_film_with_its_real_approval_document_still_passes(self):
+        with tempfile.TemporaryDirectory() as t:
+            self.assertNotIn("approval", failed(m.check_data(MANIFEST, copied_film(t))))
+
+
 if __name__ == "__main__":
     unittest.main()

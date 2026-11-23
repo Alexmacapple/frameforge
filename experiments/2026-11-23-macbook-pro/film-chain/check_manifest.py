@@ -135,6 +135,9 @@ def check_data(data, root, events=None):
     problems = []
     # Une source externe (site public) n'a pas d'empreinte : son état filmé n'est pas vérifiable.
     external = src["sha256"] is None
+    # Seule une adresse en ligne peut se passer d'empreinte : un fichier local se hache.
+    if external and not src["ref"].startswith(("http://", "https://")):
+        problems.append("source locale sans empreinte")
     if not external and (
         not (root / src["ref"]).is_file() or sha(root / src["ref"]) != src["sha256"]
     ):
@@ -250,14 +253,24 @@ def check_data(data, root, events=None):
         "repère du résultat non mesuré : " + ", ".join(untimed) if untimed else "",
     )
 
-    problems = [
-        f"{s['scene_id']} : résultat observé différent de l'attendu"
-        for s in scenes
-        if events is not None
-        and s["evidence_status"] == "observed"
-        and events["observed"].get(s["result"]["observed_key"])
-        != s["result"]["expected"]
-    ]
+    # Une scène « observée » doit avoir une observation lisible : clé présente dans le journal,
+    # valeur attendue renseignée, et égalité stricte (True n'est pas 1).
+    problems = []
+    for s in scenes:
+        if events is None or s["evidence_status"] != "observed":
+            continue
+        key, wanted = s["result"]["observed_key"], s["result"]["expected"]
+        if key not in events["observed"]:
+            problems.append(f"{s['scene_id']} : clé observée absente du journal")
+        elif wanted is None:
+            problems.append(f"{s['scene_id']} : résultat attendu non renseigné")
+        elif (
+            type(events["observed"][key]) is not type(wanted)
+            or events["observed"][key] != wanted
+        ):
+            problems.append(
+                f"{s['scene_id']} : résultat observé différent de l'attendu"
+            )
     verdict_or_unverified(
         "results",
         problems,
@@ -280,7 +293,16 @@ def check_data(data, root, events=None):
             for s in scenes
             if s["evidence_status"] != "observed"
         ]
-    verdict("statuses", problems)
+    # Sans journal lisible, des scènes qui se disent observées ne sont pas vérifiées : le dire.
+    claimed = [s["scene_id"] for s in scenes if s["evidence_status"] == "observed"]
+    verdict_or_unverified(
+        "statuses",
+        problems,
+        "scènes déclarées observées sans journal de capture lisible : "
+        + ", ".join(claimed)
+        if events is None and claimed
+        else "",
+    )
 
     # Un brouillon n'a ni document d'approbation ni, avant son premier rendu, d'empreinte de film.
     fingerprint, approval_ref = film["output_sha256"], film["approval"]["ref"]
@@ -288,16 +310,27 @@ def check_data(data, root, events=None):
     if status != "DRAFT":
         approval = root / approval_ref if approval_ref else None
         text = approval.read_text() if approval and approval.is_file() else ""
-        # L'empreinte suffit pour une approbation éditoriale ; une autorisation de diffusion
-        # doit en plus être écrite en toutes lettres dans le document.
-        needs_wording = status == "APPROVED_FOR_RELEASE"
-        if (
-            not fingerprint
-            or fingerprint not in text
-            or (needs_wording and status not in text)
-        ):
+        if not fingerprint or fingerprint not in text:
+            problems.append("le document d'approbation ne nomme pas cette version")
+        # Le document d'approbation est une trace humaine distincte : ni la fiche, ni une copie
+        # de la fiche, ni un fichier que la fiche cite ou que le garde fige.
+        own = {"provenance-manifest.json", data["pins_ref"], *refs, *pins}
+        if approval and approval.resolve() in {(root / name).resolve() for name in own}:
             problems.append(
-                "le document d'approbation ne nomme pas cette version et ce statut"
+                "le document d'approbation est un fichier cité ou figé par la fiche"
+            )
+        try:
+            json.loads(text)
+            problems.append(
+                "le document d'approbation est un fichier de données, pas une trace humaine"
+            )
+        except ValueError:
+            pass
+        # Aucune preuve d'autorisation de diffusion n'est définie par le projet : un mot dans un
+        # fichier n'en est pas une. Ce statut est refusé tant que cette preuve n'existe pas.
+        if status == "APPROVED_FOR_RELEASE":
+            problems.append(
+                "autorisation de diffusion : aucune preuve vérifiable n'est définie, statut refusé"
             )
     verdict("approval", problems)
 

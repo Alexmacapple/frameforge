@@ -24,7 +24,7 @@ CONFIG = (
 PIN_MANIFEST_SHA256 = "32b548ff6d03c4cae9481463f1c9801e379803ab0bd47167f9c7613f714eaa84"
 PIN_HTML_SHA256 = "39a4a620ecdd6f3aaf9fc3ad9bddf8273ed4edcfd09e6aba7e9d19844e2cec81"
 PIN_OUTPUT_REFERENCE_SHA256 = (
-    "54292d32bc601f80150a421f4528b117e0fb3e21ac1344f546c9c1898aa52067"
+    "72c7a0da7f774a5ab3679a0e75e6ade2c6df5f95e0dd0ba671898d1e356fa9cb"
 )
 
 GUARD = film_guard.FilmGuard(
@@ -56,7 +56,7 @@ def preflight(reference, candidate):
 
 
 def validate_output(path):
-    return GUARD.validate_output(path)
+    return GUARD.validate_output(path, load_fiche=load_fiche)
 
 
 if __name__ == "__main__":

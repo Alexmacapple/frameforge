@@ -2,5 +2,14 @@
   "expected_pcm_sha256": "644eee558715d6f7e5f842fe3e0c7ab01e3ff1140fcf710bf05948f89753b8f6",
   "expected_video_stream_sha256": "49233de2ff4355e5c77d10b055bad651c121323457f98f79ae60eab1330959da",
   "expected_duration_s": 16,
-  "expected_fps": 30
+  "expected_fps": 30,
+  "expected_packets_sha256": "d6de321c2817848129ad170c8ab67aefcc42af0364195956adbc080d72a893ab",
+  "expected_format_tags": {
+    "minor_version": "512;512",
+    "major_brand": "isom;isom",
+    "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+    "hyperframes_version": "0.0.0-dev",
+    "hyperframes_renderer": "hyperframes",
+    "encoder": "Lavf63.1.101"
+  }
 }
