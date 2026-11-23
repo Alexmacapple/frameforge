@@ -1,0 +1,12 @@
+1
+00:00:02,550 --> 00:00:04,562
+Une première tâche apparaît dans la liste.
+
+2
+00:00:06,650 --> 00:00:09,567
+Une deuxième tâche apparaît. Les deux tâches sont visibles.
+
+3
+00:00:11,200 --> 00:00:14,709
+La première tâche est cochée et barrée. La deuxième reste à faire.
+
