@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parent
 # Le wrapper V2 est réutilisé tel quel ; il importe lui-même son voisin guarded_hyperframes.
 sys.path.insert(0, str(ROOT.parents[1] / "ff10-hyperframes-guarded-integration"))
 wrapper = importlib.import_module("guarded_hyperframes_v2")
+sys.path.insert(0, str(ROOT))
+fiche_check = importlib.import_module("check_manifest")
 
 MEDIA = ("capture.mp4", "kokoro1.wav", "kokoro2.wav", "kokoro3.wav")
 CONFIG = (
@@ -28,10 +30,14 @@ CONFIG = (
     "transcript.txt",
     "kokoro-input-pins.json",
     "kokoro-output-reference.json",
+    "provenance-manifest.json",
+    "capture-events.json",
 )
-PIN_MANIFEST_SHA256 = "5a51bb54e91d8f361d3f239d95b765772584b3fc567f79b0575b4873896d6970"
+PIN_MANIFEST_SHA256 = "9513a93b40f00873a5da1de79207c079a2820aa1bd567c582d59354d6f59da36"
 PIN_HTML_SHA256 = "4fd5bd62879513b88e538808f2b382fd99fe876f0351b698bd686c5ff84ee1ee"
-PIN_OUTPUT_REFERENCE_SHA256 = "5ed3fd42e6f0b4c2737fceea52d3fd5af1a9c3dbd39d136e9ce6661146e36563"
+PIN_OUTPUT_REFERENCE_SHA256 = (
+    "5ed3fd42e6f0b4c2737fceea52d3fd5af1a9c3dbd39d136e9ce6661146e36563"
+)
 
 
 def sha(path):
@@ -51,7 +57,24 @@ def preflight(reference, candidate):
             raise ValueError("kokoro_asset_changed:" + name)
     if sha(root / "kokoro-output-reference.json") != PIN_OUTPUT_REFERENCE_SHA256:
         raise ValueError("kokoro_output_reference_changed")
+    # La fiche du projet doit être cohérente avec les fichiers qu'elle cite. Elle est lue dans le
+    # projet d'origine, y compris quand ce précontrôle est rejoué sur la copie isolée : la fiche
+    # renvoie à des documents voisins que la copie n'embarque pas, et les empreintes ci-dessus
+    # garantissent déjà que la copie porte la même fiche.
+    failures = fiche_failures()
+    if failures:
+        raise ValueError("kokoro_fiche_incoherent:" + ",".join(failures))
     return True
+
+
+def load_fiche():
+    return json.loads((ROOT / "provenance-manifest.json").read_text())
+
+
+def fiche_failures():
+    """Noms des contrôles en échec ; les UNVERIFIED déclarés ne bloquent pas le rendu."""
+    results = fiche_check.check_data(load_fiche(), ROOT)
+    return sorted({r["check"] for r in results if r["status"] == "FAIL"})
 
 
 def video_stream_hash(path):

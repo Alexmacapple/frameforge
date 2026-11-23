@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 D = Path(__file__).resolve().parent
@@ -56,6 +57,26 @@ class PreflightTests(unittest.TestCase):
         self.assertNotIn(
             "voice", (D / "index.html").read_text().replace('id="voice', "")
         )
+
+
+class FicheTests(unittest.TestCase):
+    """La fiche de film (provenance-manifest.json) conditionne le rendu."""
+
+    def test_coherent_fiche_reports_no_failure(self):
+        self.assertEqual(g.fiche_failures(), [])
+
+    def test_incoherent_fiche_blocks_preflight(self):
+        # Fiche et empreintes à jour, mais narration décalée par rapport à la composition.
+        fiche = g.load_fiche()
+        fiche["scenes"][2]["narration"]["start_s"] = 9.0
+        with mock.patch.object(g, "load_fiche", return_value=fiche):
+            with self.assertRaisesRegex(ValueError, "kokoro_fiche_incoherent:.*composition"):
+                g.preflight(D / "baseline.html", D / "index.html")
+
+    def test_fiche_and_capture_events_are_pinned_inputs(self):
+        for name in ("provenance-manifest.json", "capture-events.json"):
+            self.assertIn(name, PINS)
+            self.assertIn(name, g.CONFIG)
 
 
 class OutputTests(unittest.TestCase):

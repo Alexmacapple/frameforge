@@ -1,6 +1,6 @@
 # FF-04 — Proposition de fiche de film (manifeste de provenance)
 
-23 novembre 2026, MacBook Pro. **Statut : format validé par Alex et éprouvé sur deux films. Rien n'en dépend encore : le rendu gardé ne lit pas la fiche.**
+23 novembre 2026, MacBook Pro. **Statut : format validé par Alex, éprouvé sur deux films, et lu par le rendu gardé du formulaire.** Les sections ci-dessous sont dans l'ordre où le travail a été fait.
 
 ## Ce que c'est
 
@@ -67,6 +67,16 @@ Règle supprimée : « une action continue sans geste est un échec ». Une scè
 Résultat sur V5 : 10 PASS, 3 UNVERIFIED de contrôle (`source`, `gestures`, `results`) et 4 contrôles ouverts, code de sortie 2. Résultat inchangé sur le formulaire : 13 PASS, 2 UNVERIFIED. 17 tests sur 17 dans `test_manifest.py` ; les 17 tests du pilote V5 passent toujours.
 
 Ce que l'essai montre : le film V5, approuvé à l'écoute, a des preuves plus faibles que le film du formulaire. Ses trois résultats sont bien consignés dans le DOM de la capture d'origine, mais rien ne mesure quand ils apparaissent dans le film. La fiche le rend visible au lieu de le masquer.
+
+## Branchement sur le rendu gardé du formulaire
+
+Décidé par Alex le 23 novembre 2026. Le précontrôle de `form-pilot-kokoro/render_guarded.py` lance le contrôle de la fiche et refuse le rendu si un contrôle est en échec (`kokoro_fiche_incoherent`). Les UNVERIFIED déclarés ne bloquent pas. La fiche et le journal de capture sont ajoutés aux fichiers figés par empreinte.
+
+- **Refus sur le chemin réel** : fiche modifiée (troisième phrase avancée à 9 s) avec des empreintes remises à jour, puis `python3 render_guarded.py` : `kokoro_fiche_incoherent:composition,timeline`, code 2, aucun film déposé. État restauré ensuite.
+- **Cas nominal** : rendu gardé PASS, même empreinte `ab040730…7125` que le film approuvé.
+- **Tests** : 13 dans `test_kokoro_guard.py`, 32 avec la fiche et les gestes. Le refus neutralisé fait échouer `test_incoherent_fiche_blocks_preflight`.
+
+Portée : ce pilote seulement. Le pilote V5 a une fiche mais son rendu ne la lit pas. La fiche est relue dans le projet d'origine même quand le précontrôle est rejoué sur la copie isolée, parce qu'elle renvoie à des documents voisins ; les empreintes garantissent que la copie porte la même fiche.
 
 ## Limites
 
