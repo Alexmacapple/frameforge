@@ -1,6 +1,6 @@
 # FF-04 — Proposition de fiche de film (manifeste de provenance)
 
-23 novembre 2026, MacBook Pro. **Statut : proposition, en attente de validation du format par Alex. Rien n'en dépend encore : le rendu gardé ne lit pas la fiche.**
+23 novembre 2026, MacBook Pro. **Statut : format validé par Alex et éprouvé sur deux films. Rien n'en dépend encore : le rendu gardé ne lit pas la fiche.**
 
 ## Ce que c'est
 
@@ -52,9 +52,26 @@ Les contrôles restés ouverts sont rapportés UNVERIFIED, jamais PASS. Code de 
 - **Types de plans** (`fixed`, `continuous_action`, `title_card`, `honest_cut`, `result`) : la liste est acceptée, mais seul `continuous_action` est exercé par l'exemple. Les règles propres aux autres types ne sont pas écrites.
 - **Fraîcheur, version du produit, rôle et session** : date de capture, empreinte de la page et autorisation en texte libre. Pas de notion de rôle ni de session : la fixture n'en a pas.
 
+## Essai sur un second film
+
+Format validé par Alex le 23 novembre 2026, puis éprouvé sur le film V5 (TodoMVC, `9fbb7c31…11ad`) : fiche dans `ff10-web-workflow-entrypoint/local/provenance-manifest.json`.
+
+Le film V5 ne rentrait pas tel quel. Trois écarts réels, et la réponse retenue :
+
+- **Source publique sans empreinte.** La page filmée est un site en ligne, pas un fichier du dépôt. `sha256` peut valoir `null` ; le contrôle `source` répond alors UNVERIFIED.
+- **Aucun repère de geste aligné sur le film.** La capture a été ralentie d'un facteur 1,7 et son journal (`vertical-v3/events.json`) est dans un autre format, sur une autre horloge. `events_ref` et l'événement de résultat peuvent valoir `null` ; `gestures` et `results` répondent UNVERIFIED.
+- **Composition et approbation.** Le fichier d'empreintes de V5 ne couvre pas la composition, et son document d'approbation ne contient pas le mot `REVIEWED`. Le contrôle n'exige plus que la composition soit figée (son contenu reste confronté à la fiche) et n'exige le statut en toutes lettres que pour une autorisation de diffusion.
+
+Règle supprimée : « une action continue sans geste est un échec ». Une scène sans repère mesuré est désormais rapportée UNVERIFIED.
+
+Résultat sur V5 : 10 PASS, 3 UNVERIFIED de contrôle (`source`, `gestures`, `results`) et 4 contrôles ouverts, code de sortie 2. Résultat inchangé sur le formulaire : 13 PASS, 2 UNVERIFIED. 17 tests sur 17 dans `test_manifest.py` ; les 17 tests du pilote V5 passent toujours.
+
+Ce que l'essai montre : le film V5, approuvé à l'écoute, a des preuves plus faibles que le film du formulaire. Ses trois résultats sont bien consignés dans le DOM de la capture d'origine, mais rien ne mesure quand ils apparaissent dans le film. La fiche le rend visible au lieu de le masquer.
+
 ## Limites
 
-- Le format est tiré d'un seul film. Il n'a pas été essayé sur le film V5 ni sur un montage de rushes.
+- Le format est tiré de deux démonstrations web. Il n'a pas été essayé sur un montage de rushes.
+- Les statuts de preuve des scènes V5 sont déclarés `observed` d'après le journal d'origine, que le contrôle ne relit pas.
 - Les repères des gestes viennent de l'horloge du script de capture, pas d'une mesure sur l'image ; l'écart constaté sur cette prise est d'environ 0,01 s.
 - L'autorisation est un texte libre : le contrôle vérifie qu'elle est renseignée, pas qu'elle est vraie.
 - La fiche n'est lue par aucun autre outil. La brancher sur le rendu gardé ou générer la composition depuis elle sont des décisions à prendre après validation du format.

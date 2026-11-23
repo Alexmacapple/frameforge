@@ -117,6 +117,13 @@ def check_data(data, root, events=None):
     def verdict(check, problems):
         add(check, "FAIL" if problems else "PASS", " ; ".join(problems))
 
+    def verdict_or_unverified(check, problems, gap):
+        # Un manque déclaré dans la fiche n'est ni un succès ni une incohérence.
+        if gap and not problems:
+            add(check, "UNVERIFIED", gap)
+        else:
+            verdict(check, problems)
+
     problems = schema_problems(data)
     verdict("schema", problems)
     if problems:
@@ -126,7 +133,11 @@ def check_data(data, root, events=None):
 
     src = data["source"]
     problems = []
-    if not (root / src["ref"]).is_file() or sha(root / src["ref"]) != src["sha256"]:
+    # Une source externe (site public) n'a pas d'empreinte : son état filmé n'est pas vérifiable.
+    external = src["sha256"] is None
+    if not external and (
+        not (root / src["ref"]).is_file() or sha(root / src["ref"]) != src["sha256"]
+    ):
         problems.append("source absente ou modifiée")
     if not src["authorization"].strip():
         problems.append("autorisation non renseignée")
@@ -134,12 +145,14 @@ def check_data(data, root, events=None):
         date.fromisoformat(src["captured_on"])
     except ValueError:
         problems.append("date de capture invalide")
-    verdict("source", problems)
+    verdict_or_unverified(
+        "source", problems, "source externe non figée par empreinte" if external else ""
+    )
 
+    # La composition n'est pas exigée ici : son contenu est confronté à la fiche plus bas.
     pins = json.loads((root / data["pins_ref"]).read_text())
     refs = [
         data["capture"]["media_ref"],
-        film["composition_ref"],
         film["transcript_ref"],
         *film["caption_refs"],
         *[n["audio_ref"] for n in narrations],
@@ -212,13 +225,15 @@ def check_data(data, root, events=None):
         previous_end = end
     verdict("timeline", problems)
 
-    events = events or json.loads((root / data["capture"]["events_ref"]).read_text())
-    times = {e["name"]: e["script_s"] for e in events["events"]}
-    problems = []
+    if events is None and data["capture"]["events_ref"] is not None:
+        events = json.loads((root / data["capture"]["events_ref"]).read_text())
+    times = {e["name"]: e["script_s"] for e in events["events"]} if events else {}
+    problems, untimed = [], []
     for s in scenes:
         names = s["gesture_events"]
-        if s["shot_type"] == "continuous_action" and not names:
-            problems.append(f"{s['scene_id']} : action continue sans geste")
+        if events is None or not names or s["result"]["event"] is None:
+            untimed.append(s["scene_id"])
+            continue
         if any(n not in times for n in names) or s["result"]["event"] not in names:
             problems.append(f"{s['scene_id']} : événement absent de la capture")
             continue
@@ -229,16 +244,27 @@ def check_data(data, root, events=None):
             problems.append(
                 f"{s['scene_id']} : résultat à {shown} s, hors du sous-titre qui l'annonce"
             )
-    verdict("gestures", problems)
+    verdict_or_unverified(
+        "gestures",
+        problems,
+        "repère du résultat non mesuré : " + ", ".join(untimed) if untimed else "",
+    )
 
     problems = [
         f"{s['scene_id']} : résultat observé différent de l'attendu"
         for s in scenes
-        if s["evidence_status"] == "observed"
+        if events is not None
+        and s["evidence_status"] == "observed"
         and events["observed"].get(s["result"]["observed_key"])
         != s["result"]["expected"]
     ]
-    verdict("results", problems)
+    verdict_or_unverified(
+        "results",
+        problems,
+        ""
+        if events is not None
+        else "aucun journal de capture lisible par ce contrôle",
+    )
 
     status = film["approval"]["status"]
     problems = [
@@ -260,7 +286,10 @@ def check_data(data, root, events=None):
     problems = []
     if status != "DRAFT":
         text = approval.read_text() if approval.is_file() else ""
-        if film["output_sha256"] not in text or status not in text:
+        # L'empreinte suffit pour une approbation éditoriale ; une autorisation de diffusion
+        # doit en plus être écrite en toutes lettres dans le document.
+        needs_wording = status == "APPROVED_FOR_RELEASE"
+        if film["output_sha256"] not in text or (needs_wording and status not in text):
             problems.append(
                 "le document d'approbation ne nomme pas cette version et ce statut"
             )

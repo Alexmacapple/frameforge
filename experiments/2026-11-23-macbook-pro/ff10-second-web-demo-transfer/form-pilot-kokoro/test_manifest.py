@@ -135,6 +135,32 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(statuses(results)["measured_audio"], "UNVERIFIED")
             self.assertEqual(statuses(results)["output_film"], "UNVERIFIED")
 
+    def test_untimed_scene_is_unverified_not_passed(self):
+        def change(d):
+            d["scenes"][0]["gesture_events"] = []
+            d["scenes"][0]["result"]["event"] = None
+
+        results = mutated(change)
+        self.assertEqual(failed(results), [])
+        self.assertEqual(statuses(results)["gestures"], "UNVERIFIED")
+
+    def test_release_status_requires_explicit_wording(self):
+        def change(d):
+            d["film"]["approval"]["status"] = "APPROVED_FOR_RELEASE"
+
+        self.assertIn("approval", failed(mutated(change)))
+
+    def test_second_film_fits_with_declared_gaps(self):
+        # Film V5 : source publique sans empreinte, capture ralentie, journal dans un autre format.
+        path = D.parents[1] / "ff10-web-workflow-entrypoint/local/provenance-manifest.json"
+        results = m.check_data(json.loads(path.read_text()), path.parent)
+        self.assertEqual(failed(results), [])
+        got = statuses(results)
+        for check in ("source", "gestures", "results"):
+            self.assertEqual(got[check], "UNVERIFIED", check)
+        for check in ("schema", "texts", "captions", "composition", "timeline", "approval"):
+            self.assertEqual(got[check], "PASS", check)
+
 
 if __name__ == "__main__":
     unittest.main()

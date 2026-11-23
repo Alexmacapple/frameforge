@@ -1,0 +1,98 @@
+{
+  "manifest_version": 1,
+  "pins_ref": "asset-pins.json",
+  "film": {
+    "id": "todomvc-v5-kokoro",
+    "duration_s": 16.166667,
+    "composition_ref": "index.html",
+    "transcript_ref": "transcript.txt",
+    "caption_refs": ["captions.srt", "captions.vtt"],
+    "output_ref": "guarded-web-demo.mp4",
+    "output_sha256": "9fbb7c316fb20ef94a0424f231881b5f0f24d86daf32418aadc1a92e94ae11ad",
+    "approval": {
+      "status": "REVIEWED",
+      "ref": "../HUMAN-EDITORIAL-APPROVAL-V5.md"
+    },
+    "open_checks": [
+      "Capture ralentie d'un facteur 1,7 et recadrée : rythme réel des gestes non restitué",
+      "Résultats du DOM consignés dans vertical-v3/events.json, dans un format que ce contrôle ne lit pas",
+      "Compréhension du film sans l'image",
+      "Conformité de la voix au texte de narration"
+    ]
+  },
+  "source": {
+    "ref": "https://todomvc.com/examples/react/dist/",
+    "sha256": null,
+    "authorization": "Application publique de démonstration TodoMVC React, données fictives, sans authentification.",
+    "captured_on": "2026-11-23"
+  },
+  "capture": {
+    "media_ref": "capture.webm",
+    "events_ref": null
+  },
+  "scenes": [
+    {
+      "scene_id": "premiere-tache",
+      "shot_type": "continuous_action",
+      "gesture_events": [],
+      "result": {
+        "event": null,
+        "observed_key": "tache-1",
+        "expected": "Première tâche présente dans la liste"
+      },
+      "narration": {
+        "text": "Une première tâche apparaît dans la liste.",
+        "audio_ref": "voice1.m4a",
+        "start_s": 2.55,
+        "duration_s": 2.7
+      },
+      "caption": {
+        "start_s": 2.55,
+        "end_s": 5.37
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "deuxieme-tache",
+      "shot_type": "continuous_action",
+      "gesture_events": [],
+      "result": {
+        "event": null,
+        "observed_key": "tache-2",
+        "expected": "Deux tâches présentes dans la liste"
+      },
+      "narration": {
+        "text": "Une deuxième tâche apparaît. Les deux tâches sont visibles.",
+        "audio_ref": "voice2.m4a",
+        "start_s": 6.65,
+        "duration_s": 3.75
+      },
+      "caption": {
+        "start_s": 6.65,
+        "end_s": 10.52
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "tache-cochee",
+      "shot_type": "continuous_action",
+      "gesture_events": [],
+      "result": {
+        "event": null,
+        "observed_key": "tache-cochee",
+        "expected": "Première tâche cochée, deuxième à faire"
+      },
+      "narration": {
+        "text": "La première tâche est cochée et barrée. La deuxième reste à faire.",
+        "audio_ref": "voice3.m4a",
+        "start_s": 11.2,
+        "duration_s": 4.375
+      },
+      "caption": {
+        "start_s": 11.2,
+        "end_s": 15.695
+      },
+      "evidence_status": "observed"
+    }
+  ]
+}
