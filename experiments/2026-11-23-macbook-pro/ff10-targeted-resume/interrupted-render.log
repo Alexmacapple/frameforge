@@ -1,5 +1,5 @@
 
-◆  Rendering ff10-targeted-resume → /Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro/ff10-targeted-resume/media/interrupted.mp4
+◆  Rendering ff10-targeted-resume → <depot>/experiments/2026-11-23-macbook-pro/ff10-targeted-resume/media/interrupted.mp4
    30fps · standard · auto workers (12 cores detected)
    GPU: browser GPU (auto-detect)
 
@@ -9,7 +9,7 @@
 [INFO] [Render:trace] {"renderJobId":"e1e03ef3-50d5-4ce8-a850-05ec71ebd152","phase":"pipeline","status":"checkpoint","elapsedMs":1,"message":"started","format":"mp4","quality":"standard","browserGpuMode":"auto","forceScreenshot":false,"protocolTimeoutMs":300000,"pageNavigationTimeoutMs":60000,"playerReadyTimeoutMs":45000,"requestedWorkers":"auto"}
 [INFO] [Render:trace] {"renderJobId":"e1e03ef3-50d5-4ce8-a850-05ec71ebd152","phase":"compile","status":"start","elapsedMs":2,"needsAlpha":false}
   █░░░░░░░░░░░░░░░░░░░░░░░░  5%  Compiling composition
-[INFO] [Compiler] Fetched 11 font face(s) for "Inter" from Google Fonts (cached to /Users/alex/.cache/hyperframes/fonts/inter)
+[INFO] [Compiler] Fetched 11 font face(s) for "Inter" from Google Fonts (cached to ~/.cache/hyperframes/fonts/inter)
 [INFO] [Compiler] Injected deterministic @font-face rules for 1 requested font families
 [INFO] Compiled composition metadata {"renderJobId":"e1e03ef3-50d5-4ce8-a850-05ec71ebd152","entryFile":"index.html","staticDuration":16.166,"width":1920,"height":1080,"videoCount":1,"audioCount":3,"renderModeHints":{"recommendScreenshot":false,"reasons":[]}}
 [INFO] [Render:trace] {"renderJobId":"e1e03ef3-50d5-4ce8-a850-05ec71ebd152","phase":"compile","status":"end","elapsedMs":247,"durationMs":245,"needsAlpha":false}

@@ -1,6 +1,6 @@
 from pathlib import Path
 import hashlib,json,re
-R=Path('/Users/alex/Claude/git-hors-workflow/frameforge')
+R=Path(__file__).resolve().parents[3]
 S=R/'experiments/2026-11-23-macbook-pro/vertical-v5-kokoro-siwis'
 D=Path('/tmp/frameforge-ff10-revision-sandbox-20261123')
 def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()

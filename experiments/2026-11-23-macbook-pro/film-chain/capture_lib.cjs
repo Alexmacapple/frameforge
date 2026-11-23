@@ -8,7 +8,7 @@
 // FF_CAPTURE_OUT : dossier de sortie de remplacement, pour essayer une capture sans toucher à
 // celle du film, figée par empreinte. FF_PLAYWRIGHT : chemin du module Playwright.
 const { chromium } = require(process.env.FF_PLAYWRIGHT
-  || '/Users/alex/.local/share/shipguard-runtime/node_modules/playwright');
+  || require('path').join(require('os').homedir(), '.local/share/shipguard-runtime/node_modules/playwright'));
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');

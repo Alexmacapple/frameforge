@@ -5,7 +5,7 @@
   "relaunch_returncode": 0,
   "relaunch_output": {
     "status": "PASS",
-    "output": "/Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro/ff10-lock-guard-pilot/local/guarded-interrupted-resumed.mp4",
+    "output": "<depot>/experiments/2026-11-23-macbook-pro/ff10-lock-guard-pilot/local/guarded-interrupted-resumed.mp4",
     "sha256": "73c84ea720beabb588a4ac1e421871847eb55fa8d9ec6875b63e252595693597"
   },
   "inputs_unchanged": true,

@@ -16,14 +16,14 @@
       "work-058a3b0e-befc-45e1-972f-f93ec8990858-HOAt9b/capture-attempt-0/worker-0/frame_000001.jpg",
       "work-058a3b0e-befc-45e1-972f-f93ec8990858-HOAt9b/capture-attempt-0/worker-0/frame_000015.jpg"
     ],
-    "dir": "/Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro/ff10-hyperframes-guarded-integration/local/interruption-concurrency/interrupt"
+    "dir": "<depot>/experiments/2026-11-23-macbook-pro/ff10-hyperframes-guarded-integration/local/interruption-concurrency/interrupt"
   },
   "concurrent_transient_mutation": {
     "rc": 0,
     "input_restored": true,
     "final_exists": true,
     "final_sha256": "07e8dd7d237877a5c80d8210f6c69a2cb1ac1ceb56c139e7da93dae149e20324",
-    "dir": "/Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro/ff10-hyperframes-guarded-integration/local/interruption-concurrency/race"
+    "dir": "<depot>/experiments/2026-11-23-macbook-pro/ff10-hyperframes-guarded-integration/local/interruption-concurrency/race"
   },
   "scope": "real HyperFrames, copies only, not a universal security boundary"
 }

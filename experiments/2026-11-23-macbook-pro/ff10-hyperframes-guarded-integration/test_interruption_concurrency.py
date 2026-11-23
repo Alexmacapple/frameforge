@@ -53,7 +53,7 @@ def run_interrupted():
     # HyperFrames may leave a partial file or workdir. Do not delete it before reporting.
     partials = [str(p.relative_to(d)) for p in d.rglob("*") if p.is_file() and p.name not in
                 ("index.html", "baseline.html", "hyperframes.json", "package.json", "run-interrupted.log")]
-    return {"interrupted_rc":rc,"no_final_after_interrupt":no_final,"leftovers":partials[:12],"dir":str(d)}
+    return {"interrupted_rc":rc,"no_final_after_interrupt":no_final,"leftovers":partials[:12],"dir":str(d.relative_to(HERE))}
 
 def run_race():
     d = project("race")
@@ -79,7 +79,7 @@ def run_race():
     final=(d/"result.mp4")
     return {"rc":rc,"input_restored":sha(d/"index.html")==before,
             "final_exists":final.exists(),"final_sha256":sha(final) if final.exists() else None,
-            "dir":str(d)}
+            "dir":str(d.relative_to(HERE))}
 
 def main():
     WORK.mkdir(exist_ok=True)

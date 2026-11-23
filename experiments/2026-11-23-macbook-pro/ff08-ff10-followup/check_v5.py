@@ -1,6 +1,6 @@
 from pathlib import Path
 import subprocess, hashlib, json, re
-R=Path('/Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro')
+R=Path(__file__).resolve().parents[1]
 D=R/'vertical-v5-kokoro-siwis'; v=D/'media/prototype-v5.mp4'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(v)]))
