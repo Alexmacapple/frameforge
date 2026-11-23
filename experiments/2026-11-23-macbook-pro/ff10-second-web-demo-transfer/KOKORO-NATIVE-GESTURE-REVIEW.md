@@ -50,4 +50,6 @@ Pour chaque point : horodatage, observation, statut proposé, justification, con
 
 En attente, geste par geste : geste 1, geste 2, geste 3 (dont la question du clic invisible), délai d'annonce du geste 3, compréhension sans image.
 
+Verdict rendu le 23 novembre 2026 : clic invisible et délai d'annonce du geste 3 à corriger. Correction et nouveau film : voir KOKORO-POINTER-RESULT.md.
+
 Aucune diffusion autorisée. FF-08 et FF-10 restent ouverts.

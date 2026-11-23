@@ -60,9 +60,30 @@ class PreflightTests(unittest.TestCase):
 
 class OutputTests(unittest.TestCase):
     def test_thomas_voiced_film_rejected(self):
-        # Mêmes images que la version approuvée, mais narration Thomas.
-        with self.assertRaisesRegex(ValueError, "kokoro_output_audio_changed"):
-            g.validate_output(THOMAS_PILOT / "media/form-guarded.mp4")
+        # Images du brouillon témoin copiées sans réencodage, narration Thomas à la place de Kokoro.
+        with tempfile.TemporaryDirectory() as t:
+            thomas = Path(t) / "thomas.mp4"
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-v",
+                    "error",
+                    "-i",
+                    str(D / "media/form-kokoro-pointeur-draft.mp4"),
+                    "-i",
+                    str(THOMAS_PILOT / "media/form-guarded.mp4"),
+                    "-map",
+                    "0:v:0",
+                    "-map",
+                    "1:a:0",
+                    "-c",
+                    "copy",
+                    str(thomas),
+                ],
+                check=True,
+            )
+            with self.assertRaisesRegex(ValueError, "kokoro_output_audio_changed"):
+                g.validate_output(thomas)
 
     def test_reencoded_video_with_kokoro_audio_rejected(self):
         with tempfile.TemporaryDirectory() as t:
@@ -73,7 +94,7 @@ class OutputTests(unittest.TestCase):
                     "-v",
                     "error",
                     "-i",
-                    str(D / "media/form-kokoro-draft.mp4"),
+                    str(D / "media/form-kokoro-pointeur-draft.mp4"),
                     "-vf",
                     "hue=s=0",
                     "-c:v",
@@ -115,7 +136,7 @@ class OutputTests(unittest.TestCase):
                 g.validate_output(short)
 
     def test_witness_draft_accepted(self):
-        self.assertTrue(g.validate_output(D / "media/form-kokoro-draft.mp4"))
+        self.assertTrue(g.validate_output(D / "media/form-kokoro-pointeur-draft.mp4"))
 
 
 class PrepareTests(unittest.TestCase):
@@ -123,7 +144,7 @@ class PrepareTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             target = Path(t)
             p.prepare(target=target)
-            for name in g.MEDIA:
+            for name, _, _ in p.RECIPE:
                 self.assertEqual(g.sha(target / name), PINS[name], name)
 
     def test_altered_source_rejected_without_deposit(self):

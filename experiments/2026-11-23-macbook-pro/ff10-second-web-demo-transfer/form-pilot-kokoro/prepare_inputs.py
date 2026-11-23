@@ -1,4 +1,6 @@
-"""Reconstruit les médias locaux du pilote Kokoro depuis les sources figées de form-pilot.
+"""Reconstruit les clips Kokoro du pilote depuis les sources figées de form-pilot.
+
+La capture vidéo (capture.mp4) est produite à part par capture.cjs et figée par le manifeste.
 
 Recette de la piste approuvée à l'écoute (voir KOKORO-NATIVE-PROTOCOL.md) :
 phrases 1 et 2 accélérées par atempo, phrase 3 inchangée. Aucune synthèse n'est relancée.
@@ -15,14 +17,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SOURCES = ROOT.parent / "form-pilot"
 SOURCE_PINS = {
-    "capture.mp4": "43c3350529a8cd9ecb74bbc39009fb49e60dd95289c87b388a9ce6f6b6a1e6c3",
     "media/kokoro-fast1.wav": "9cd8bc0f02321e9a7dde3a2ebaf9e997ac0d801ed1719d493b82033e37344819",
     "media/kokoro-fast2.wav": "c717e1fdc212083ec03d811a0c112e5fd89b5caefa37b6b29d177092a2703089",
     "media/kokoro-fast3.wav": "676c07c7ad87cc084f5db3f143bc32d0ebb9d4aeccaf66c69af8edced73cdca3",
 }
 # (fichier produit, source, facteur atempo ou None pour une copie exacte)
 RECIPE = (
-    ("capture.mp4", "capture.mp4", None),
     ("kokoro1.wav", "media/kokoro-fast1.wav", "1.06"),
     ("kokoro2.wav", "media/kokoro-fast2.wav", "1.08"),
     ("kokoro3.wav", "media/kokoro-fast3.wav", None),

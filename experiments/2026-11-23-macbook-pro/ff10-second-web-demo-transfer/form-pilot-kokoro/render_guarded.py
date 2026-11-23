@@ -29,9 +29,9 @@ CONFIG = (
     "kokoro-input-pins.json",
     "kokoro-output-reference.json",
 )
-PIN_MANIFEST_SHA256 = "deee66939af8d3a6e5f4afc7a014328ed22874cd36dddd2f18c665fe075a780a"
+PIN_MANIFEST_SHA256 = "5a51bb54e91d8f361d3f239d95b765772584b3fc567f79b0575b4873896d6970"
 PIN_HTML_SHA256 = "4fd5bd62879513b88e538808f2b382fd99fe876f0351b698bd686c5ff84ee1ee"
-PIN_OUTPUT_REFERENCE_SHA256 = "e919767f468955c32c8fe5d4f4ab5f7e93cc0cf4475abe9092932b0c32690086"
+PIN_OUTPUT_REFERENCE_SHA256 = "5ed3fd42e6f0b4c2737fceea52d3fd5af1a9c3dbd39d136e9ce6661146e36563"
 
 
 def sha(path):
@@ -115,7 +115,7 @@ def validate_output(path):
         or float(audio[0].get("duration") or 0) < 15.9
     ):
         raise ValueError("kokoro_output_audio_invalid")
-    # Les images doivent être exactement celles de la version approuvée à l'écoute.
+    # Les images doivent être exactement celles du brouillon témoin de référence.
     if video_stream_hash(path) != reference["expected_video_stream_sha256"]:
         raise ValueError("kokoro_output_video_changed")
     pcm = subprocess.check_output(
@@ -146,7 +146,7 @@ def main():
         project=ROOT,
         baseline=ROOT / "baseline.html",
         candidate=ROOT / "index.html",
-        output=ROOT / "media/form-kokoro-native.mp4",
+        output=ROOT / "media/form-kokoro-pointeur.mp4",
     )
     try:
         print(

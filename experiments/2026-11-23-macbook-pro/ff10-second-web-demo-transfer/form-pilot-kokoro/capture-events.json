@@ -1,0 +1,50 @@
+{
+  "plan": {
+    "nameGlide": 0.9,
+    "nameClick": 1.55,
+    "nameType": 1.9,
+    "emailGlide": 4.6,
+    "emailClick": 5.25,
+    "emailType": 5.6,
+    "sendGlide": 9.5,
+    "sendClick": 10.45,
+    "end": 15.3
+  },
+  "video_offset_ms": 0,
+  "events": [
+    {
+      "name": "page_loaded",
+      "script_s": 0.012
+    },
+    {
+      "name": "name_clicked",
+      "script_s": 1.651
+    },
+    {
+      "name": "name_typed",
+      "script_s": 2.981
+    },
+    {
+      "name": "email_clicked",
+      "script_s": 5.351
+    },
+    {
+      "name": "email_typed",
+      "script_s": 7.34
+    },
+    {
+      "name": "send_clicked",
+      "script_s": 10.577
+    },
+    {
+      "name": "confirmation_visible",
+      "script_s": 10.579
+    }
+  ],
+  "observed": {
+    "name": "Camille Martin",
+    "email": "camille@example.test",
+    "confirmation": "Demande enregistrée pour Camille Martin."
+  },
+  "pointer": "dessiné par script injecté, positions des événements souris réels"
+}
