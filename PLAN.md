@@ -31,3 +31,12 @@ P3 : réexécution avec différences explicables.
 
 ## Travail non autorisé par ce cadrage
 Aucun déploiement, publication externe, installation système ou traitement de données réelles sensibles sans accord spécifique.
+
+## Clôture du cadrage métier — grill-with-docs (23 novembre 2026)
+- Cinq tours terminés ; décisions D1 à D16 validées. Glossaire métier consolidé dans [GLOSSARY.md](GLOSSARY.md).
+- Aucun ADR nécessaire avant les essais : les éventuels arbitrages durables de rendu, capture, reprise ou stockage dépendront de preuves techniques.
+- **GO pour préparer FF-01 et FF-02**, pas validation de faisabilité ni autorisation implicite d'installation système.
+- **FF-01** : vérifier l'accès à l'environnement macOS cible, fixer versions et SHA d'HyperFrames, rendre cinq secondes, décoder intégralement ; si nécessaire mesurer un repli FFmpeg avec garanties équivalentes.
+- **FF-02** : vérifier l'accès à l'environnement, l'autorisation du site, du scénario et de la session, puis capturer trois gestes, leurs résultats et horodatages.
+- Les formats définitifs du manifeste, la synchronisation complète, le cache/reprise et les modalités de validation ne bloquent pas ces deux expériences ; les traiter dans les issues déjà ouvertes.
+- Préserver les preuves et les statuts distincts ; aucun faux PASS en cas d'outil indisponible ou d'essai non exécuté.
