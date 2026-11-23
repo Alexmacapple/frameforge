@@ -1,0 +1,3 @@
+Le nom Camille Martin est saisi dans le formulaire.
+L'adresse électronique de démonstration est renseignée.
+Le formulaire est envoyé. Un message confirme l'enregistrement de la demande.

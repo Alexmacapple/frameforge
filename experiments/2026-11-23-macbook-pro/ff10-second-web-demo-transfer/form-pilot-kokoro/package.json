@@ -1,0 +1,1 @@
+{"name":"ff10-form-kokoro-native","private":true,"type":"module","scripts":{"prepare-inputs":"python3 -B prepare_inputs.py","render":"python3 -B render_guarded.py","publish":"echo Publication interdite && exit 2"}}

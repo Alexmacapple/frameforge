@@ -1,0 +1,6 @@
+{
+  "expected_pcm_sha256": "644eee558715d6f7e5f842fe3e0c7ab01e3ff1140fcf710bf05948f89753b8f6",
+  "expected_video_stream_sha256": "86a966e4f9bc6c7d000a179061eb0ba5e6422c10fb84329be6c273decba4eb52",
+  "expected_duration_s": 16,
+  "expected_fps": 30
+}
