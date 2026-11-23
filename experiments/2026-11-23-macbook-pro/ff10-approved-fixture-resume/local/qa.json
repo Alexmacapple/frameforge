@@ -1,0 +1,8 @@
+{
+  "video_elementary_stream_sha256_equal": true,
+  "audio_elementary_stream_sha256_equal": true,
+  "approved_cue2_exact_equal": true,
+  "cue1_changed": true,
+  "cue1_words_equal": true,
+  "interruption_observed": true
+}
