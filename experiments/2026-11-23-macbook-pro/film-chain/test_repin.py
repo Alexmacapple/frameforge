@@ -3,6 +3,7 @@
 import hashlib
 import importlib
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -105,7 +106,7 @@ class RepinTests(unittest.TestCase):
     def test_record_output_writes_the_film_fingerprint_into_the_fiche(self):
         (self.root / "media").mkdir()
         (self.root / "media/film.mp4").write_bytes(b"film")
-        r.record_output(self.root)
+        r.record_output(self.root, validate=lambda path: True)
         fiche = json.loads((self.root / "provenance-manifest.json").read_text())
         self.assertEqual(
             fiche["film"]["output_sha256"], sha(self.root / "media/film.mp4")
@@ -116,6 +117,46 @@ class RepinTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "film absent"):
             r.record_output(self.root)
 
+    def test_record_output_refuses_a_film_the_guard_rejects_and_writes_nothing(self):
+        # Issue 15, constat 6.
+        (self.root / "media").mkdir()
+        (self.root / "media/film.mp4").write_bytes(b"pas un film")
+        before = {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+
+        def reject(path):
+            raise ValueError("film_output_duration_invalid")
+
+        with self.assertRaisesRegex(ValueError, "film refusé par le garde"):
+            r.record_output(self.root, validate=reject)
+        self.assertEqual(before, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
+
+    def test_record_output_writes_nothing_when_a_pinned_file_is_missing(self):
+        (self.root / "media").mkdir()
+        (self.root / "media/film.mp4").write_bytes(b"film")
+        (self.root / "clip.wav").unlink()
+        before = (self.root / "provenance-manifest.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "fichier figé absent : clip.wav"):
+            r.record_output(self.root, validate=lambda path: True)
+        self.assertEqual(before, (self.root / "provenance-manifest.json").read_bytes())
+
+    def test_nothing_is_written_when_a_guard_constant_is_missing(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text().replace("PIN_HTML_SHA256", "AUTRE_NOM"))
+        (self.root / "clip.wav").write_bytes(b"autre son")
+        (self.root / "media").mkdir()
+        (self.root / "media/film.mp4").write_bytes(b"film")
+        before = {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+        for call in (lambda: r.refresh(self.root), lambda: r.record_output(self.root, validate=lambda path: True)):
+            with self.assertRaisesRegex(ValueError, "constante introuvable"):
+                call()
+            self.assertEqual(before, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
+
+    def test_record_output_needs_a_guard_that_can_validate(self):
+        (self.root / "media").mkdir()
+        (self.root / "media/film.mp4").write_bytes(b"film")
+        with self.assertRaisesRegex(ValueError, "garde du film sans validate_output"):
+            r.record_output(self.root)
+
 
 class RealFilmsTests(unittest.TestCase):
     def test_both_films_are_consistent(self):
@@ -124,6 +165,33 @@ class RealFilmsTests(unittest.TestCase):
             "ff04-room-booking-film",
         ):
             self.assertEqual(r.stale(D.parent / film), [], film)
+
+
+class RealGuardTests(unittest.TestCase):
+    """Sur une copie complète du film de réservation, avec son vrai garde."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        for name in ("film-chain", "ff10-hyperframes-guarded-integration", "ff04-room-booking-film"):
+            shutil.copytree(D.parent / name, root / name,
+                            ignore=shutil.ignore_patterns("__pycache__", ".ruff_cache", "*.webm"))
+        self.film = root / "ff04-room-booking-film"
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_real_film_is_recorded_without_any_change(self):
+        self.assertEqual(r.record_output(self.film), [])
+        self.assertEqual(r.stale(self.film), [])
+
+    def test_text_file_in_place_of_the_film_is_refused_and_nothing_is_written(self):
+        fiche = (self.film / "provenance-manifest.json").read_bytes()
+        (self.film / "media/room-booking.mp4").write_text("ceci n'est pas un film\n")
+        with self.assertRaisesRegex(ValueError, "film refusé par le garde"):
+            r.record_output(self.film)
+        self.assertEqual(fiche, (self.film / "provenance-manifest.json").read_bytes())
+        self.assertEqual(r.stale(self.film), [])
 
 
 if __name__ == "__main__":
