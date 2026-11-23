@@ -1,0 +1,7 @@
+{
+  "started": true,
+  "interrupted_while_running": true,
+  "returncode": -9,
+  "interrupted_artifact_exists": false,
+  "log": "interrupted-render.log"
+}

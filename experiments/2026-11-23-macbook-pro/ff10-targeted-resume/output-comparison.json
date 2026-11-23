@@ -1,0 +1,26 @@
+{
+  "baseline_sha256": "779cadcd5e53be7cd85bca7a38b526a0b0653f312cb236599cf46c80b2526cc3",
+  "resumed_sha256": "abd531d8faf3f8fcfb940a5996a43ce576f521a85422ab219372a16fc7fb76a9",
+  "audio_decoded_sha256_baseline": "f6819e9e643df7e29951eb2fba046111177c65b6334fa05c6defe2c04652ca86",
+  "audio_decoded_sha256_resumed": "f6819e9e643df7e29951eb2fba046111177c65b6334fa05c6defe2c04652ca86",
+  "frames_total": 485,
+  "frames_identical_decoded": 182,
+  "frames_different_decoded": 303,
+  "different_outside_edited_cue": 187,
+  "first_different_frame": 171,
+  "last_different_frame": 484,
+  "outside_first_examples": [
+    171,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193
+  ]
+}

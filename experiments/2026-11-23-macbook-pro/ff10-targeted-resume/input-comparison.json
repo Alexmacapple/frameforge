@@ -1,0 +1,27 @@
+{
+  "baseline_video_sha256": "779cadcd5e53be7cd85bca7a38b526a0b0653f312cb236599cf46c80b2526cc3",
+  "changed": [
+    "index.html:caption2 presentation",
+    "captions.srt:cue2 linebreak",
+    "captions.vtt:cue2 linebreak"
+  ],
+  "source_media": {
+    "capture.webm": {
+      "baseline": "714fe82ed3b68f2ca5cddd71e523df138b699cef0acfcc431d0a99541b5240dc",
+      "candidate": "714fe82ed3b68f2ca5cddd71e523df138b699cef0acfcc431d0a99541b5240dc"
+    },
+    "voice1.m4a": {
+      "baseline": "23b614977d6066d95d39b219696e31b0fef28b9ec42abf7fb3039859dc902dc1",
+      "candidate": "23b614977d6066d95d39b219696e31b0fef28b9ec42abf7fb3039859dc902dc1"
+    },
+    "voice2.m4a": {
+      "baseline": "2e97f76ea8ac736ce7a8fff608f679879b4b8409e89beaab0cd4732f17d8ceec",
+      "candidate": "2e97f76ea8ac736ce7a8fff608f679879b4b8409e89beaab0cd4732f17d8ceec"
+    },
+    "voice3.m4a": {
+      "baseline": "dc1aee1da4a6026ada4ec4037c481ef2cd93c61cce7c05991342400c01ea292a",
+      "candidate": "dc1aee1da4a6026ada4ec4037c481ef2cd93c61cce7c05991342400c01ea292a"
+    }
+  },
+  "unchanged_transcript": true
+}
