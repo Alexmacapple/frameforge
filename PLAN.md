@@ -43,3 +43,69 @@ Aucun déploiement, publication externe, installation système ou traitement de 
 - **FF-02** : vérifier l'accès à l'environnement, l'autorisation du site, du scénario et de la session, puis capturer trois gestes, leurs résultats et horodatages.
 - Les formats définitifs du manifeste, la synchronisation complète, le cache/reprise et les modalités de validation ne bloquent pas ces deux expériences ; les traiter dans les issues déjà ouvertes.
 - Préserver les preuves et les statuts distincts ; aucun faux PASS en cas d'outil indisponible ou d'essai non exécuté.
+
+## État réel au soir du 23 novembre 2026
+
+Section proposée par un agent, à valider par Alex. Elle ne ferme aucune issue et n'autorise aucune diffusion.
+
+### La feuille de route existe : elle est dans FF-13
+
+Le rapport de contre-revue d'AlexDot, publié sur l'issue FF-13, fixe quatre expériences dans l'ordre et une liste de choses à ne pas construire. Son verdict : « Conserver le socle, terminer la recette du premier film, puis le mettre à l'épreuve sur des rushes. Rien de nouveau à construire maintenant. » Publier ce rapport ne valait pas l'adopter ; cette section propose de l'adopter comme ordre de travail.
+
+### Où en sont les quatre expériences
+
+1. **Recette du film précis (FF-06, FF-07, FF-08, FF-09) : partielle.**
+   - Fait : deux films identifiés par empreinte et approuvés à l'écoute et au visionnage, le formulaire `ab040730…7125` et la réservation `9c834228…f543` ; gestes et résultats relus sur planche ; sous-titres, transcription et composition au même texte ; résultat de chaque geste affiché pendant la phrase qui l'annonce.
+   - Reste : compréhension de chaque information essentielle sans l'image ; comparaison de ce qui est prononcé aux sous-titres ; ouverture des sous-titres externes dans le lecteur prévu ; droits et confidentialité du lot, métadonnées comprises.
+2. **Cas temporel adversarial (FF-06) : non fait.** Ni geste ralenti, ni phrase qui déborde n'ont été essayés.
+3. **Révision et reprise (FF-10) : non faite telle que décrite.** Un élément s'en approche : la correction du pointeur a changé les images en conservant la piste son approuvée, identique à l'octet. Le verrouillage d'un choix humain, l'interruption et la reprise ne sont pas essayés.
+4. **Deux rushes sans navigateur (FF-11) : inchangé aujourd'hui.** Verdict écrit du dépôt : pilote local clos à périmètre restreint, issue ouverte.
+
+### Ce qui a été construit hors de cette feuille de route
+
+Le 23 novembre, sur recommandations successives de l'agent, validées une à une par Alex sans que le rapport de FF-13 ait été relu :
+
+- une fiche de film (manifeste de provenance) et son contrôle, pour FF-04 ;
+- un générateur de composition, sous-titres et transcription depuis la fiche ;
+- un second film de démonstration web, la réservation de salle ;
+- un dossier d'outils communs, `film-chain/`, avec un garde de rendu partagé.
+
+Le rapport demandait de corriger dans le flux existant et de ne rien construire de nouveau. Ces outils ne sont ni un orchestrateur, ni un éditeur, ni un cache ; ils restent du travail que la feuille de route ne demandait pas, et un second film web ne remplace pas l'essai sur des rushes. À décider par Alex : les conserver tels quels, ou les geler jusqu'à la fin des quatre expériences.
+
+### Constats ouverts
+
+- **Contre-revue adverse du garde, en cours.** Deux failles déjà reproduites : la validation du film à la sortie du rendu accepte un film affiché à l'envers et un film portant une piste de sous-titres ajoutée. Le contrôle de la fiche les refuse tous deux. Un second relecteur n'a pas encore rendu son rapport.
+- **Médias approuvés non versionnés.** Une capture figée a été écrasée puis restaurée. Une copie locale existe désormais hors dépôt, sur le même disque.
+- **Synthèse Kokoro non reproductible à l'octet**, même avec graine ; environnement de synthèse installé dans un dossier temporaire.
+- **Aucune PR jusqu'ici** : tout le travail est allé directement sur `main`, sans relecture préalable.
+
+### Ordre proposé
+
+1. Corriger les failles confirmées par la contre-revue adverse, une fois les deux rapports reproduits.
+2. Finir l'expérience 1 sur un des deux films approuvés : écoute sans l'image, voix comparée aux sous-titres, sous-titres externes dans le lecteur prévu, droits et confidentialité.
+3. Expérience 2 : un geste ralenti ou une phrase qui déborde, sur une scène existante.
+4. Expérience 3 : correction d'une scène, interruption, reprise, sur copies.
+5. Expérience 4 : deux rushes sans navigateur.
+6. Aucun nouvel outil avant la fin de l'expérience 4, sauf pour corriger un écart constaté.
+
+### État proposé des issues
+
+Proposition à valider issue par issue ; les commentaires d'état du 23 novembre donnent le détail.
+
+- **FF-01** : garder ouverte. Rendu de 5 s acquis ; manquent le SHA d'HyperFrames et le cas de repli.
+- **FF-02** : garder ouverte. Repères précis, action incertaine et sélecteur ambigu non couverts.
+- **FF-03** : candidate à la clôture. Capture réelle intégrée, rendu décodable, écart documenté.
+- **FF-04** : candidate à la clôture sur ses trois critères d'origine ; les critères ajoutés (types de plans, rôle et session) restent partiels.
+- **FF-05** : garder ouverte. Licence de la voix non documentée, pas de cache, échec de synthèse non testé.
+- **FF-06** : garder ouverte. Expérience 2 à faire.
+- **FF-07** : garder ouverte. Films de 15 et 16 s pour une cible d'environ trente ; voix non comparée au texte.
+- **FF-08** : garder ouverte. Expérience 1 à finir.
+- **FF-09** : garder ouverte. Confidentialité non vérifiée partout.
+- **FF-10** : garder ouverte. Expérience 3 à faire ; tolérances de comparaison non documentées.
+- **FF-11** : garder ouverte. Expérience 4.
+- **FF-12** : garder ouverte, non commencée, reportée après l'expérience 4 comme le demande le rapport.
+- **FF-13** : garder ouverte tant que ses recommandations ne sont ni adoptées ni écartées par Alex.
+
+### Règle de travail proposée
+
+Tout changement de `film-chain/` ou du garde d'un film passe par une branche et une PR, relue avant fusion. Les comptes rendus d'expérience peuvent rester en commits directs.
