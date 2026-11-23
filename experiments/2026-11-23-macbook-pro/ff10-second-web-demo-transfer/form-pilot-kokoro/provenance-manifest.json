@@ -1,0 +1,96 @@
+{
+  "manifest_version": 1,
+  "pins_ref": "kokoro-input-pins.json",
+  "film": {
+    "id": "form-kokoro-pointeur",
+    "duration_s": 16,
+    "composition_ref": "index.html",
+    "transcript_ref": "transcript.txt",
+    "caption_refs": ["captions.srt", "captions.vtt"],
+    "output_ref": "media/form-kokoro-pointeur.mp4",
+    "output_sha256": "ab040730a5bdc4bb36e77be4a7b22da067dd3da2bfaddd436c5a636f7b567125",
+    "approval": {
+      "status": "REVIEWED",
+      "ref": "../KOKORO-POINTER-EDITORIAL-APPROVAL.md"
+    },
+    "open_checks": [
+      "Compréhension du film sans l'image",
+      "Conformité de la voix au texte de narration"
+    ]
+  },
+  "source": {
+    "ref": "../form-pilot/form.html",
+    "sha256": "d5c9ededfda9c44fcad5f249d1ce3996ba8ce227d8e1d3074b79366dcb2ff859",
+    "authorization": "Fixture locale du dépôt, données fictives, aucun compte ni session réels.",
+    "captured_on": "2026-11-23"
+  },
+  "capture": {
+    "media_ref": "capture.mp4",
+    "events_ref": "capture-events.json"
+  },
+  "scenes": [
+    {
+      "scene_id": "saisie-nom",
+      "shot_type": "continuous_action",
+      "gesture_events": ["name_clicked", "name_typed"],
+      "result": {
+        "event": "name_typed",
+        "observed_key": "name",
+        "expected": "Camille Martin"
+      },
+      "narration": {
+        "text": "Le nom Camille Martin est saisi dans le formulaire.",
+        "audio_ref": "kokoro1.wav",
+        "start_s": 1.5,
+        "duration_s": 2.767
+      },
+      "caption": {
+        "start_s": 1.5,
+        "end_s": 4.28
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "saisie-adresse",
+      "shot_type": "continuous_action",
+      "gesture_events": ["email_clicked", "email_typed"],
+      "result": {
+        "event": "email_typed",
+        "observed_key": "email",
+        "expected": "camille@example.test"
+      },
+      "narration": {
+        "text": "L'adresse électronique de démonstration est renseignée.",
+        "audio_ref": "kokoro2.wav",
+        "start_s": 5.2,
+        "duration_s": 2.948
+      },
+      "caption": {
+        "start_s": 5.2,
+        "end_s": 8.16
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "envoi-confirmation",
+      "shot_type": "continuous_action",
+      "gesture_events": ["send_clicked", "confirmation_visible"],
+      "result": {
+        "event": "confirmation_visible",
+        "observed_key": "confirmation",
+        "expected": "Demande enregistrée pour Camille Martin."
+      },
+      "narration": {
+        "text": "Le formulaire est envoyé. Un message confirme l'enregistrement de la demande.",
+        "audio_ref": "kokoro3.wav",
+        "start_s": 10,
+        "duration_s": 4.5
+      },
+      "caption": {
+        "start_s": 10,
+        "end_s": 14.57
+      },
+      "evidence_status": "observed"
+    }
+  ]
+}
