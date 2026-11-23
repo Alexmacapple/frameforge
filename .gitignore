@@ -1,0 +1,20 @@
+# Médias : jamais versionnés (films, captures, voix, planches). Les quelques médias
+# déjà suivis le restent ; pour en ajouter un volontairement : git add -f.
+*.mp4
+*.webm
+*.mov
+*.wav
+*.m4a
+*.aiff
+*.jpg
+*.jpeg
+*.png
+
+# Journaux de rendu et caches
+*.log
+*.pyc
+__pycache__/
+.DS_Store
+
+# Brouillons de messages de commit
+.commit-drafts/
