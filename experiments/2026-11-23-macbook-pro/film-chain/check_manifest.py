@@ -288,16 +288,27 @@ def check_data(data, root, events=None):
     if status != "DRAFT":
         approval = root / approval_ref if approval_ref else None
         text = approval.read_text() if approval and approval.is_file() else ""
-        # L'empreinte suffit pour une approbation éditoriale ; une autorisation de diffusion
-        # doit en plus être écrite en toutes lettres dans le document.
-        needs_wording = status == "APPROVED_FOR_RELEASE"
-        if (
-            not fingerprint
-            or fingerprint not in text
-            or (needs_wording and status not in text)
-        ):
+        if not fingerprint or fingerprint not in text:
+            problems.append("le document d'approbation ne nomme pas cette version")
+        # Le document d'approbation est une trace humaine distincte : ni la fiche, ni une copie
+        # de la fiche, ni un fichier que la fiche cite ou que le garde fige.
+        own = {"provenance-manifest.json", data["pins_ref"], *refs, *pins}
+        if approval and approval.resolve() in {(root / name).resolve() for name in own}:
             problems.append(
-                "le document d'approbation ne nomme pas cette version et ce statut"
+                "le document d'approbation est un fichier cité ou figé par la fiche"
+            )
+        try:
+            json.loads(text)
+            problems.append(
+                "le document d'approbation est un fichier de données, pas une trace humaine"
+            )
+        except ValueError:
+            pass
+        # Aucune preuve d'autorisation de diffusion n'est définie par le projet : un mot dans un
+        # fichier n'en est pas une. Ce statut est refusé tant que cette preuve n'existe pas.
+        if status == "APPROVED_FOR_RELEASE":
+            problems.append(
+                "autorisation de diffusion : aucune preuve vérifiable n'est définie, statut refusé"
             )
     verdict("approval", problems)
 
