@@ -20,7 +20,8 @@ def prepare(dest):
         source=HERE/'local'/name
         if not source.is_file():
             raise FileNotFoundError('versioned pilot source missing: '+str(source))
-        shutil.copyfile(source,dest/name)
+        if source.resolve() != (dest/name).resolve():
+            shutil.copyfile(source,dest/name)
     for name in ('hyperframes.json','captions.srt','captions.vtt','transcript.txt'):
         shutil.copyfile(V5/name,dest/name)
     for name in ('capture.webm','voice1.m4a','voice2.m4a','voice3.m4a'):
