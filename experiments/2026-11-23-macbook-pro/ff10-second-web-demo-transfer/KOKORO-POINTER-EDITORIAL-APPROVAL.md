@@ -25,7 +25,9 @@ La remarque laisse entendre que la voix entendue n'était pas la voix féminine 
 
 Le film approuvé porte donc la voix féminine Kokoro `ff_siwis`, la même que les versions précédentes ; son décodé identique à l'octet (KOKORO-POINTER-RESULT.md). La hauteur mesurée ne dit pas si cette voix plaît.
 
-Sens de la remarque : **non établi**. Deux lectures possibles, entre lesquelles l'agent ne tranche pas : une préférence confirmée pour cette voix féminine, ou le souhait d'une autre voix féminine. Aucune voix n'est modifiée sur cette base.
+**Remarque levée.** Interrogé sur ce qu'il avait voulu dire (voix d'homme entendue, ou souhait d'une autre voix féminine), l'utilisateur a répondu « non mais c'est ok la suite », puis « c'est parfait ». La voix du film est donc acceptée telle quelle ; aucune autre voix n'est demandée.
+
+Sens initial de la remarque, avant cette précision : **non établi**. Deux lectures possibles, entre lesquelles l'agent ne tranche pas : une préférence confirmée pour cette voix féminine, ou le souhait d'une autre voix féminine. Aucune voix n'est modifiée sur cette base.
 
 ## Portée
 

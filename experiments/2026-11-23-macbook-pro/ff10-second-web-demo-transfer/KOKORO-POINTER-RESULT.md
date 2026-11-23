@@ -6,7 +6,7 @@
 
 **PASS technique** : le rendu gardé de `form-pilot-kokoro/` produit un film où le pointeur est visible aux trois gestes et où la confirmation apparaît pendant la phrase « Le formulaire est envoyé. ».
 
-**Approbation éditoriale** de ce film exact consignée après coup dans KOKORO-POINTER-EDITORIAL-APPROVAL.md, avec une remarque sur la voix à éclaircir. **NO-GO** : toute diffusion. FF-08 et FF-10 restent ouverts.
+**Approbation éditoriale** de ce film exact consignée après coup dans KOKORO-POINTER-EDITORIAL-APPROVAL.md, avec une remarque sur la voix, levée ensuite par l'approbateur. **NO-GO** : toute diffusion. FF-08 et FF-10 restent ouverts.
 
 ## Film produit
 
@@ -36,7 +36,13 @@
 - La capture n'est pas reproductible à l'octet : chaque prise donne un fichier différent. Celle-ci est figée par empreinte dans le manifeste ; ses événements horodatés sont dans `capture-events.json`.
 - `capture.cjs` appelle Playwright par un chemin absolu propre à ce Mac.
 - Le silence de 7,8 à 10,4 s subsiste ; le pointeur s'y déplace vers le bouton à partir de 9,5 s.
-- Compréhension sans image, conformité de la voix au script, cadence constante : toujours non vérifiées.
+- Compréhension sans image : toujours non vérifiée.
+- Conformité de la voix au script : SKIPPED. Aucun outil de transcription en français n'est disponible en local (seuls des modèles anglais sont en cache) ; aucun n'a été installé. Seule l'écoute de l'approbateur en répond.
+
+## Contrôles complémentaires sur le film approuvé
+
+- **Cadence constante : PASS.** Les 479 écarts entre images successives valent tous 0,0333 s (`ffprobe`, horodatage de chaque image).
+- **Gels d'image.** `freezedetect` (seuil −60 dB, 2 s) signale deux passages immobiles : de 2,17 à 4,30 s et de 10,57 à 14,60 s. Ils correspondent aux moments où le scénario ne prévoit aucun geste (fin de la saisie du nom, puis lecture du message de confirmation) et se terminent à la disparition d'un sous-titre. Le début à 2,17 s précède la fin de la frappe (2,98 s) : à ce seuil, l'ajout d'un caractère est trop petit pour être détecté. Lecture de l'agent, pas un verdict : passages fixes attendus, pas un gel de lecture.
 - Les contrôles de gestes regardent des pixels et des repères ; ils ne disent pas si le film se comprend.
 
 ## Suite
