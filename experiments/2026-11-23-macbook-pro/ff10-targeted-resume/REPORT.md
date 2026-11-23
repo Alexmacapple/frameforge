@@ -38,3 +38,5 @@ Tester la possibilité de modifier **uniquement la présentation du sous-titre 2
 **Expérience utile, mais FF-10 reste ouvert.** La reprise par relance complète fonctionne, les médias sources et l'audio sont préservés, mais ni la reprise incrémentale, ni la protection d'un élément humain verrouillé ne sont prouvées. Ne pas inventer un moteur de cache : tester une vraie correction approuvée et comparer le coût de relance avant de construire un mécanisme supplémentaire. FF-08/FF-09 restent des dépendances non closes.
 
 Ce dossier contient le rendu de reprise, les manifests, logs, mesures et planche de comparaison. Les sources de la V5 originale ne sont pas modifiées.
+
+**Hygiène des preuves :** les images temporaires générées par HyperFrames pendant l'essai interrompu ne sont pas des livrables ni un cache validé. Elles ont été retirées du suivi Git dans un commit correctif ; les journaux, manifests, comparaison et MP4 de reprise sont conservés. Le premier commit d'expérience les avait incluses par erreur.
