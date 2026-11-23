@@ -1,0 +1,2 @@
+Rush A : mire animée, sans son.
+Rush B : barres de couleur, son témoin.
