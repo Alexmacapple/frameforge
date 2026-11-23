@@ -42,6 +42,7 @@ SUITES = (
             "test_habillage_v2",
             "test_guard_main",
             "test_interruption",
+            "test_review_findings",
         ),
     ),
     (

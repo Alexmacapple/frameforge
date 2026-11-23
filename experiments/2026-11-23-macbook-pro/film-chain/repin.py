@@ -109,6 +109,9 @@ def refresh(film):
     film = Path(film)
     require_constants(film)
     changed = stale(film)
+    # Rien de périmé : rien n'est réécrit, même pour remettre en forme.
+    if not changed:
+        return []
     pins_ref, _, fresh = fresh_pins(film)
     (film / pins_ref).write_text(json.dumps(fresh, indent=2) + "\n")
     guard_path = film / "render_guarded.py"
@@ -181,6 +184,11 @@ def record_output(film, validate=None):
         )
     path = film / "provenance-manifest.json"
     fiche = json.loads(path.read_text())
+    # Une approbation retirée ne se complète pas : la fiche d'un film révoqué reste telle quelle.
+    if (fiche["film"].get("approval") or {}).get("status") == "REVOKED":
+        raise ValueError(
+            "approbation retirée (REVOKED) : rien n'est inscrit dans la fiche"
+        )
     fiche["film"]["output_sha256"] = sha(output)
     # Le reçu atteste que ce film est sorti de ces entrées.
     fiche["film"]["inputs_sha256"] = inputs
@@ -190,7 +198,10 @@ def record_output(film, validate=None):
 
 def main():
     paths = [a for a in sys.argv[1:] if not a.startswith("--")]
-    if len(paths) != 1:
+    options = [a for a in sys.argv[1:] if a.startswith("--")]
+    # Une option mal tapée ne doit pas devenir « tout refiger » : elle est refusée.
+    known = ("--check", "--record-output")
+    if len(paths) != 1 or len(options) > 1 or any(a not in known for a in options):
         print(__doc__)
         return 2
     film = Path(paths[0]).resolve()

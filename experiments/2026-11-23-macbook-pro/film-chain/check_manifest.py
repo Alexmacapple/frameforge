@@ -16,7 +16,11 @@ import re
 import subprocess
 import sys
 from datetime import date
-from pathlib import Path
+from html import unescape
+from pathlib import Path, PurePosixPath
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_from_fiche import TITLE_END, TITLE_START
 
 SHOT_TYPES = {"fixed", "continuous_action", "title_card", "honest_cut", "result"}
 EVIDENCE = {"observed", "reasoned", "planned", "unverified", "failed"}
@@ -53,13 +57,14 @@ FIELDS = {
     "narration": {"text", "audio_ref", "start_s", "duration_s"},
     "caption": {"start_s", "end_s"},
 }
-CUE = re.compile(r"(\d+):(\d+):(\d+)[,.](\d+) --> (\d+):(\d+):(\d+)[,.](\d+)\n(.+)")
+CUE_TIME = re.compile(r"(\d+):(\d+):(\d+)[,.](\d+) --> (\d+):(\d+):(\d+)[,.](\d+)")
 AUDIO = re.compile(
     r'<audio[^>]*src="([^"]+)"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"'
 )
-TITLE = re.compile(r'<div id="title"[^>]*>([^<]*)<')
-# Le titre de la version 2 occupe le début du film : voir TITLE_END dans build_from_fiche.py.
-TITLE_END = 1.4
+TITLE = re.compile(
+    r'<div id="title"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
+)
+VIDEO = re.compile(r'<video[^>]*src="([^"]+)"')
 CAPTION = re.compile(
     r'<div id="caption\d+"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
@@ -70,14 +75,28 @@ def sha(path):
 
 
 def cues(text):
+    """Repères d'un fichier SRT ou VTT : (début, fin, texte entier du repère).
+
+    Le texte reprend toutes les lignes du repère : une ligne ajoutée sous la phrase se voit.
+    Une ligne de minutage illisible donne un repère sans temps, qui ne peut égaler aucune scène.
+    """
     out = []
-    for g in CUE.findall(text):
-        h1, m1, s1, ms1, h2, m2, s2, ms2 = map(int, g[:8])
+    for block in re.split(r"\n[ \t]*\n", text.strip()):
+        lines = [line.strip() for line in block.splitlines()]
+        at = next((i for i, line in enumerate(lines) if "-->" in line), None)
+        if at is None:
+            continue
+        timing = CUE_TIME.fullmatch(lines[at])
+        said = "\n".join(lines[at + 1 :]).strip()
+        if timing is None:
+            out.append((-1.0, -1.0, said))
+            continue
+        h1, m1, s1, ms1, h2, m2, s2, ms2 = map(int, timing.groups())
         out.append(
             (
                 h1 * 3600 + m1 * 60 + s1 + ms1 / 1000,
                 h2 * 3600 + m2 * 60 + s2 + ms2 / 1000,
-                g[8].strip(),
+                said,
             )
         )
     return out
@@ -97,6 +116,106 @@ def inputs_fingerprint(pins, fiche_name="provenance-manifest.json"):
     return hashlib.sha256(json.dumps(entries, sort_keys=True).encode()).hexdigest()
 
 
+def is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def is_time(value):
+    return is_number(value) and value >= 0
+
+
+def is_text(value):
+    """Une ligne de texte, sans espace en bord : ce qui est comparé est ce qui est écrit."""
+    return (
+        isinstance(value, str)
+        and value != ""
+        and value == value.strip()
+        and "\n" not in value
+    )
+
+
+def is_ref(value):
+    """Chemin relatif qui reste dans le dossier du film."""
+    if not isinstance(value, str) or not value or value != value.strip():
+        return False
+    path = PurePosixPath(value)
+    return not path.is_absolute() and ".." not in path.parts
+
+
+def is_sha(value):
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def is_string(value):
+    return isinstance(value, str)
+
+
+def optional(check):
+    return lambda value: value is None or check(value)
+
+
+def list_of(check, at_least=0):
+    return lambda value: (
+        isinstance(value, list)
+        and len(value) >= at_least
+        and all(check(v) for v in value)
+    )
+
+
+# Forme attendue de chaque valeur. Un champ absent d'ici n'est contraint que par sa présence.
+SHAPES = {
+    "root": {"pins_ref": is_ref, "scenes": list_of(lambda v: True, at_least=1)},
+    "film": {
+        "id": is_text,
+        "duration_s": lambda v: is_number(v) and v > 0,
+        "composition_ref": is_ref,
+        "transcript_ref": is_ref,
+        "caption_refs": list_of(is_ref),
+        "output_ref": is_ref,
+        "output_sha256": optional(is_sha),
+        "inputs_sha256": optional(is_sha),
+        "open_checks": list_of(is_string),
+    },
+    "approval": {"status": is_string, "ref": optional(is_string)},
+    "source": {
+        "ref": is_text,
+        "sha256": optional(is_sha),
+        "authorization": is_string,
+        "captured_on": is_string,
+    },
+    "capture": {"media_ref": is_ref, "events_ref": optional(is_ref)},
+    "scene": {
+        "scene_id": is_text,
+        "shot_type": is_string,
+        "gesture_events": list_of(is_string),
+        "evidence_status": is_string,
+    },
+    "result": {"event": optional(is_string), "observed_key": optional(is_string)},
+    "narration": {
+        "text": is_text,
+        "audio_ref": is_ref,
+        "start_s": is_time,
+        "duration_s": is_time,
+    },
+    "caption": {"start_s": is_time, "end_s": is_time},
+}
+
+
+def journal_is_readable(events):
+    """Forme du journal de capture que les contrôles lisent : événements datés, observations."""
+    return (
+        isinstance(events, dict)
+        and isinstance(events.get("observed"), dict)
+        and isinstance(events.get("events"), list)
+        and all(
+            isinstance(e, dict)
+            and is_string(e.get("name"))
+            and is_number(e.get("script_s"))
+            for e in events["events"]
+        )
+    )
+
+
 def schema_problems(data):
     problems = []
 
@@ -109,11 +228,17 @@ def schema_problems(data):
             )
             problems.append(f"{where} : champs inattendus ou manquants {extra}")
             return False
+        odd = sorted(
+            f for f, check in SHAPES.get(kind, {}).items() if not check(obj[f])
+        )
+        if odd:
+            problems.append(f"{where} : valeur de forme inattendue pour {odd}")
+            return False
         return True
 
     if same(data, "root", "fiche"):
         version = data["manifest_version"]
-        if version not in (1, 2) or isinstance(version, bool):
+        if type(version) is not int or version not in (1, 2):
             problems.append(f"version de fiche inconnue : {version!r}")
         v2 = FIELDS["film_v2"] if version == 2 else frozenset()
         if same(data["film"], "film", "film", v2):
@@ -197,7 +322,18 @@ def check_data(data, root, events=None):
         for ref in refs
         if ref not in pins
     ]
-    verdict("pinned_media", problems)
+    # Figé ne suffit pas : l'empreinte inscrite doit être celle du fichier présent.
+    absent = sorted(name for name in pins if not (root / name).is_file())
+    problems += [
+        f"{name} : empreinte figée différente du fichier"
+        for name in sorted(pins)
+        if name not in absent and sha(root / name) != pins[name]
+    ]
+    verdict_or_unverified(
+        "pinned_media",
+        problems,
+        "fichiers figés absents en local : " + ", ".join(absent) if absent else "",
+    )
 
     texts = [n["text"] for n in narrations]
     transcript = [
@@ -232,9 +368,17 @@ def check_data(data, root, events=None):
             problems.append(f"{ref} : repères différents de la fiche")
     verdict("captions", problems)
 
-    html = (root / film["composition_ref"]).read_text()
-    audio, divs = AUDIO.findall(html), CAPTION.findall(html)
+    page = (root / film["composition_ref"]).read_text()
+    audio, divs = AUDIO.findall(page), CAPTION.findall(page)
     problems = []
+    # Une piste que le motif ne reconnaît pas (attributs dans un autre ordre) reste une piste.
+    if page.count("<audio") != len(audio):
+        problems.append("piste audio non reconnue dans la composition")
+    if (
+        VIDEO.findall(page) != [data["capture"]["media_ref"]]
+        or page.count("<video") != 1
+    ):
+        problems.append("la composition ne montre pas la seule capture de la fiche")
     if len(audio) != len(scenes) or any(
         a[0] != n["audio_ref"]
         or not near(a[1], n["start_s"])
@@ -243,11 +387,27 @@ def check_data(data, root, events=None):
     ):
         problems.append("pistes de narration différentes de la composition")
     if len(divs) != len(scenes) or any(
-        not near(d[0], s["caption"]["start_s"]) or d[2] != s["narration"]["text"]
+        not near(d[0], s["caption"]["start_s"])
+        or not near(d[1], s["caption"]["end_s"] - s["caption"]["start_s"])
+        # Le texte est écrit échappé dans la page : il se compare une fois rendu lisible.
+        or unescape(d[2]) != s["narration"]["text"]
         for d, s in zip(divs, scenes)
     ):
         problems.append("sous-titres incrustés différents de la fiche")
-    if TITLE.findall(html) != ([film["title"]] if "title" in film else []):
+    titles = [(float(t[0]), float(t[1]), unescape(t[2])) for t in TITLE.findall(page)]
+    wanted = (
+        [(TITLE_START, TITLE_END - TITLE_START, film["title"])]
+        if "title" in film
+        else []
+    )
+    if (
+        page.count('id="title"') != len(titles)
+        or len(titles) != len(wanted)
+        or any(
+            not near(t[0], w[0]) or not near(t[1], w[1]) or t[2] != w[2]
+            for t, w in zip(titles, wanted)
+        )
+    ):
         problems.append("titre incrusté différent de la fiche")
     verdict("composition", problems)
 
@@ -270,8 +430,12 @@ def check_data(data, root, events=None):
 
     if events is None and data["capture"]["events_ref"] is not None:
         events = json.loads((root / data["capture"]["events_ref"]).read_text())
+    # Un journal de forme inattendue n'est pas lu : il est signalé, et rien n'est tenu pour observé.
+    journal = []
+    if events is not None and not journal_is_readable(events):
+        journal, events = ["journal de capture de forme inattendue"], None
     times = {e["name"]: e["script_s"] for e in events["events"]} if events else {}
-    problems, untimed = [], []
+    problems, untimed = list(journal), []
     for s in scenes:
         names = s["gesture_events"]
         if events is None or not names or s["result"]["event"] is None:
@@ -295,10 +459,11 @@ def check_data(data, root, events=None):
 
     # Une scène « observée » doit avoir une observation lisible : clé présente dans le journal,
     # valeur attendue renseignée, et égalité stricte (True n'est pas 1).
-    problems = []
+    problems, compared = list(journal), 0
     for s in scenes:
         if events is None or s["evidence_status"] != "observed":
             continue
+        compared += 1
         key, wanted = s["result"]["observed_key"], s["result"]["expected"]
         if key not in events["observed"]:
             problems.append(f"{s['scene_id']} : clé observée absente du journal")
@@ -314,9 +479,12 @@ def check_data(data, root, events=None):
     verdict_or_unverified(
         "results",
         problems,
-        ""
-        if events is not None
-        else "aucun journal de capture lisible par ce contrôle",
+        "aucun journal de capture lisible par ce contrôle"
+        if events is None
+        # Rien à comparer n'est pas « tout est conforme ».
+        else ""
+        if compared
+        else "aucune scène déclarée observée : aucun résultat comparé",
     )
 
     status = film["approval"]["status"]
@@ -355,7 +523,14 @@ def check_data(data, root, events=None):
             problems.append("le document d'approbation ne nomme pas cette version")
         # Le document d'approbation est une trace humaine distincte : ni la fiche, ni une copie
         # de la fiche, ni un fichier que la fiche cite ou que le garde fige.
-        own = {"provenance-manifest.json", data["pins_ref"], *refs, *pins}
+        own = {
+            "provenance-manifest.json",
+            data["pins_ref"],
+            film["composition_ref"],
+            *([data["capture"]["events_ref"]] if data["capture"]["events_ref"] else []),
+            *refs,
+            *pins,
+        }
         if approval and approval.resolve() in {(root / name).resolve() for name in own}:
             problems.append(
                 "le document d'approbation est un fichier cité ou figé par la fiche"
@@ -387,20 +562,25 @@ def check_data(data, root, events=None):
         if not clip.is_file():
             missing.append(n["audio_ref"])
             continue
-        real = float(
-            subprocess.check_output(
-                [
-                    "ffprobe",
-                    "-v",
-                    "error",
-                    "-show_entries",
-                    "format=duration",
-                    "-of",
-                    "csv=p=0",
-                    str(clip),
-                ]
+        try:
+            real = float(
+                subprocess.check_output(
+                    [
+                        "ffprobe",
+                        "-v",
+                        "error",
+                        "-show_entries",
+                        "format=duration",
+                        "-of",
+                        "csv=p=0",
+                        str(clip),
+                    ],
+                    timeout=30,
+                )
             )
-        )
+        except (subprocess.SubprocessError, ValueError):
+            problems.append(f"{n['audio_ref']} : durée illisible par ffprobe")
+            continue
         if abs(real - n["duration_s"]) > 0.02:
             problems.append(
                 f"{n['audio_ref']} : durée réelle {real:.3f} s, créneau {n['duration_s']} s"

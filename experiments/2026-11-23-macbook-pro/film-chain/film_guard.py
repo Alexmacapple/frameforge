@@ -137,6 +137,18 @@ class FilmGuard:
         results = fiche_check.check_data(fiche or self.load_fiche(), self.root)
         return sorted({r["check"] for r in results if r["status"] == "FAIL"})
 
+    def differs_from_fiche(self, fiche):
+        """Ce que le garde déclare autrement que la fiche : empreintes, film de sortie, médias."""
+        cited = {fiche["capture"]["media_ref"]} | {
+            scene["narration"]["audio_ref"] for scene in fiche["scenes"]
+        }
+        checks = (
+            ("pins_ref", fiche["pins_ref"] != self.pins_ref),
+            ("output", self.root / fiche["film"]["output_ref"] != self.output),
+            ("media", cited != set(self.media)),
+        )
+        return [name for name, differs in checks if differs]
+
     def preflight(self, reference, candidate, load_fiche=None, fiche_failures=None):
         """load_fiche et fiche_failures permettent au fichier du film de fournir les siens."""
         load_fiche = load_fiche or self.load_fiche
@@ -165,9 +177,20 @@ class FilmGuard:
         stale = fiche_build.stale_files(load_fiche(), self.root)
         if stale:
             raise self.refuse("files_not_generated_from_fiche:" + ",".join(stale))
+        fiche = load_fiche()
+        # Le garde et la fiche doivent parler des mêmes fichiers : sinon la fiche peut être
+        # contrôlée contre d'autres empreintes, ou décrire un autre film que celui qui est rendu.
+        mismatch = self.differs_from_fiche(fiche)
+        if mismatch:
+            raise self.refuse("guard_differs_from_fiche:" + ",".join(mismatch))
+        status = fiche["film"]["approval"]["status"]
         # Un film dont l'approbation a été retirée ne se rend pas sous ce statut.
-        if load_fiche()["film"]["approval"]["status"] == "REVOKED":
+        if status == "REVOKED":
             raise self.refuse("fiche_revoked")
+        # Une approbation qui ne dit pas de quelles entrées le film est sorti ne permet pas de
+        # voir qu'elles ont changé : effacer ce champ ne doit pas rouvrir le rendu.
+        if status != "DRAFT" and fiche["film"]["inputs_sha256"] is None:
+            raise self.refuse("approval_not_tied_to_inputs")
         return True
 
     def validate_output(self, path, load_fiche=None):

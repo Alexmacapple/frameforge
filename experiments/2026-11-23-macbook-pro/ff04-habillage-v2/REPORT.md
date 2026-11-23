@@ -26,5 +26,5 @@ Refaits avec l'outil modifié, par la vraie commande : réservation `9c834228…
 
 - Le film en mouvement, par une personne.
 - Le rognage : à 1,2, seuls les 83 % du haut et du centre de la capture restent visibles. Ici la carte tient dedans, constaté à l'œil sur six images ; rien ne le mesure.
-- Un titre contenant `&` ou `<` : la composition l'échappe, le contrôle compare le texte brut et refuserait.
+- Un titre contenant `&` ou `<` était refusé à tort par le contrôle ; corrigé après la revue du 23 novembre (le texte se compare une fois rendu lisible).
 - Lisibilité du cartouche sur une page filmée sombre : l'habillage suppose une page claire.

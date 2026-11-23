@@ -12,6 +12,7 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `test_repin.py` : tests de `repin.py`.
 - `test_guard_main.py` : verdict, code de sortie et reçu de rendu du garde, sans média.
 - `test_interruption.py` : l'arrêt d'un rendu ne laisse aucun processus en vie.
+- `test_review_findings.py` : un test par constat corrigé de la revue du 23 novembre, sur une copie du film de réservation.
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
