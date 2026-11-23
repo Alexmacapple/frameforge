@@ -36,7 +36,10 @@ def interrupted(signum, frame):
     stop_child()
     raise KeyboardInterrupt("guarded render interrupted")
 
-def run(args):
+def run(args, preflight_fn=None, media=None, config=None):
+    preflight_fn = preflight_fn or preflight
+    media = MEDIA if media is None else tuple(media)
+    config = CONFIG if config is None else tuple(config)
     global child
     for s in (signal.SIGTERM, signal.SIGINT):
         signal.signal(s, interrupted)
@@ -45,22 +48,22 @@ def run(args):
         raise ValueError("output_already_exists")
     if candidate.resolve() != (project/"index.html").resolve():
         raise ValueError("candidate_not_project_entrypoint")
-    preflight(baseline,candidate)
-    sources=[baseline, candidate, *[project/n for n in MEDIA], *[project/n for n in CONFIG if (project/n).exists()]]
+    preflight_fn(baseline,candidate)
+    sources=[baseline, candidate, *[project/n for n in media], *[project/n for n in config if (project/n).exists()]]
     hashes={str(p):digest(p) for p in sources}
     output.parent.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".ff10-isolated-",dir=output.parent) as temp:
         work=Path(temp)
         snapshot=work/"project"
         snapshot.mkdir()
-        for name in CONFIG + MEDIA:
+        for name in config + media:
             src=project/name
             if src.exists():
                 shutil.copyfile(src,snapshot/name)
         baseline_snapshot=work/"baseline.html"
         shutil.copyfile(baseline,baseline_snapshot)
-        preflight(baseline_snapshot,snapshot/"index.html")
-        for name in CONFIG + MEDIA:
+        preflight_fn(baseline_snapshot,snapshot/"index.html")
+        for name in config + media:
             src=project/name
             if src.exists() and digest(src)!=digest(snapshot/name):
                 raise ValueError("input_changed_while_snapshotting")
