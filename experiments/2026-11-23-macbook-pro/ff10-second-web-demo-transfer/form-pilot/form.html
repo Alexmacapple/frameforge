@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Démonstration de formulaire — fixture locale</title>
+<style>body{font:32px Arial,sans-serif;background:#f6f7fa;color:#17212d;margin:0;padding:90px}main{max-width:1100px;margin:auto;background:white;padding:60px;border:2px solid #ccc;border-radius:20px}label{display:block;margin:35px 0 16px}input{display:block;width:90%;padding:18px;font:inherit;border:3px solid #333}button{font:inherit;padding:18px 35px;margin-top:40px;background:#0b57d0;color:white;border:0;border-radius:8px}#result{margin-top:30px;padding:20px;background:#e0f3e4;display:none}#result.visible{display:block}</style></head>
+<body><main><h1>Demande de documentation</h1><form id="demo"><label for="name">Votre nom</label><input id="name" name="name" required autocomplete="off"><label for="email">Votre adresse électronique</label><input id="email" name="email" type="email" required autocomplete="off"><button type="submit">Envoyer la demande</button></form><p id="result" role="status" aria-live="polite"></p></main>
+<script>document.querySelector('#demo').addEventListener('submit',e=>{e.preventDefault();document.querySelector('#result').textContent='Demande enregistrée pour '+document.querySelector('#name').value+'.';document.querySelector('#result').classList.add('visible')})</script>
+</body></html>

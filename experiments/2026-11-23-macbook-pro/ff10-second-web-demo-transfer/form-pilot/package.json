@@ -1,0 +1,1 @@
+{"name":"ff10-second-form-web-demo","private":true,"type":"module","scripts":{"render-draft":"npx --yes hyperframes@0.8.33 render . --output=media/form-draft.mp4 --workers=2 --no-best-effort","publish":"echo Publication interdite && exit 2"}}
