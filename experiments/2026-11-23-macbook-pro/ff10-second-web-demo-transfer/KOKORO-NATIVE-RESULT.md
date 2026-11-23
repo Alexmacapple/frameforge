@@ -6,7 +6,7 @@
 
 **PASS technique** : `python3 render_guarded.py` (ou `npm run render`) dans `form-pilot-kokoro/` produit en un seul rendu gardé le film du formulaire avec la voix Kokoro. Plus de rendu intermédiaire Thomas ni de remplacement de piste.
 
-**UNVERIFIED** : écoute humaine de ce film exact. **NO-GO** : promotion générale et toute diffusion. FF-10 reste ouvert.
+**Approbation éditoriale** de ce film exact consignée après coup dans KOKORO-NATIVE-EDITORIAL-APPROVAL.md. **NO-GO** : promotion générale et toute diffusion. FF-10 reste ouvert.
 
 ## Film produit
 
@@ -42,6 +42,6 @@
 - `form-pilot/finalize_kokoro.py` reste en place comme trace de la version approuvée ; ce pilote ne l'utilise plus.
 - Cadence moyenne contrôlée, pas cadence constante. Visibilité des trois gestes et compréhension sans image : non réévaluées ici.
 
-## Suite proposée
+## Suite donnée
 
-Écouter `form-kokoro-native.mp4` et consigner l'approbation ou le refus de cette empreinte exacte.
+Approbation éditoriale de l'empreinte `0d9d0c9c…92a5` consignée le 23 novembre 2026 : voir KOKORO-NATIVE-EDITORIAL-APPROVAL.md.
