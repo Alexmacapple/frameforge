@@ -35,6 +35,8 @@ FIELDS = {
         "approval",
         "open_checks",
     },
+    # Version 2 de la fiche : titre d'ouverture et agrandissement de la capture, en plus.
+    "film_v2": {"title", "capture_zoom"},
     "approval": {"status", "ref"},
     "source": {"ref", "sha256", "authorization", "captured_on"},
     "capture": {"media_ref", "events_ref"},
@@ -55,6 +57,9 @@ CUE = re.compile(r"(\d+):(\d+):(\d+)[,.](\d+) --> (\d+):(\d+):(\d+)[,.](\d+)\n(.
 AUDIO = re.compile(
     r'<audio[^>]*src="([^"]+)"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"'
 )
+TITLE = re.compile(r'<div id="title"[^>]*>([^<]*)<')
+# Le titre de la version 2 occupe le début du film : voir TITLE_END dans build_from_fiche.py.
+TITLE_END = 1.4
 CAPTION = re.compile(
     r'<div id="caption\d+"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
@@ -95,10 +100,10 @@ def inputs_fingerprint(pins, fiche_name="provenance-manifest.json"):
 def schema_problems(data):
     problems = []
 
-    def same(obj, kind, where):
-        if not isinstance(obj, dict) or set(obj) != FIELDS[kind]:
+    def same(obj, kind, where, more=frozenset()):
+        if not isinstance(obj, dict) or set(obj) != FIELDS[kind] | more:
             extra = (
-                sorted(set(obj) ^ FIELDS[kind])
+                sorted(set(obj) ^ (FIELDS[kind] | more))
                 if isinstance(obj, dict)
                 else ["objet attendu"]
             )
@@ -107,8 +112,24 @@ def schema_problems(data):
         return True
 
     if same(data, "root", "fiche"):
-        if same(data["film"], "film", "film"):
+        version = data["manifest_version"]
+        if version not in (1, 2) or isinstance(version, bool):
+            problems.append(f"version de fiche inconnue : {version!r}")
+        v2 = FIELDS["film_v2"] if version == 2 else frozenset()
+        if same(data["film"], "film", "film", v2):
             same(data["film"]["approval"], "approval", "film.approval")
+            if v2:
+                title, zoom = data["film"]["title"], data["film"]["capture_zoom"]
+                if not isinstance(title, str) or not title.strip():
+                    problems.append("film : titre vide")
+                if (
+                    isinstance(zoom, bool)
+                    or not isinstance(zoom, (int, float))
+                    or not 1 <= zoom <= 1.5
+                ):
+                    problems.append(
+                        "film : agrandissement de la capture hors de 1 à 1,5"
+                    )
         same(data["source"], "source", "source")
         same(data["capture"], "capture", "capture")
         for i, scene in enumerate(data["scenes"]):
@@ -187,8 +208,12 @@ def check_data(data, root, events=None):
     caption_files = {
         ref: cues((root / ref).read_text()) for ref in film["caption_refs"]
     }
+    # En version 2, le titre affiché ouvre la transcription ; les sous-titres ne le portent pas.
+    spoken_and_shown = ([film["title"]] if "title" in film else []) + texts
     problems = (
-        [] if transcript == texts else ["la transcription diffère de la narration"]
+        []
+        if transcript == spoken_and_shown
+        else ["la transcription diffère de la narration"]
     )
     problems += [
         f"{ref} : texte différent"
@@ -222,9 +247,13 @@ def check_data(data, root, events=None):
         for d, s in zip(divs, scenes)
     ):
         problems.append("sous-titres incrustés différents de la fiche")
+    if TITLE.findall(html) != ([film["title"]] if "title" in film else []):
+        problems.append("titre incrusté différent de la fiche")
     verdict("composition", problems)
 
     problems, previous_end = [], 0.0
+    if "title" in film and scenes[0]["caption"]["start_s"] < TITLE_END:
+        problems.append("pas de place pour le titre avant le premier sous-titre")
     for s in scenes:
         start, end = (
             s["narration"]["start_s"],

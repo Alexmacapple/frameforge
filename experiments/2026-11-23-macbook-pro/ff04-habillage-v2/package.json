@@ -1,0 +1,1 @@
+{"name":"ff04-habillage-v2","private":true,"type":"module","scripts":{"render":"python3 -B render_guarded.py","publish":"echo Publication interdite && exit 2"}}

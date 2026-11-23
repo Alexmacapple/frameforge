@@ -1,0 +1,113 @@
+{
+  "manifest_version": 2,
+  "pins_ref": "input-pins.json",
+  "film": {
+    "id": "room-booking-v2",
+    "duration_s": 15,
+    "composition_ref": "index.html",
+    "transcript_ref": "transcript.txt",
+    "caption_refs": [
+      "captions.srt",
+      "captions.vtt"
+    ],
+    "output_ref": "media/room-booking-v2.mp4",
+    "output_sha256": "5056a8bd55c6d61041a3c4b0bc00a178a8f883dc1539c75ac147dc3b85f849a5",
+    "inputs_sha256": "7e0142ba8898d7a7016fb604c3921c1a4f27d31ad42fa0f213fedc00b91450a5",
+    "approval": {
+      "status": "DRAFT",
+      "ref": null
+    },
+    "open_checks": [
+      "Visionnage humain du film",
+      "Compréhension du film sans l'image",
+      "Conformité de la voix au texte de narration",
+      "Rognage de la capture par l'agrandissement : jugé à l'œil, non mesuré"
+    ],
+    "title": "Réserver une salle avec vidéoprojecteur",
+    "capture_zoom": 1.2
+  },
+  "source": {
+    "ref": "booking.html",
+    "sha256": "876ca09e82e52244f2fa4712d108438dba112ada5a0d0c435bd810ab62c4162e",
+    "authorization": "Fixture locale du dépôt, données fictives, aucun compte ni session réels.",
+    "captured_on": "2026-11-23"
+  },
+  "capture": {
+    "media_ref": "capture.mp4",
+    "events_ref": "capture-events.json"
+  },
+  "scenes": [
+    {
+      "scene_id": "choix-salle",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "room_clicked",
+        "room_selected"
+      ],
+      "result": {
+        "event": "room_selected",
+        "observed_key": "room",
+        "expected": "Salle Érable"
+      },
+      "narration": {
+        "text": "La salle Érable est choisie parmi les trois salles.",
+        "audio_ref": "voice1.wav",
+        "start_s": 1.5,
+        "duration_s": 2.775
+      },
+      "caption": {
+        "start_s": 1.5,
+        "end_s": 4.4
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "option-videoprojecteur",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "projector_clicked",
+        "projector_checked"
+      ],
+      "result": {
+        "event": "projector_checked",
+        "observed_key": "projector",
+        "expected": true
+      },
+      "narration": {
+        "text": "L'option vidéoprojecteur est cochée.",
+        "audio_ref": "voice2.wav",
+        "start_s": 5.4,
+        "duration_s": 2.25
+      },
+      "caption": {
+        "start_s": 5.4,
+        "end_s": 7.8
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "reservation-confirmee",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "book_clicked",
+        "confirmation_visible"
+      ],
+      "result": {
+        "event": "confirmation_visible",
+        "observed_key": "confirmation",
+        "expected": "Salle Érable réservée avec vidéoprojecteur."
+      },
+      "narration": {
+        "text": "La réservation est envoyée. Un message confirme la salle et l'option.",
+        "audio_ref": "voice3.wav",
+        "start_s": 9.0,
+        "duration_s": 4.025
+      },
+      "caption": {
+        "start_s": 9.0,
+        "end_s": 14.8
+      },
+      "evidence_status": "observed"
+    }
+  ]
+}
