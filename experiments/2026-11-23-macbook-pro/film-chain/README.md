@@ -28,7 +28,7 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 
 ## Pièges constatés
 
-- **Les médias figés n'existent qu'en un exemplaire local.** Une capture, un clip ou un film n'est pas versionné : l'écraser, c'est perdre le film approuvé. `capture_lib.cjs` refuse d'écraser une capture existante ; pour un essai, définir `FF_CAPTURE_OUT`.
+- **Les médias figés n'existent qu'en un exemplaire local.** Une capture, un clip ou un film n'est pas versionné : l'écraser, c'est perdre le film approuvé. `capture_lib.cjs` refuse d'écraser une capture existante ; pour un essai, définir `FF_CAPTURE_OUT`. Une copie des médias des trois films approuvés est conservée hors dépôt, sur le même Mac, dans `~/Claude-worktrees/frameforge-medias-approuves/`, avec ses empreintes ; elle est à refaire après chaque nouvelle approbation.
 - **Refiger n'est pas approuver.** `repin.py` rend cohérentes des empreintes ; il ne dit pas que le changement est voulu. Relire ce qu'il affiche avant de commiter.
 - **Une nouvelle synthèse de voix peut donner un autre son**, même avec une graine fixe. Elle demande une nouvelle écoute.
 - **Aucun contrôle automatique ne voit un pointeur qui masque un résultat.** Regarder une planche d'images de la capture.
