@@ -13,6 +13,14 @@ Brief -> storyboard/provenance -> capture agent-browser -> médias et événemen
 ## Contrat minimal d'une scène (conceptuel)
 `scene_id`, `purpose`, `claims`, `source_refs`, `capture_refs`, `narration_text`, `audio_ref`, `cue_points`, `media_refs`, `expected_visual_result`, `verification_status`.
 
+## Précisions éditoriales par plan — extraction HyperBD (23 novembre 2026)
+- **Découpage explicite, sans nouveau schéma imposé** : pour chaque plan utile, pouvoir décrire le cadrage et l'échelle de lecture visés, l'action réellement visible, le résultat attendu, les informations essentielles à restituer dans la narration et les critères d'acceptation perceptifs. Ces informations complètent le contrat conceptuel de scène ci-dessus ; elles ne constituent pas une API ni un nouveau format obligatoire.
+- **Lisibilité avant rendu** : vérifier que l'interface, le geste et le résultat seront compréhensibles dans le ratio et à la taille de diffusion visés ; prévoir la place des sous-titres. Un recadrage ne doit ni masquer une preuve déterminante ni faire croire à une action non observée.
+- **Défauts éditoriaux** : distinguer un **bloquant** (geste ou résultat déterminant invisible, affirmation non étayée, narration trompeuse, information essentielle inaccessible, donnée sensible divulguée) d'une **imperfection tolérable** sans conséquence démontrée sur le sens, la compréhension, les preuves ou la confidentialité. Consigner les tolérances et leur justification ; elles ne transforment pas un contrôle non exécuté en PASS.
+- **Correction ciblée** : privilégier la modification d'un plan, cadrage, segment de narration ou sous-titre plutôt que de régénérer le film entier ; préserver les décisions humaines validées et réexécuter les contrôles affectés. La préservation exacte des éléments non modifiés reste à démontrer techniquement.
+
+Ces précisions sont des critères de conception inspirés de la méthode HyperBD, **pas** des capacités déjà implémentées ni une raison d'ajouter un skill, un moteur ou un orchestrateur.
+
 ## Statuts de preuve
 `observed`, `reasoned`, `planned`, `unverified`, `failed` ; horodatage, environnement et provenance associés.
 
