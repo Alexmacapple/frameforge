@@ -1,0 +1,16 @@
+{
+  "model": "tiny.en",
+  "status": "UNVERIFIED; ASR is not proof of audible speech",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.0,
+      "text": " The global community needs to come together to resolve."
+    },
+    {
+      "start": 3.0,
+      "end": 7.0,
+      "text": " Now it looks like we are no more belonging to two different words."
+    }
+  ]
+}
