@@ -1,0 +1,17 @@
+{
+  "voice": "Kokoro ff_siwis",
+  "model": "hexgrad/Kokoro-82M",
+  "speed": 1.0,
+  "starts": [
+    2.55,
+    6.65,
+    11.2
+  ],
+  "durations": [
+    2.7,
+    3.75,
+    4.375
+  ],
+  "composition_duration": 16.433,
+  "source_duration": 16.166
+}
