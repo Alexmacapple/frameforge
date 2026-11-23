@@ -6,7 +6,7 @@
 
 **PASS technique** : le rendu gardé de `form-pilot-kokoro/` produit un film où le pointeur est visible aux trois gestes et où la confirmation apparaît pendant la phrase « Le formulaire est envoyé. ».
 
-**En attente** : visionnage et approbation humaine de ce film exact. **NO-GO** : toute diffusion. FF-08 et FF-10 restent ouverts.
+**Approbation éditoriale** de ce film exact consignée après coup dans KOKORO-POINTER-EDITORIAL-APPROVAL.md, avec une remarque sur la voix à éclaircir. **NO-GO** : toute diffusion. FF-08 et FF-10 restent ouverts.
 
 ## Film produit
 
