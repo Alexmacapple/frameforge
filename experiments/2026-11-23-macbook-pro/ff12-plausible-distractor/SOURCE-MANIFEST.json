@@ -1,0 +1,78 @@
+{
+  "retrieval_date": "2026-11-23",
+  "items": [
+    {
+      "role": "a-transit",
+      "nasa_id": "GSFC_20150914_SDO_m11993_transit",
+      "url": "https://images-assets.nasa.gov/video/GSFC_20150914_SDO_m11993_transit/GSFC_20150914_SDO_m11993_transit~preview.mp4",
+      "sha256": "cdf0fb9a05e1e6ea98421320d936fca61116dcc6d07b8b941679ccbabf9ef78f",
+      "bytes": 4574768,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "50.233333"
+        }
+      }
+    },
+    {
+      "role": "b-spacecraft",
+      "nasa_id": "GSFC_20170830_MultiSpacecraft_m12698_eclipse",
+      "url": "https://images-assets.nasa.gov/video/GSFC_20170830_MultiSpacecraft_m12698_eclipse/GSFC_20170830_MultiSpacecraft_m12698_eclipse~preview.mp4",
+      "sha256": "7c992176313504a22898b0abc36032af27c1fb69e94b7382c36d7548b479af87",
+      "bytes": 6226610,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "74.985986"
+        }
+      }
+    },
+    {
+      "role": "c-lunar",
+      "nasa_id": "GSFC_20140408_LRO_M11516_Lunar",
+      "url": "https://images-assets.nasa.gov/video/GSFC_20140408_LRO_M11516_Lunar/GSFC_20140408_LRO_M11516_Lunar~preview.mp4",
+      "sha256": "384406664ea1b074f42ee7b59c67648ac4561f0f5a9ed6a130732bf2e467e88b",
+      "bytes": 9923200,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "118.400000"
+        }
+      }
+    }
+  ],
+  "status": "rights not cleared for redistribution"
+}
