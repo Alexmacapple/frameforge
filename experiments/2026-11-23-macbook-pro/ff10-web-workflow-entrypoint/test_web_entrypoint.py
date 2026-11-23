@@ -91,6 +91,17 @@ class WebEntrypointTests(unittest.TestCase):
                 'yuv420p',str(path)],check=True)
             with self.assertRaisesRegex(ValueError,'output_duration_invalid'):
                 mod.validate_output(path)
+    def test_wrong_frame_rate_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'wrong-rate.mp4'
+            # 24 fps with correct duration/resolution; cadence checked before count.
+            subprocess.run(['ffmpeg','-v','error','-f','lavfi','-i',
+                'color=s=1920x1080:r=24:d=21','-c:v','libx264',
+                '-preset','ultrafast','-pix_fmt','yuv420p',
+                '-t','16.166667',str(path)],check=True)
+            # The frame rate must fail before any audio or PCM check.
+            with self.assertRaisesRegex(ValueError,'output_frame_rate_invalid'):
+                mod.validate_output(path)
     def test_normal_duration_without_audio_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp)/'silent.mp4'

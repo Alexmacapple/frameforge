@@ -47,6 +47,14 @@ def validate_output(path):
     audio=[s for s in data.get('streams',[]) if s.get('codec_type')=='audio']
     if len(video)!=1 or video[0].get('codec_name')!='h264' or video[0].get('width')!=1920 or video[0].get('height')!=1080:
         raise ValueError('output_video_format_invalid')
+    rate=video[0].get('avg_frame_rate','0/0')
+    try:
+        numerator,denominator=map(int,rate.split('/'))
+        fps=numerator/denominator
+    except (ValueError,ZeroDivisionError):
+        raise ValueError('output_frame_rate_invalid')
+    if abs(fps-30)>0.01:
+        raise ValueError('output_frame_rate_invalid')
     if int(video[0].get('nb_frames') or 0)<480:
         raise ValueError('output_frame_count_invalid')
     if len(audio)!=1 or audio[0].get('codec_name')!='aac' or float(audio[0].get('duration') or 0)<16.0:
