@@ -1,0 +1,16 @@
+{
+  "model": "faster-whisper small.en",
+  "status": "independent model crosscheck, NOT human verified",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.8,
+      "text": "soil moisture, and shoreline changes."
+    },
+    {
+      "start": 2.8,
+      "end": 6.8,
+      "text": "It's based on radar, so it has two different frequency radars and..."
+    }
+  ]
+}

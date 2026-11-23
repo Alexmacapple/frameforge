@@ -1,0 +1,30 @@
+{
+  "status": "DRAFT NOT HUMAN VERIFIED",
+  "source_video_sha256": "6d7f1f3758cc9c48b2507e2a6c73a95b4a1ecc89b65b44fbad7787fc29a86204",
+  "asr_models": [
+    "tiny.en",
+    "small.en"
+  ],
+  "offset_s": 6,
+  "segments": [
+    {
+      "start_in_final_s": 6.0,
+      "end_in_final_s": 8.8,
+      "en": "soil moisture, and shoreline changes.",
+      "fr": "L’humidité des sols et les changements du littoral."
+    },
+    {
+      "start_in_final_s": 8.8,
+      "end_in_final_s": 12.8,
+      "en": "It's based on radar, so it has two different frequency radars and...",
+      "fr": "La mission utilise des radars de deux fréquences différentes et…"
+    }
+  ],
+  "files": {
+    "captions-speech-en-DRAFT.srt": "c0e161e9b5dc77f62e8be9c40157916a7881748ccc396409b80c1fe5a18859ab",
+    "captions-speech-fr-DRAFT.srt": "c1d86d5ad65af36f799b5c73931e1a3dfb2307923c2fa99df2070c9340084f93",
+    "captions-speech-en-DRAFT.vtt": "621864b69d3fd2a067a7234a3ba1ff197952f2ed439fa5da6525d1ed9359a84c",
+    "captions-speech-fr-DRAFT.vtt": "b35fee91a4cd4352b6639cdee8f5ac4a183d42678ece4ec70764ac1c54089107",
+    "transcript-bilingual-DRAFT.md": "4a687e9a8d8332b6abc098d45f431ef5e0e7330465652277e27e2fa785a5f10f"
+  }
+}
