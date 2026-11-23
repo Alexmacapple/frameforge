@@ -1,0 +1,11 @@
+1
+00:00:01,000 --> 00:00:02,820
+Nous ajoutons une première tâche.
+
+2
+00:00:06,800 --> 00:00:09,166
+Nous ajoutons ensuite une deuxième tâche.
+
+3
+00:00:12,600 --> 00:00:15,105
+Enfin, nous terminons la première tâche.
