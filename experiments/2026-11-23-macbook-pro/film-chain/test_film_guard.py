@@ -8,6 +8,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -176,6 +177,95 @@ class TamperedFilmTests(unittest.TestCase):
                         ValueError, "output_reference_incomplete"
                     ):
                         guard.validate_output(draft)
+
+
+def copied_inputs(module, tmp):
+    """Copie des fichiers de premier niveau d'un film : tout ce que le précontrôle lit."""
+    root = Path(tmp) / "film"
+    root.mkdir()
+    for path in module.GUARD.root.iterdir():
+        if path.is_file():
+            shutil.copyfile(path, root / path.name)
+    return root
+
+
+class PreflightTests(unittest.TestCase):
+    """Chaque motif de refus du précontrôle, sur les deux films."""
+
+    def refused(self, reason, alter):
+        for name in FILMS:
+            with self.subTest(film=name), tempfile.TemporaryDirectory() as tmp:
+                module, _ = load(name)
+                root = copied_inputs(module, tmp)
+                alter(module, root)
+                with self.assertRaisesRegex(ValueError, reason):
+                    module.preflight(root / "baseline.html", root / "index.html")
+
+    def test_untouched_copy_accepted(self):
+        for name in FILMS:
+            with self.subTest(film=name), tempfile.TemporaryDirectory() as tmp:
+                module, _ = load(name)
+                root = copied_inputs(module, tmp)
+                self.assertTrue(module.preflight(root / "baseline.html", root / "index.html"))
+
+    def test_changed_composition_refused(self):
+        def alter(module, root):
+            (root / "index.html").write_text((root / "index.html").read_text() + "<!-- -->")
+
+        self.refused("reference_or_candidate_changed", alter)
+
+    def test_changed_pins_file_refused(self):
+        def alter(module, root):
+            path = root / module.GUARD.pins_ref
+            path.write_text(path.read_text() + "\n")
+
+        self.refused("manifest_changed", alter)
+
+    def test_changed_input_refused(self):
+        def alter(module, root):
+            (root / "capture.mp4").write_bytes(b"autre capture")
+
+        self.refused("asset_changed:capture.mp4", alter)
+
+    def test_changed_output_reference_refused(self):
+        def alter(module, root):
+            path = root / module.GUARD.reference_ref
+            path.write_text(path.read_text() + "\n")
+
+        self.refused("output_reference_changed", alter)
+
+
+class InvalidOutputTests(unittest.TestCase):
+    """Films invalides par leur forme, réencodés depuis le brouillon témoin."""
+
+    def refused(self, reason, *encoding):
+        for name in FILMS:
+            with self.subTest(film=name), tempfile.TemporaryDirectory() as tmp:
+                module, draft = load(name)
+                target = Path(tmp) / "film.mp4"
+                ffmpeg("-i", str(draft), *encoding, str(target))
+                with self.assertRaisesRegex(ValueError, reason):
+                    module.validate_output(target)
+
+    def test_smaller_picture_refused(self):
+        self.refused("output_video_invalid", "-vf", "scale=1280:720", "-c:v", "libx264", "-preset", "ultrafast",
+                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+
+    def test_other_frame_rate_refused(self):
+        self.refused("output_framerate_invalid", "-vf",
+            "fps=20", "-c:v", "libx264", "-preset", "ultrafast",
+                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+
+    def test_other_audio_codec_refused(self):
+        self.refused("output_audio_invalid", "-c:v", "copy", "-c:a",
+            "libmp3lame")
+
+    def test_reencoded_picture_refused(self):
+        self.refused("output_video_changed", "-vf", "hue=s=0", "-c:v", "libx264", "-preset", "ultrafast",
+                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+
+    def test_reencoded_sound_refused(self):
+        self.refused("output_audio_changed", "-c:v", "copy", "-af", "volume=0.5", "-c:a", "aac")
 
 
 if __name__ == "__main__":
