@@ -1,0 +1,20 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice3.wav",
+      "text": "La réservation est envoyée.",
+      "duration_s": 1.975,
+      "sha256": "e210ca0c6071c80ae2b7c78481b91593a90cba25846d39b68b7293329d888f10"
+    },
+    {
+      "audio_ref": "voice4.wav",
+      "text": "Un message confirme la salle et l'option.",
+      "duration_s": 2.55,
+      "sha256": "1f36c8bc118b054e28cdfbb0d8bb10100a4ef23d6e5d6a1657e38143dafebd9f"
+    }
+  ]
+}

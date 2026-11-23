@@ -1,0 +1,50 @@
+{
+  "lead_s": 0.5,
+  "observed": {
+    "room": "Salle Érable",
+    "projector": true,
+    "pending": "Réservation en cours…",
+    "confirmation": "Salle Érable réservée avec vidéoprojecteur."
+  },
+  "result_box": {
+    "x": 360,
+    "y": 611,
+    "width": 1200,
+    "height": 77
+  },
+  "events": [
+    {
+      "name": "page_loaded",
+      "script_s": 0.022
+    },
+    {
+      "name": "room_clicked",
+      "script_s": 2.246
+    },
+    {
+      "name": "room_selected",
+      "script_s": 2.249
+    },
+    {
+      "name": "projector_clicked",
+      "script_s": 6.094
+    },
+    {
+      "name": "projector_checked",
+      "script_s": 6.095
+    },
+    {
+      "name": "book_clicked",
+      "script_s": 9.717
+    },
+    {
+      "name": "pending_visible",
+      "script_s": 9.719
+    },
+    {
+      "name": "confirmation_visible",
+      "script_s": 16.034
+    }
+  ],
+  "pointer": "dessiné par script injecté, positions des événements souris réels"
+}
