@@ -1,0 +1,10 @@
+{
+  "old_sha256": "548b31087df3165d856cbff0216389116fb0301f59a21547af66663ee3e7b0e5",
+  "new_sha256": "f4552189c24758879f60a87c0a0a369dbd49a8e3a333c683eac0b42057ecefad",
+  "video_stream_hash": "0,v,SHA256=86a966e4f9bc6c7d000a179061eb0ba5e6422c10fb84329be6c273decba4eb52",
+  "audio_stream_changed": true,
+  "duration_s": 16.0,
+  "frames": 480,
+  "fps_average": "30/1",
+  "full_decode": "PASS"
+}
