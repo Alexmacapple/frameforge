@@ -1,0 +1,7 @@
+{
+  "rc": 0,
+  "stdout": "{\"status\": \"PASS\", \"output\": \"/Users/alex/Claude/git-hors-workflow/frameforge/experiments/2026-11-23-macbook-pro/ff10-hyperframes-guarded-integration/local/v2-race.mp4\", \"sha256\": \"07e8dd7d237877a5c80d8210f6c69a2cb1ac1ceb56c139e7da93dae149e20324\"}\n",
+  "source_restored": true,
+  "output_exists": true,
+  "output_sha256": "07e8dd7d237877a5c80d8210f6c69a2cb1ac1ceb56c139e7da93dae149e20324"
+}
