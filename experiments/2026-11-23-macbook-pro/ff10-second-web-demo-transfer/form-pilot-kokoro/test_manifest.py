@@ -161,6 +161,21 @@ class ManifestTests(unittest.TestCase):
         for check in ("schema", "texts", "captions", "composition", "timeline", "approval"):
             self.assertEqual(got[check], "PASS", check)
 
+    def test_draft_film_not_yet_rendered_is_unverified_not_failed(self):
+        def change(d):
+            d["film"]["approval"] = {"status": "DRAFT", "ref": None}
+            d["film"]["output_sha256"] = None
+
+        results = mutated(change)
+        self.assertEqual(failed(results), [])
+        self.assertEqual(statuses(results)["output_film"], "UNVERIFIED")
+
+    def test_reviewed_film_needs_an_output_fingerprint(self):
+        def change(d):
+            d["film"]["output_sha256"] = None
+
+        self.assertIn("approval", failed(mutated(change)))
+
 
 if __name__ == "__main__":
     unittest.main()

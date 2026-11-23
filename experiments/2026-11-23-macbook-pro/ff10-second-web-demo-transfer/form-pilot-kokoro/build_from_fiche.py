@@ -2,8 +2,8 @@
 
 La fiche est la seule source : composition HyperFrames, sous-titres SRT et VTT, transcription.
 L'habillage (cadre, couleurs, taille du texte) est propre à ce film et reste dans ce fichier.
-Sans argument, les fichiers sont écrits. Avec --check, rien n'est écrit : code 1 si un fichier
-présent diffère de ce que la fiche génère.
+Sans option, les fichiers sont écrits. Avec --check, rien n'est écrit : code 1 si un fichier
+présent diffère de ce que la fiche génère. Un chemin de fiche en argument vise un autre film.
 """
 
 import html
@@ -99,13 +99,16 @@ def stale_files(fiche, root):
 
 
 def main():
-    fiche = json.loads((ROOT / "provenance-manifest.json").read_text())
-    stale = stale_files(fiche, ROOT)
+    # Sans chemin, la fiche de ce dossier ; avec un chemin, celle d'un autre film.
+    paths = [a for a in sys.argv[1:] if not a.startswith("--")]
+    path = Path(paths[0]).resolve() if paths else ROOT / "provenance-manifest.json"
+    fiche, root = json.loads(path.read_text()), path.parent
+    stale = stale_files(fiche, root)
     if "--check" in sys.argv[1:]:
         print(json.dumps({"status": "FAIL" if stale else "PASS", "stale": stale}))
         return 1 if stale else 0
     for name in stale:
-        (ROOT / name).write_text(render(fiche)[name])
+        (root / name).write_text(render(fiche)[name])
     print(json.dumps({"status": "PASS", "written": stale}))
     return 0
 

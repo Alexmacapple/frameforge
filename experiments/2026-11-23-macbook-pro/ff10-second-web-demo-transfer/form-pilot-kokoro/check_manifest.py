@@ -282,14 +282,20 @@ def check_data(data, root, events=None):
         ]
     verdict("statuses", problems)
 
-    approval = root / film["approval"]["ref"]
+    # Un brouillon n'a ni document d'approbation ni, avant son premier rendu, d'empreinte de film.
+    fingerprint, approval_ref = film["output_sha256"], film["approval"]["ref"]
     problems = []
     if status != "DRAFT":
-        text = approval.read_text() if approval.is_file() else ""
+        approval = root / approval_ref if approval_ref else None
+        text = approval.read_text() if approval and approval.is_file() else ""
         # L'empreinte suffit pour une approbation éditoriale ; une autorisation de diffusion
         # doit en plus être écrite en toutes lettres dans le document.
         needs_wording = status == "APPROVED_FOR_RELEASE"
-        if film["output_sha256"] not in text or (needs_wording and status not in text):
+        if (
+            not fingerprint
+            or fingerprint not in text
+            or (needs_wording and status not in text)
+        ):
             problems.append(
                 "le document d'approbation ne nomme pas cette version et ce statut"
             )
@@ -329,14 +335,18 @@ def check_data(data, root, events=None):
         verdict("measured_audio", problems)
 
     output = root / film["output_ref"]
-    if not output.is_file():
+    if not fingerprint:
+        add(
+            "output_film",
+            "UNVERIFIED",
+            "film pas encore rendu : aucune empreinte dans la fiche",
+        )
+    elif not output.is_file():
         add("output_film", "UNVERIFIED", "film absent en local")
     else:
         verdict(
             "output_film",
-            []
-            if sha(output) == film["output_sha256"]
-            else ["empreinte du film différente"],
+            [] if sha(output) == fingerprint else ["empreinte du film différente"],
         )
 
     for item in film["open_checks"]:

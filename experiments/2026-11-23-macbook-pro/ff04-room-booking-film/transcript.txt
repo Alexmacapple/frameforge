@@ -1,0 +1,3 @@
+La salle Érable est choisie parmi les trois salles.
+L'option vidéoprojecteur est cochée.
+La réservation est envoyée. Un message confirme la salle et l'option.
