@@ -196,6 +196,35 @@ class FicheCheckTests(unittest.TestCase):
             lambda d: d["film"].update(output_sha256="1" * 64),
         )
 
+    def test_observed_scene_whose_key_is_absent_from_the_journal(self):
+        # Issue 15, constat 5 : « observé » sans observation ne peut pas répondre PASS.
+        def change(d):
+            d["scenes"][0]["result"]["observed_key"] = "cle_absente"
+            d["scenes"][0]["result"]["expected"] = None
+
+        self.expect("results", "clé observée absente du journal", change)
+
+    def test_observed_scene_without_expected_value(self):
+        self.expect("results", "résultat attendu non renseigné",
+                    lambda d: d["scenes"][0]["result"].update(expected=None))
+
+    def test_expected_value_is_compared_strictly(self):
+        # True et 1 sont égaux en Python ; ce ne sont pas le même résultat observé.
+        root = FILMS["reservation"]
+        status, detail = details(root, lambda d: d["scenes"][1]["result"].update(expected=1))["results"]
+        self.assertEqual(status, "FAIL", detail)
+        self.assertIn("résultat observé différent", detail)
+
+    def test_local_source_cannot_be_declared_without_fingerprint(self):
+        self.expect("source", "source locale sans empreinte", lambda d: d["source"].update(sha256=None))
+
+    def test_reviewed_film_without_journal_is_not_reported_as_passed(self):
+        for name, root in FILMS.items():
+            with self.subTest(film=name):
+                found = details(root, lambda d: d["capture"].update(events_ref=None))
+                self.assertEqual(found["statuses"][0], "UNVERIFIED", found["statuses"])
+                self.assertIn("sans journal de capture lisible", found["statuses"][1])
+
     def test_unknown_field(self):
         for name, root in FILMS.items():
             with self.subTest(film=name):
