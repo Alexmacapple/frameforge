@@ -84,4 +84,4 @@ Portée : ce pilote seulement. Le pilote V5 a une fiche mais son rendu ne la lit
 - Les statuts de preuve des scènes V5 sont déclarés `observed` d'après le journal d'origine, que le contrôle ne relit pas.
 - Les repères des gestes viennent de l'horloge du script de capture, pas d'une mesure sur l'image ; l'écart constaté sur cette prise est d'environ 0,01 s.
 - L'autorisation est un texte libre : le contrôle vérifie qu'elle est renseignée, pas qu'elle est vraie.
-- La fiche n'est lue par aucun autre outil. La brancher sur le rendu gardé ou générer la composition depuis elle sont des décisions à prendre après validation du format.
+- La fiche est contrôlée avant le rendu, mais elle ne produit rien : la composition, les sous-titres et le plan de capture restent écrits à la main, et la fiche les recopie. Générer ces fichiers depuis la fiche est une décision distincte, non prise.
