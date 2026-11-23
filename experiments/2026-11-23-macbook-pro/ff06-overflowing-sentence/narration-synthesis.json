@@ -1,0 +1,14 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice2.wav",
+      "text": "L'option vidéoprojecteur est cochée, pour que la salle soit équipée dès le début de la réunion.",
+      "duration_s": 5.15,
+      "sha256": "d75d57ac7a045cac64586cd36bd36041e61ef49ae81564502909752782f70a48"
+    }
+  ]
+}
