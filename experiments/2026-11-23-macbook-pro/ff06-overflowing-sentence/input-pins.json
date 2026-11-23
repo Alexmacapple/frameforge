@@ -1,0 +1,14 @@
+{
+  "index.html": "a4b088ec431853eb30e2ac4587ea3f3f3ad75a8e7720d32a5cd901a5e6a9eb00",
+  "hyperframes.json": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+  "package.json": "500815a3a31efcf1befc6b1f10869dfd4531d5dacdaddb8180dc74d4feae6551",
+  "captions.srt": "828b5bb301a9cba78f6c30bd9a5a3a2ba4c9ae5dec0fbb18a1cae87c38d1ea7c",
+  "captions.vtt": "ccdd66157a0552fdf30fb54d54deb94a2067b2cd8534425cfb6012abb613a475",
+  "transcript.txt": "f14c27446a5f25fb8fff2df6294f7837e872c754a68e84253c5dc5bdaa87dfe7",
+  "capture.mp4": "837fec7c30729aeab91bb0a9153108f6eb39ed906c7f4ccbd893a6e038579350",
+  "voice1.wav": "10c69ddb54580ac9e1e44a49961ca5db012b6b38042dc7e4f1067500bcb35b64",
+  "voice2.wav": "d75d57ac7a045cac64586cd36bd36041e61ef49ae81564502909752782f70a48",
+  "voice3.wav": "1bb7975f4f7e0d92a103454cc6beb5d9767c591122dde81da72e78a481467a66",
+  "capture-events.json": "2fc4614012297436bdee6bec1e04aff6f2d40746bb2fc77b0435b0cfbf19ac09",
+  "provenance-manifest.json": "d5ba920fcd5a61a4cdf0a06be8f2508ffeb40fac5bd2ab25ff94f41b900b6b80"
+}
