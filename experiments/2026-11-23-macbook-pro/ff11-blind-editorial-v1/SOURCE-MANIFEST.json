@@ -1,0 +1,78 @@
+{
+  "retrieval_date": "2026-11-23",
+  "items": [
+    {
+      "role": "explain",
+      "nasa_id": "GSFC_20170721_LRO_m12648_SolarEclipse",
+      "url": "https://images-assets.nasa.gov/video/GSFC_20170721_LRO_m12648_SolarEclipse/GSFC_20170721_LRO_m12648_SolarEclipse~preview.mp4",
+      "sha256": "d35206dad8f6964d8574b781818866138606b0d2eb50ca810df051eeb748200f",
+      "bytes": 12874470,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "154.200000"
+        }
+      }
+    },
+    {
+      "role": "observe",
+      "nasa_id": "GSFC_20170822_Total_m12690_Eclipse",
+      "url": "https://images-assets.nasa.gov/video/GSFC_20170822_Total_m12690_Eclipse/GSFC_20170822_Total_m12690_Eclipse~preview.mp4",
+      "sha256": "c7c35929897a2fbd19629a19bd0852d4c1a0429589bdfdde7e3d591120efbcbb",
+      "bytes": 1995028,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "28.033333"
+        }
+      }
+    },
+    {
+      "role": "distractor",
+      "nasa_id": "ARC-20200409-AAV3258-NeMONet-ResourceReel-NASAWeb1080",
+      "url": "https://images-assets.nasa.gov/video/ARC-20200409-AAV3258-NeMONet-ResourceReel-NASAWeb1080/ARC-20200409-AAV3258-NeMONet-ResourceReel-NASAWeb1080~preview.mp4",
+      "sha256": "c51ced195905d432257e1baaa2151dc73c9191f29309175caf3450aa6e90abef",
+      "bytes": 11383264,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio"
+          },
+          {
+            "codec_name": "h264",
+            "codec_type": "video"
+          }
+        ],
+        "format": {
+          "duration": "133.566667"
+        }
+      }
+    }
+  ],
+  "status": "rights not cleared for redistribution"
+}
