@@ -1,6 +1,6 @@
 from pathlib import Path
 import hashlib,json,shutil,re
-R=Path('/Users/alex/Claude/git-hors-workflow/frameforge')
+R=Path(__file__).resolve().parents[3]
 S=R/'experiments/2026-11-23-macbook-pro/vertical-v5-kokoro-siwis'
 D=Path('/tmp/frameforge-ff10-revision-sandbox-20261123')
 if D.exists():shutil.rmtree(D)

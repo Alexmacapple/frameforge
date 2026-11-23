@@ -1,4 +1,4 @@
-const {chromium}=require('/Users/alex/.local/share/shipguard-runtime/node_modules/playwright');
+const {chromium}=require(require('path').join(require('os').homedir(), '.local/share/shipguard-runtime/node_modules/playwright'));
 const path=require('path'),fs=require('fs');
 (async()=>{
  const browser=await chromium.launch({headless:true});
