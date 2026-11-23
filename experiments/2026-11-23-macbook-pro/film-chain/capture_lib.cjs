@@ -42,56 +42,78 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
       throw new Error(`capture existante, non écrasée : ${path.join(outDir, ref)} (définir FF_CAPTURE_OUT)`);
     }
   }
-  const media = path.join(outDir, 'media');
-  fs.mkdirSync(media, { recursive: true });
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 1920, height: 1080 },
-    recordVideo: { dir: media, size: { width: 1920, height: 1080 } },
-  });
-  await context.addInitScript(POINTER);
-  const page = await context.newPage();
-  const t0 = Date.now();
-  const events = [];
-  const mark = (name) => events.push({ name, script_s: (Date.now() - t0) / 1000 });
-  const at = async (seconds) => {
-    const wait = seconds * 1000 - (Date.now() - t0);
-    if (wait > 0) await page.waitForTimeout(wait);
-  };
-  let pos = { x: 1500, y: 950 };
-  const glide = async (dest, ms) => {
-    const steps = Math.max(1, Math.round(ms / 20));
-    const from = pos;
-    for (let i = 1; i <= steps; i++) {
-      const k = i / steps;
-      const ease = k * k * (3 - 2 * k);
-      await page.mouse.move(from.x + (dest.x - from.x) * ease, from.y + (dest.y - from.y) * ease);
-      await page.waitForTimeout(20);
+  // Tout est produit dans un dossier de travail, puis posé à son nom final sans écraser : une
+  // interruption ne laisse ni capture partielle au nom du film, ni fichier à moitié écrit.
+  fs.mkdirSync(outDir, { recursive: true });
+  const work = fs.mkdtempSync(path.join(outDir, '.capture-'));
+  let browser;
+  try {
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      viewport: { width: 1920, height: 1080 },
+      recordVideo: { dir: work, size: { width: 1920, height: 1080 } },
+    });
+    await context.addInitScript(POINTER);
+    const page = await context.newPage();
+    const t0 = Date.now();
+    const events = [];
+    const mark = (name) => events.push({ name, script_s: (Date.now() - t0) / 1000 });
+    const at = async (seconds) => {
+      const wait = seconds * 1000 - (Date.now() - t0);
+      if (wait > 0) await page.waitForTimeout(wait);
+    };
+    let pos = { x: 1500, y: 950 };
+    const glide = async (dest, ms) => {
+      const steps = Math.max(1, Math.round(ms / 20));
+      const from = pos;
+      for (let i = 1; i <= steps; i++) {
+        const k = i / steps;
+        const ease = k * k * (3 - 2 * k);
+        await page.mouse.move(from.x + (dest.x - from.x) * ease, from.y + (dest.y - from.y) * ease);
+        await page.waitForTimeout(20);
+      }
+      pos = dest;
+    };
+    const clickHere = (delay) => page.mouse.click(pos.x, pos.y, { delay });
+
+    await page.goto(url);
+    mark('page_loaded');
+    await page.mouse.move(pos.x, pos.y);
+    const extra = await play({ page, at, glide, clickHere, mark });
+    // Le journal sert de preuve des résultats : sans observations, il ne prouve rien.
+    if (!extra || typeof extra.observed !== 'object' || extra.observed === null) {
+      throw new Error('play() doit rendre un objet avec le champ observed');
     }
-    pos = dest;
-  };
-  const clickHere = (delay) => page.mouse.click(pos.x, pos.y, { delay });
+    const video = await page.video().path();
+    await context.close();
+    await browser.close();
+    browser = null;
 
-  await page.goto(url);
-  mark('page_loaded');
-  await page.mouse.move(pos.x, pos.y);
-  const extra = await play({ page, at, glide, clickHere, mark });
-  const video = await page.video().path();
-  await context.close();
-  await browser.close();
-
-  // Conversion à 30 images par seconde, une image clé par seconde (exigence de HyperFrames) ;
-  // la dernière image est prolongée jusqu'à la durée du film.
-  const raw = path.join(media, 'capture-pointer.webm');
-  fs.renameSync(video, raw);
-  execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', raw, '-vf',
-    `fps=30,tpad=stop_mode=clone:stop_duration=6,trim=duration=${durationS},setpts=PTS-STARTPTS`,
-    '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', '-pix_fmt', 'yuv420p',
-    '-r', '30', '-g', '30', '-keyint_min', '30', '-movflags', '+faststart',
-    path.join(outDir, mediaRef)]);
-  const report = { ...extra, events, pointer: POINTER_NOTE };
-  fs.writeFileSync(path.join(outDir, eventsRef), JSON.stringify(report, null, 2) + '\n');
-  console.log(JSON.stringify(report));
+    // Conversion à 30 images par seconde, une image clé par seconde (exigence de HyperFrames) ;
+    // la dernière image est prolongée jusqu'à la durée du film.
+    const converted = path.join(work, 'capture.mp4');
+    execFileSync('ffmpeg', ['-v', 'error', '-i', video, '-vf',
+      `fps=30,tpad=stop_mode=clone:stop_duration=6,trim=duration=${durationS},setpts=PTS-STARTPTS`,
+      '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', '-pix_fmt', 'yuv420p',
+      '-r', '30', '-g', '30', '-keyint_min', '30', '-movflags', '+faststart', converted]);
+    const report = { ...extra, events, pointer: POINTER_NOTE };
+    const journal = path.join(work, 'journal.json');
+    fs.writeFileSync(journal, JSON.stringify(report, null, 2) + '\n');
+    // linkSync refuse un nom déjà pris : le contrôle fait au début ne suffit pas si un fichier
+    // est apparu entre-temps.
+    fs.linkSync(converted, path.join(outDir, mediaRef));
+    fs.linkSync(journal, path.join(outDir, eventsRef));
+    // La prise brute est gardée pour examen, sous un nom libre : une prise précédente reste.
+    const media = path.join(outDir, 'media');
+    fs.mkdirSync(media, { recursive: true });
+    let raw = path.join(media, 'capture-pointer.webm');
+    for (let n = 2; fs.existsSync(raw); n++) raw = path.join(media, `capture-pointer-${n}.webm`);
+    fs.copyFileSync(video, raw, fs.constants.COPYFILE_EXCL);
+    console.log(JSON.stringify(report));
+  } finally {
+    if (browser) await browser.close().catch(() => {});
+    fs.rmSync(work, { recursive: true, force: true });
+  }
 }
 
 function record(options) {

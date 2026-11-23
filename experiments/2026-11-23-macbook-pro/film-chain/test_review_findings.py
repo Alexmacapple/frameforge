@@ -359,6 +359,28 @@ class GenerationTests(FilmCopy):
 
 
 class RepinTests(FilmCopy):
+    def run_repin(self, *args):
+        out = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["repin.py", *args]),
+            contextlib.redirect_stdout(out),
+        ):
+            return r.main(), out.getvalue()
+
+    def test_command_line_reports_fresh_stale_and_unreadable(self):
+        # r1-z02-011
+        self.assertEqual(self.run_repin(str(self.root), "--check")[0], 0)
+        self.edit("transcript.txt", r"\A", "Ligne en trop.\n")
+        code, said = self.run_repin(str(self.root), "--check")
+        self.assertEqual((code, json.loads(said)["status"]), (1, "FAIL"))
+        self.assertEqual(self.run_repin()[0], 2)
+        (self.root / "provenance-manifest.json").write_text("{}")
+        (self.root / "media").unlink()
+        (self.root / "media").mkdir()
+        (self.root / "media/room-booking.mp4").write_bytes(b"film")
+        code, said = self.run_repin(str(self.root), "--record-output")
+        self.assertEqual((code, json.loads(said)["status"]), (2, "BLOCKED"))
+
     def test_nothing_stale_means_nothing_rewritten(self):
         # Audit logique : --check disait PASS, puis repin réécrivait sans le dire.
         pins = self.root / "input-pins.json"

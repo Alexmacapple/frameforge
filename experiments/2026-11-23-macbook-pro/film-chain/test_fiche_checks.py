@@ -205,18 +205,27 @@ class FicheCheckTests(unittest.TestCase):
         self.expect("results", "clé observée absente du journal", change)
 
     def test_observed_scene_without_expected_value(self):
-        self.expect("results", "résultat attendu non renseigné",
-                    lambda d: d["scenes"][0]["result"].update(expected=None))
+        self.expect(
+            "results",
+            "résultat attendu non renseigné",
+            lambda d: d["scenes"][0]["result"].update(expected=None),
+        )
 
     def test_expected_value_is_compared_strictly(self):
         # True et 1 sont égaux en Python ; ce ne sont pas le même résultat observé.
         root = FILMS["reservation"]
-        status, detail = details(root, lambda d: d["scenes"][1]["result"].update(expected=1))["results"]
+        status, detail = details(
+            root, lambda d: d["scenes"][1]["result"].update(expected=1)
+        )["results"]
         self.assertEqual(status, "FAIL", detail)
         self.assertIn("résultat observé différent", detail)
 
     def test_local_source_cannot_be_declared_without_fingerprint(self):
-        self.expect("source", "source locale sans empreinte", lambda d: d["source"].update(sha256=None))
+        self.expect(
+            "source",
+            "source locale sans empreinte",
+            lambda d: d["source"].update(sha256=None),
+        )
 
     def test_reviewed_film_without_journal_is_not_reported_as_passed(self):
         for name, root in FILMS.items():
@@ -227,8 +236,11 @@ class FicheCheckTests(unittest.TestCase):
 
     def test_inputs_changed_since_the_approved_render(self):
         # Constat de l'expérience de révision et reprise : une approbation périmée répondait PASS.
-        self.expect("approval", "les entrées ont changé depuis le rendu du film approuvé",
-                    lambda d: d["film"].update(inputs_sha256="0" * 64))
+        self.expect(
+            "approval",
+            "les entrées ont changé depuis le rendu du film approuvé",
+            lambda d: d["film"].update(inputs_sha256="0" * 64),
+        )
 
     def test_approved_film_without_inputs_fingerprint_is_not_reported_as_passed(self):
         for name, root in FILMS.items():
@@ -237,9 +249,24 @@ class FicheCheckTests(unittest.TestCase):
                 self.assertEqual(found["approval"][0], "UNVERIFIED", found["approval"])
                 self.assertIn("entrées non figées", found["approval"][1])
 
+    def test_real_films_are_fully_verified_when_their_media_is_here(self):
+        for name, root in FILMS.items():
+            with self.subTest(film=name):
+                fiche = json.loads((root / "provenance-manifest.json").read_text())
+                needed = [fiche["film"]["output_ref"], fiche["capture"]["media_ref"]]
+                missing = [ref for ref in needed if not (root / ref).is_file()]
+                if missing:
+                    self.skipTest(
+                        f"médias non versionnés absents ({missing}) : fiche non vérifiée en entier"
+                    )
+                got = details(root)
+                for check in ("pinned_media", "measured_audio", "output_film"):
+                    self.assertEqual(got[check][0], "PASS", (check, got[check]))
+
     def test_draft_film_is_not_concerned(self):
         for name, root in FILMS.items():
             with self.subTest(film=name):
+
                 def change(d):
                     d["film"].update(inputs_sha256=None, output_sha256=None)
                     d["film"]["approval"] = {"status": "DRAFT", "ref": None}

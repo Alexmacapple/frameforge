@@ -126,6 +126,8 @@ class RepinTests(unittest.TestCase):
         self.assertEqual(
             fiche["film"]["output_sha256"], sha(self.root / "media/film.mp4")
         )
+        pins = json.loads((self.root / "pins.json").read_text())
+        self.assertEqual(fiche["film"]["inputs_sha256"], r.inputs_fingerprint(pins))
         self.assertEqual(r.stale(self.root), [])
 
     def snapshot(self):

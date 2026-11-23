@@ -118,5 +118,70 @@ class UnreadableOutputTests(GuardCase):
                 self.guard.validate_output(self.root / "film.mp4")
 
 
+class ProbedShapeTests(GuardCase):
+    """Chaque refus de forme, isolé : la sonde est fabriquée, un seul champ s'écarte du film attendu."""
+
+    def setUp(self):
+        super().setUp()
+        (self.root / "reference.json").write_text(
+            json.dumps({**REFERENCE, "expected_duration_s": 10, "expected_fps": 30})
+        )
+
+    def probe(self, **changes):
+        video = {
+            "codec_type": "video",
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_frames": "300",
+            "avg_frame_rate": "30/1",
+            "sample_aspect_ratio": "1:1",
+            "display_aspect_ratio": "16:9",
+        }
+        audio = {"codec_type": "audio", "codec_name": "aac", "duration": "10.0"}
+        video.update(changes.get("video", {}))
+        audio.update(changes.get("audio", {}))
+        data = {
+            "format": {"duration": changes.get("duration", "10.0")},
+            "streams": [video, audio],
+        }
+        return mock.patch.object(
+            film_guard.subprocess,
+            "check_output",
+            return_value=json.dumps(data).encode(),
+        )
+
+    def refused(self, reason, **changes):
+        with (
+            self.probe(**changes),
+            self.assertRaisesRegex(ValueError, "film_" + reason + "$"),
+        ):
+            self.guard.validate_output(self.root / "film.mp4")
+
+    def test_expected_shape_reaches_the_content_comparison(self):
+        # Témoin : sans écart de forme, le refus vient de la comparaison des images, plus loin.
+        with (
+            self.probe(),
+            mock.patch.object(film_guard, "video_stream_hash", return_value="autre"),
+            self.assertRaisesRegex(ValueError, "film_output_video_changed$"),
+        ):
+            self.guard.validate_output(self.root / "film.mp4")
+
+    def test_sound_shorter_than_the_film_is_refused(self):
+        self.refused("output_audio_invalid", audio={"duration": "9.5"})
+
+    def test_missing_frames_are_refused(self):
+        self.refused("output_framerate_invalid", video={"nb_frames": "299"})
+
+    def test_other_frame_rate_is_refused(self):
+        self.refused(
+            "output_framerate_invalid",
+            video={"avg_frame_rate": "25/1", "nb_frames": "300"},
+        )
+
+    def test_other_duration_is_refused(self):
+        self.refused("output_duration_invalid", duration="10.2")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -42,7 +42,7 @@ def settings(film):
     text = (film / "render_guarded.py").read_text()
     out, missing = {}, []
     for key in ("pins_ref", "reference_ref", "output"):
-        match = re.search(rf'{key}="([^"]+)"', text)
+        match = re.search(rf'\b{key}="([^"]+)"', text)
         if match:
             out[key] = match.group(1)
         else:
@@ -218,8 +218,14 @@ def main():
         changed = (
             record_output(film) if "--record-output" in sys.argv[1:] else refresh(film)
         )
-    except (ValueError, OSError) as exc:
-        print(json.dumps({"status": "BLOCKED", "reason": str(exc)}, ensure_ascii=False))
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        # Fiche ou reçu de forme inattendue : un refus lisible, pas une trace.
+        reason = (
+            str(exc)
+            if isinstance(exc, (ValueError, OSError))
+            else f"fiche de forme inattendue : {exc!r}"
+        )
+        print(json.dumps({"status": "BLOCKED", "reason": reason}, ensure_ascii=False))
         return 2
     print(json.dumps({"status": "PASS", "refrozen": changed}, ensure_ascii=False))
     return 0
