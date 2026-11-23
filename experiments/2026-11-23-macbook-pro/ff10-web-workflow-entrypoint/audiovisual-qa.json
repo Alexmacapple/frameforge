@@ -1,0 +1,23 @@
+{
+  "mp4_sha256": "9fbb7c316fb20ef94a0424f231881b5f0f24d86daf32418aadc1a92e94ae11ad",
+  "duration_seconds": 16.166667,
+  "video_frames": 485,
+  "audio_present": true,
+  "audio_pcm_identical_to_v5": true,
+  "srt_cues": 3,
+  "srt_matches_transcript": true,
+  "cue_intervals_seconds": [
+    [
+      2.55,
+      5.37
+    ],
+    [
+      6.65,
+      10.52
+    ],
+    [
+      11.2,
+      15.695
+    ]
+  ]
+}
