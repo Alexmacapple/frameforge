@@ -1,0 +1,34 @@
+{
+  "sha256": "9fbb7c316fb20ef94a0424f231881b5f0f24d86daf32418aadc1a92e94ae11ad",
+  "duration_s": 16.166667,
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "video_frames": 485,
+  "average_frame_rate": "30/1",
+  "audio_pcm_sha256": "f6819e9e643df7e29951eb2fba046111177c65b6334fa05c6defe2c04652ca86",
+  "sampled_frames": [
+    {
+      "label": "before_first",
+      "time_s": 1.0,
+      "rgb_sha256": "c804c6e39dfedc7ba5d3a719082f481f5cb6ac5563c4dd51421c2d34c1826a7d"
+    },
+    {
+      "label": "first_task",
+      "time_s": 4.0,
+      "rgb_sha256": "2398444ab2b910c1c91b386db0d7dabafa008e68a1ab48c04c559815538f0caa",
+      "changed_rgb_byte_ratio_vs_previous": 0.28079
+    },
+    {
+      "label": "second_task",
+      "time_s": 8.5,
+      "rgb_sha256": "94fc80dfdcfff7d227758c64dcead0c2210aa304039f8fa05ae97bd0d26c4599",
+      "changed_rgb_byte_ratio_vs_previous": 0.2949
+    },
+    {
+      "label": "first_checked",
+      "time_s": 13.5,
+      "rgb_sha256": "204e8d1cf7ec0807cd47d487acf1c8fb7cb558cc3390f9afb61b1be5c942e7cd",
+      "changed_rgb_byte_ratio_vs_previous": 0.11168
+    }
+  ]
+}
