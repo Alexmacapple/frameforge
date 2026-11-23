@@ -55,6 +55,19 @@ class GuardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "expected exactly two"):
             mod.check(self.ref, p)
 
+    def test_existing_output_never_overwritten(self):
+        candidate = self.candidate(REFERENCE)
+        output = self.root / "existing.mp4"
+        output.write_bytes(b"existing")
+        with self.assertRaisesRegex(ValueError, "output_already_exists"):
+            mod.export(self.root / "missing.mp4", self.ref, candidate, output)
+        self.assertEqual(output.read_bytes(), b"existing")
+
+    def test_malformed_subtitles_fail_closed(self):
+        candidate = self.candidate("invalid srt")
+        with self.assertRaisesRegex(ValueError, "expected exactly two"):
+            mod.check(self.ref, candidate)
+
     def test_no_output_for_bad_change(self):
         p = self.candidate(REFERENCE.replace("sur la Terre.", "sur la planète."))
         output = self.root / "forbidden.mp4"
