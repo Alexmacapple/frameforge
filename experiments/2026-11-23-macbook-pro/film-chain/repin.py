@@ -117,9 +117,7 @@ def refresh(film):
     guard_path = film / "render_guarded.py"
     guard = guard_path.read_text()
     for name, value in expected(film).items():
-        guard, count = re.subn(CONSTANT.format(name=name), rf"\g<1>{value}\g<3>", guard)
-        if count != 1:
-            raise ValueError("constante introuvable dans render_guarded.py : " + name)
+        guard = re.sub(CONSTANT.format(name=name), rf"\g<1>{value}\g<3>", guard)
     guard_path.write_text(guard)
     return changed
 
@@ -129,7 +127,11 @@ def guard_validator(film):
     spec = importlib.util.spec_from_file_location(
         f"render_guarded_{abs(hash(str(film)))}", film / "render_guarded.py"
     )
-    if spec is None or spec.loader is None:
+    if (
+        not (film / "render_guarded.py").is_file()
+        or spec is None
+        or spec.loader is None
+    ):
         raise ValueError("garde du film introuvable : render_guarded.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

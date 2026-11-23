@@ -300,6 +300,14 @@ class GenerationTests(FilmCopy):
             ):
                 b.render(data)
 
+    def test_subtitle_format_the_generator_does_not_know_is_refused(self):
+        data = self.fiche()
+        data["film"]["caption_refs"] = ["sous-titres.txt"]
+        with self.assertRaisesRegex(
+            ValueError, "format de sous-titres non pris en charge"
+        ):
+            b.render(data)
+
     def test_times_keep_the_thousandth_whatever_their_size(self):
         # r1-z01-016
         self.assertEqual(

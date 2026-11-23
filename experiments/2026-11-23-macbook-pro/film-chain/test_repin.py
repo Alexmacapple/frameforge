@@ -219,6 +219,19 @@ class RepinTests(unittest.TestCase):
                 {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()},
             )
 
+    def test_guard_without_its_declared_names_is_refused(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text().replace('output="media/film.mp4"', ""))
+        with self.assertRaisesRegex(
+            ValueError, "paramètre introuvable dans render_guarded.py : output"
+        ):
+            r.stale(self.root)
+
+    def test_film_without_guard_file_cannot_be_validated(self):
+        (self.root / "render_guarded.py").unlink()
+        with self.assertRaisesRegex(ValueError, "garde du film introuvable"):
+            r.guard_validator(self.root)
+
     def test_record_output_needs_a_guard_that_can_validate(self):
         (self.root / "media").mkdir()
         (self.root / "media/film.mp4").write_bytes(b"film")
