@@ -12,6 +12,7 @@
     ],
     "output_ref": "media/room-booking.mp4",
     "output_sha256": "9c834228ae4db81dda154f5bf62e3bfc8fd3ac4012f9f64bbfddfcc29dfbf543",
+    "inputs_sha256": "6d923f986f25ed282561d827b3a3e5519c104cbfb9fc7b62221abc6f309c185b",
     "approval": {
       "status": "REVIEWED",
       "ref": "EDITORIAL-APPROVAL.md"

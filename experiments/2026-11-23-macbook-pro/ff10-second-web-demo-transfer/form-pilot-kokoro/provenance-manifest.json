@@ -6,9 +6,13 @@
     "duration_s": 16,
     "composition_ref": "index.html",
     "transcript_ref": "transcript.txt",
-    "caption_refs": ["captions.srt", "captions.vtt"],
+    "caption_refs": [
+      "captions.srt",
+      "captions.vtt"
+    ],
     "output_ref": "media/form-kokoro-pointeur.mp4",
     "output_sha256": "ab040730a5bdc4bb36e77be4a7b22da067dd3da2bfaddd436c5a636f7b567125",
+    "inputs_sha256": "f9ed485587ed9fc7dba395c2250f026dc6723deab97ce9da164d8cf398bdda4a",
     "approval": {
       "status": "REVIEWED",
       "ref": "../KOKORO-POINTER-EDITORIAL-APPROVAL.md"
@@ -32,7 +36,10 @@
     {
       "scene_id": "saisie-nom",
       "shot_type": "continuous_action",
-      "gesture_events": ["name_clicked", "name_typed"],
+      "gesture_events": [
+        "name_clicked",
+        "name_typed"
+      ],
       "result": {
         "event": "name_typed",
         "observed_key": "name",
@@ -53,7 +60,10 @@
     {
       "scene_id": "saisie-adresse",
       "shot_type": "continuous_action",
-      "gesture_events": ["email_clicked", "email_typed"],
+      "gesture_events": [
+        "email_clicked",
+        "email_typed"
+      ],
       "result": {
         "event": "email_typed",
         "observed_key": "email",
@@ -74,7 +84,10 @@
     {
       "scene_id": "envoi-confirmation",
       "shot_type": "continuous_action",
-      "gesture_events": ["send_clicked", "confirmation_visible"],
+      "gesture_events": [
+        "send_clicked",
+        "confirmation_visible"
+      ],
       "result": {
         "event": "confirmation_visible",
         "observed_key": "confirmation",

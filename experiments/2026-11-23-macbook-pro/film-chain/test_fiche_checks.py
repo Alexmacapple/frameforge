@@ -225,6 +225,27 @@ class FicheCheckTests(unittest.TestCase):
                 self.assertEqual(found["statuses"][0], "UNVERIFIED", found["statuses"])
                 self.assertIn("sans journal de capture lisible", found["statuses"][1])
 
+    def test_inputs_changed_since_the_approved_render(self):
+        # Constat de l'expérience de révision et reprise : une approbation périmée répondait PASS.
+        self.expect("approval", "les entrées ont changé depuis le rendu du film approuvé",
+                    lambda d: d["film"].update(inputs_sha256="0" * 64))
+
+    def test_approved_film_without_inputs_fingerprint_is_not_reported_as_passed(self):
+        for name, root in FILMS.items():
+            with self.subTest(film=name):
+                found = details(root, lambda d: d["film"].update(inputs_sha256=None))
+                self.assertEqual(found["approval"][0], "UNVERIFIED", found["approval"])
+                self.assertIn("entrées non figées", found["approval"][1])
+
+    def test_draft_film_is_not_concerned(self):
+        for name, root in FILMS.items():
+            with self.subTest(film=name):
+                def change(d):
+                    d["film"].update(inputs_sha256=None, output_sha256=None)
+                    d["film"]["approval"] = {"status": "DRAFT", "ref": None}
+
+                self.assertEqual(details(root, change)["approval"][0], "PASS")
+
     def test_unknown_field(self):
         for name, root in FILMS.items():
             with self.subTest(film=name):

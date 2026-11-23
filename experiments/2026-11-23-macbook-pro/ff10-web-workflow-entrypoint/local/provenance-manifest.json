@@ -6,9 +6,13 @@
     "duration_s": 16.166667,
     "composition_ref": "index.html",
     "transcript_ref": "transcript.txt",
-    "caption_refs": ["captions.srt", "captions.vtt"],
+    "caption_refs": [
+      "captions.srt",
+      "captions.vtt"
+    ],
     "output_ref": "guarded-web-demo.mp4",
     "output_sha256": "9fbb7c316fb20ef94a0424f231881b5f0f24d86daf32418aadc1a92e94ae11ad",
+    "inputs_sha256": null,
     "approval": {
       "status": "REVIEWED",
       "ref": "../HUMAN-EDITORIAL-APPROVAL-V5.md"

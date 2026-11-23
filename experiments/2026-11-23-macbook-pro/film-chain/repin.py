@@ -12,12 +12,16 @@ La liste des fichiers figés n'est jamais modifiée ici ; elle se décide dans l
 """
 
 import hashlib
+import importlib
 import importlib.util
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+inputs_fingerprint = importlib.import_module("check_manifest").inputs_fingerprint
 
 CONSTANT = r'({name} = \(?\s*")([0-9a-f]{{64}})(")'
 
@@ -139,6 +143,8 @@ def record_output(film, validate=None):
     path = film / "provenance-manifest.json"
     fiche = json.loads(path.read_text())
     fiche["film"]["output_sha256"] = sha(output)
+    # Le film vient d'être validé contre ces entrées : on note desquelles il est sorti.
+    fiche["film"]["inputs_sha256"] = inputs_fingerprint(fresh_pins(film)[2])
     path.write_text(json.dumps(fiche, indent=2, ensure_ascii=False) + "\n")
     return refresh(film)
 

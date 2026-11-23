@@ -31,6 +31,7 @@ FIELDS = {
         "caption_refs",
         "output_ref",
         "output_sha256",
+        "inputs_sha256",
         "approval",
         "open_checks",
     },
@@ -79,6 +80,16 @@ def cues(text):
 
 def near(a, b, tolerance=0.0011):
     return abs(float(a) - float(b)) <= tolerance
+
+
+def inputs_fingerprint(pins, fiche_name="provenance-manifest.json"):
+    """Empreinte de l'ensemble des entrées figées d'un film, fiche exclue.
+
+    Inscrite dans la fiche quand l'empreinte du film rendu y est reportée : elle dit de quelles
+    entrées ce film est sorti. La fiche est exclue, puisqu'elle porte elle-même cette valeur.
+    """
+    entries = {name: value for name, value in pins.items() if name != fiche_name}
+    return hashlib.sha256(json.dumps(entries, sort_keys=True).encode()).hexdigest()
 
 
 def schema_problems(data):
@@ -307,6 +318,7 @@ def check_data(data, root, events=None):
     # Un brouillon n'a ni document d'approbation ni, avant son premier rendu, d'empreinte de film.
     fingerprint, approval_ref = film["output_sha256"], film["approval"]["ref"]
     problems = []
+    stale_gap = ""
     if status != "DRAFT":
         approval = root / approval_ref if approval_ref else None
         text = approval.read_text() if approval and approval.is_file() else ""
@@ -332,7 +344,13 @@ def check_data(data, root, events=None):
             problems.append(
                 "autorisation de diffusion : aucune preuve vérifiable n'est définie, statut refusé"
             )
-    verdict("approval", problems)
+        # L'approbation porte sur un film ; ce film est sorti de certaines entrées. Si elles ont
+        # changé depuis, l'approbation ne couvre plus ce que la fiche décrit aujourd'hui.
+        if film["inputs_sha256"] is None:
+            stale_gap = "entrées non figées au moment du rendu approuvé : approbation non rattachée aux entrées"
+        elif film["inputs_sha256"] != inputs_fingerprint(pins):
+            problems.append("les entrées ont changé depuis le rendu du film approuvé")
+    verdict_or_unverified("approval", problems, stale_gap)
 
     problems, missing = [], []
     for n in narrations:

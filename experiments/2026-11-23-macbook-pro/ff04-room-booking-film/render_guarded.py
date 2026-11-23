@@ -21,7 +21,7 @@ CONFIG = (
     "provenance-manifest.json",
     "capture-events.json",
 )
-PIN_MANIFEST_SHA256 = "32b548ff6d03c4cae9481463f1c9801e379803ab0bd47167f9c7613f714eaa84"
+PIN_MANIFEST_SHA256 = "0e665738f4a96dae45e6eca4b54f1e093365ce8eb57ebd5cef5912479328ff45"
 PIN_HTML_SHA256 = "39a4a620ecdd6f3aaf9fc3ad9bddf8273ed4edcfd09e6aba7e9d19844e2cec81"
 PIN_OUTPUT_REFERENCE_SHA256 = (
     "72c7a0da7f774a5ab3679a0e75e6ade2c6df5f95e0dd0ba671898d1e356fa9cb"
