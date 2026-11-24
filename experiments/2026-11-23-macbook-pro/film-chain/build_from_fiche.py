@@ -11,6 +11,7 @@ présent diffère de ce que la fiche génère. Un chemin de fiche en argument vi
 import html
 import importlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -121,6 +122,10 @@ def unsafe_targets(fiche):
         film["output_ref"],
         *[scene["narration"]["audio_ref"] for scene in fiche["scenes"]],
     }
+    # Deux écritures d'un même fichier (« ./a.html », « A.html » sur un disque qui ignore la
+    # casse) se comparent une fois ramenées à une seule forme.
+    spelled = [same_file_key(name) for name in targets]
+    taken = {same_file_key(name) for name in taken}
     return sorted(
         {
             str(name)
@@ -128,10 +133,24 @@ def unsafe_targets(fiche):
             if not isinstance(name, str)
             or Path(name).is_absolute()
             or ".." in Path(name).parts
+            or os.path.normpath(name) != name
             or not name.endswith(GENERATED_SUFFIXES)
-            or name in taken
-            or targets.count(name) > 1
+            or same_file_key(name) in taken
+            or spelled.count(same_file_key(name)) > 1
         }
+    )
+
+
+def same_file_key(name):
+    """Forme unique d'un nom de fichier, pour reconnaître deux écritures du même fichier."""
+    return os.path.normpath(name).casefold() if isinstance(name, str) else name
+
+
+def through_link(root, name):
+    """Vrai si écrire ce nom passerait par un lien symbolique, fichier ou dossier."""
+    parts = Path(name).parts
+    return any(
+        (Path(root).joinpath(*parts[: i + 1])).is_symlink() for i in range(len(parts))
     )
 
 
@@ -193,6 +212,13 @@ def main():
         if problems:
             raise ValueError("fiche refusée par son schéma : " + " ; ".join(problems))
         stale = stale_files(fiche, root)
+        # Écrire à travers un lien modifierait un fichier que la fiche ne nomme pas.
+        linked = [name for name in stale if through_link(root, name)]
+        if linked and "--check" not in options:
+            raise ValueError(
+                "fichier généré qui passe par un lien, rien n'est écrit : "
+                + ", ".join(linked)
+            )
     except (OSError, ValueError) as exc:
         print(json.dumps({"status": "BLOCKED", "reason": str(exc)}, ensure_ascii=False))
         return 2

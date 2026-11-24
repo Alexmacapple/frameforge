@@ -369,15 +369,17 @@ def check_data(data, root, events=None):
     verdict("captions", problems)
 
     page = (root / film["composition_ref"]).read_text()
-    audio, divs = AUDIO.findall(page), CAPTION.findall(page)
+    # Une adresse est écrite échappée dans la page (« & » devient « &amp; ») : elle se compare
+    # une fois rendue lisible, comme le texte des sous-titres.
+    audio = [(unescape(a[0]), *a[1:]) for a in AUDIO.findall(page)]
+    divs = CAPTION.findall(page)
     problems = []
     # Une piste que le motif ne reconnaît pas (attributs dans un autre ordre) reste une piste.
     if page.count("<audio") != len(audio):
         problems.append("piste audio non reconnue dans la composition")
-    if (
-        VIDEO.findall(page) != [data["capture"]["media_ref"]]
-        or page.count("<video") != 1
-    ):
+    if [unescape(v) for v in VIDEO.findall(page)] != [
+        data["capture"]["media_ref"]
+    ] or page.count("<video") != 1:
         problems.append("la composition ne montre pas la seule capture de la fiche")
     if len(audio) != len(scenes) or any(
         a[0] != n["audio_ref"]

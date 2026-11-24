@@ -48,8 +48,8 @@ record({
   filmDir: process.argv[3],
   url: 'about:blank',
   durationS: 1,
-  mediaRef: 'capture.mp4',
-  eventsRef: 'capture-events.json',
+  mediaRef: process.argv[4] || 'capture.mp4',
+  eventsRef: process.argv[5] || 'capture-events.json',
   play: async () => ({ observed: { done: true } }),
 });
 """
@@ -83,10 +83,10 @@ class CaptureDepositTests(unittest.TestCase):
         self.outside = Path(tmp.name) / "ailleurs"
         self.outside.mkdir()
 
-    def capture(self):
+    def capture(self, *refs):
         shared = Path(self.shared.name)
         return subprocess.run(
-            ["node", self.driver, CHAIN / "capture_lib.cjs", self.film],
+            ["node", self.driver, CHAIN / "capture_lib.cjs", self.film, *refs],
             env={
                 "PATH": os.environ["PATH"],
                 "FF_PLAYWRIGHT": str(shared / "playwright"),
@@ -152,6 +152,45 @@ class CaptureDepositTests(unittest.TestCase):
         self.assertIn("media est un lien", refused.stderr)
         self.assertEqual(list(self.outside.iterdir()), [])
         self.assertEqual(self.left_in_film(), [])
+
+    def test_reference_that_leaves_the_film_is_refused(self):
+        # Revue Codex du 24 novembre 2026, constat 2 : le nom de la capture ou du journal
+        # pouvait désigner un fichier hors du dossier du film.
+        outside = str(self.outside / "capture.mp4")
+        for refs in (
+            ("../ailleurs/capture.mp4",),
+            ("capture.mp4", "../ailleurs/journal.json"),
+            (outside,),
+            ("sous/../../ailleurs/capture.mp4",),
+        ):
+            with self.subTest(refs=refs):
+                refused = self.capture(*refs)
+                self.assertEqual(refused.returncode, 1)
+                self.assertIn("hors du dossier de la capture", refused.stderr)
+                self.assertEqual(list(self.outside.iterdir()), [])
+                self.assertEqual(self.left_in_film(), [])
+
+    def test_reference_through_a_linked_folder_is_refused(self):
+        (self.film / "exports").symlink_to(self.outside, target_is_directory=True)
+        for refs in (
+            ("exports/capture.mp4",),
+            ("capture.mp4", "exports/journal.json"),
+        ):
+            with self.subTest(refs=refs):
+                refused = self.capture(*refs)
+                self.assertEqual(refused.returncode, 1)
+                self.assertIn("hors du dossier de la capture", refused.stderr)
+                self.assertEqual(list(self.outside.iterdir()), [])
+                self.assertEqual(self.left_in_film(), [])
+
+    def test_reference_in_a_real_subfolder_is_deposited(self):
+        (self.film / "prises").mkdir()
+        done = self.capture("prises/capture.mp4", "prises/journal.json")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(
+            self.left_in_film(),
+            ["media/capture-pointer.webm", "prises/capture.mp4", "prises/journal.json"],
+        )
 
 
 WAITING_PAGE = """<!doctype html><html lang="fr"><meta charset="utf-8"><title>attente</title>

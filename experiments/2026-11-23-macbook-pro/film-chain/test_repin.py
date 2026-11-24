@@ -240,11 +240,49 @@ class RepinTests(unittest.TestCase):
                 self.assertEqual(r.settings(self.root), declared)
                 self.assertEqual(r.stale(self.root), [])
 
-    def test_name_declared_twice_is_refused(self):
+    def test_another_call_with_the_same_arguments_designates_nothing(self):
+        # Revue Codex du 24 novembre 2026, constat 4 : seul l'appel qui construit GUARD compte.
         guard = self.root / "render_guarded.py"
-        guard.write_text(guard.read_text() + 'OTHER = dict(pins_ref="autre.json")\n')
+        declared = r.settings(self.root)
+        guard.write_text(
+            guard.read_text()
+            + 'OTHER = dict(pins_ref="autre.json", reference_ref="a.json", output="a.mp4")\n'
+        )
+        self.assertEqual(r.settings(self.root), declared)
+        self.assertEqual(r.stale(self.root), [])
+
+    def test_guard_names_given_through_variables_are_refused(self):
+        # Même constat : GUARD nommait ses fichiers par des variables, un autre appel les
+        # nommait en clair, et c'est le fichier de cet autre appel qui était refigé.
+        guard = self.root / "render_guarded.py"
+        (self.root / "autre.json").write_text('{"clip.wav": "' + "0" * 64 + '"}\n')
+        guard.write_text(
+            guard.read_text().replace(
+                'GUARD = dict(pins_ref="pins.json",',
+                'PINS = "pins.json"\nGUARD = dict(pins_ref=PINS,',
+            )
+            + 'OTHER = dict(pins_ref="autre.json")\n'
+        )
+        before = (self.root / "autre.json").read_bytes()
         with self.assertRaisesRegex(
-            ValueError, "paramètre déclaré plusieurs fois .* pins_ref"
+            ValueError, "paramètre qui n'est pas un texte écrit en clair .* pins_ref"
+        ):
+            r.refresh(self.root)
+        self.assertEqual((self.root / "autre.json").read_bytes(), before)
+
+    def test_guard_assigned_twice_is_refused(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text() + 'GUARD = dict(pins_ref="autre.json")\n')
+        with self.assertRaisesRegex(
+            ValueError, "GUARD déclaré plusieurs fois dans render_guarded.py"
+        ):
+            r.stale(self.root)
+
+    def test_guard_file_without_guard_is_refused(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text().replace("GUARD = dict(", "AUTRE = dict("))
+        with self.assertRaisesRegex(
+            ValueError, "GUARD introuvable dans render_guarded.py"
         ):
             r.stale(self.root)
 

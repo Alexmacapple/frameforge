@@ -15,6 +15,7 @@ un test, soit le contrôle est redondant. Les redondances assumées sont listée
 leur raison.
 """
 
+import ast
 import json
 import re
 import shutil
@@ -43,6 +44,7 @@ SUITES = (
             "test_guard_main",
             "test_interruption",
             "test_review_findings",
+            "test_codex_findings",
         ),
     ),
     (
@@ -132,7 +134,40 @@ def apply(path, old, new, rank):
     if rank >= len(starts):
         raise ValueError(f"occurrence {rank} de {old!r} introuvable dans {path.name}")
     at = starts[rank]
-    path.write_text(text[:at] + new + text[at + len(old) :])
+    if old.startswith("raise "):
+        text = without_cause(text, at)
+    mutated = text[:at] + new + text[at + len(old) :]
+    if path.suffix == ".py":
+        # Un mutant qui ne se compile pas fait échouer les tests à l'import : il serait compté
+        # comme vu alors qu'aucun test n'a exercé le contrôle retiré.
+        try:
+            ast.parse(mutated)
+        except SyntaxError as exc:
+            raise ValueError(f"mutant illisible dans {path.name} : {exc}") from exc
+    path.write_text(mutated)
+
+
+def without_cause(text, at):
+    """Retire le « from … » du raise placé à cette position.
+
+    « raise X(…) from exc » sans son raise n'est plus du Python : la cause part avec lui.
+    """
+    lines = text.splitlines(keepends=True)
+
+    def offset(lineno, col):
+        # ast compte les colonnes en octets UTF-8.
+        line = lines[lineno - 1].encode()[:col].decode()
+        return sum(len(x) for x in lines[: lineno - 1]) + len(line)
+
+    for node in ast.walk(ast.parse(text)):
+        if (
+            isinstance(node, ast.Raise)
+            and node.cause is not None
+            and offset(node.lineno, node.col_offset) == at
+        ):
+            end = offset(node.exc.end_lineno, node.exc.end_col_offset)
+            return text[:end] + text[offset(node.end_lineno, node.end_col_offset) :]
+    return text
 
 
 def suites_pass(root):
