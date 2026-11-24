@@ -38,3 +38,6 @@ experiments/2026-11-23-macbook-pro/ff11-real-rush-corpus/index.html
 experiments/2026-11-23-macbook-pro/ff11-real-rush-corpus/package.json
 experiments/2026-11-23-macbook-pro/vertical-v4-results-narration/HUMAN-REVIEW-DRAFT.md
 experiments/2026-11-23-macbook-pro/voice-comparison-v5/README.md
+
+# Reçu de rendu écrit par le garde à côté du film
+*.receipt.json

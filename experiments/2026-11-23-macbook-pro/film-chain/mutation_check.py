@@ -35,7 +35,15 @@ COPIED = (
 SUITES = (
     (
         "film-chain",
-        ("test_film_guard", "test_repin", "test_fiche_checks", "test_habillage_v2"),
+        (
+            "test_film_guard",
+            "test_repin",
+            "test_fiche_checks",
+            "test_habillage_v2",
+            "test_guard_main",
+            "test_interruption",
+            "test_review_findings",
+        ),
     ),
     (
         "ff10-second-web-demo-transfer/form-pilot-kokoro",
@@ -57,11 +65,11 @@ def mutants():
     out = []
     guard = (CHAIN / "film_guard.py").read_text()
     for rank, match in enumerate(
-        re.finditer(r'raise self\.refuse\(\s*"([a-z_:]+)', guard)
+        re.finditer(r'raise self\.refuse\(\s*("[a-z_:]+)?', guard)
     ):
         out.append(
             (
-                f"garde:{match.group(1)}#{rank}",
+                f"garde:{(match.group(1) or '?').strip(chr(34))}#{rank}",
                 "film_guard.py",
                 "raise self.refuse(",
                 "self.refuse(",
@@ -85,6 +93,32 @@ def mutants():
                 rank,
             )
         )
+    # Contrôles écrits en « problems += [ … ] » : la liste ajoutée est rendue vide.
+    for rank, match in enumerate(re.finditer(r"problems \+= \[", check)):
+        line = check[: match.start()].count("\n") + 1
+        out.append(
+            (
+                f"fiche:ajout#{rank}@L{line}",
+                "check_manifest.py",
+                "problems += [",
+                "problems += [] and [",
+                rank,
+            )
+        )
+    # Refus des deux autres outils : chaque « raise ValueError( » devient une simple expression.
+    for name in ("repin.py", "build_from_fiche.py"):
+        text = (CHAIN / name).read_text()
+        for rank, match in enumerate(re.finditer(r"raise ValueError\(", text)):
+            line = text[: match.start()].count("\n") + 1
+            out.append(
+                (
+                    f"{name}:refus#{rank}@L{line}",
+                    name,
+                    "raise ValueError(",
+                    "ValueError(",
+                    rank,
+                )
+            )
     header = "    def verdict(check, problems):\n"
     for name in re.findall(r'verdict(?:_or_unverified)?\(\s*"(\w+)"', check):
         patch = header + f'        if check == "{name}":\n            problems = []\n'
@@ -104,14 +138,22 @@ def apply(path, old, new, rank):
 def suites_pass(root):
     """Vrai si toutes les suites passent ; s'arrête à la première qui échoue."""
     for folder, modules in SUITES:
-        present = [m for m in modules if (root / folder / f"{m}.py").is_file()]
-        done = subprocess.run(
-            [sys.executable, "-B", "-m", "unittest", *present],
-            cwd=root / folder,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        # Un module de test absent ne doit pas passer pour une suite verte.
+        absent = [m for m in modules if not (root / folder / f"{m}.py").is_file()]
+        if absent:
+            raise ValueError(f"suite de tests absente dans {folder} : {absent}")
+        try:
+            done = subprocess.run(
+                [sys.executable, "-B", "-m", "unittest", *modules],
+                cwd=root / folder,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+        except subprocess.TimeoutExpired:
+            # Un mutant qui fait tourner les tests sans fin est vu : il est tenu pour tué.
+            return False
         if done.returncode != 0:
             return False
     return True
@@ -145,9 +187,12 @@ def main():
         for ident, name, old, new, rank in todo:
             target = root / "film-chain" / name
             original = target.read_text()
-            apply(target, old, new, rank)
-            killed = not suites_pass(root)
-            target.write_text(original)
+            try:
+                apply(target, old, new, rank)
+                killed = not suites_pass(root)
+            finally:
+                # Le fichier est remis en état même si le contrôle est interrompu.
+                target.write_text(original)
             print(("tué       " if killed else "SURVIVANT ") + ident, flush=True)
             if not killed:
                 survivors.append(ident)

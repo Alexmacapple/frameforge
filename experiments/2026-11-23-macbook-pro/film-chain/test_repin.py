@@ -26,6 +26,20 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def write_receipt(root, output="media/film.mp4", pins="pins.json"):
+    """Reçu tel que le garde l'écrit après un rendu fait depuis les entrées présentes."""
+    names = json.loads((root / pins).read_text())
+    fresh = {name: sha(root / name) for name in names}
+    (root / (output + ".receipt.json")).write_text(
+        json.dumps(
+            {
+                "output_sha256": sha(root / output),
+                "inputs_sha256": r.inputs_fingerprint(fresh),
+            }
+        )
+    )
+
+
 def make_film(root):
     """Petit dossier de film cohérent : deux entrées figées, une référence, une fiche, un garde."""
     (root / "index.html").write_text("<p>composition</p>\n")
@@ -106,12 +120,58 @@ class RepinTests(unittest.TestCase):
     def test_record_output_writes_the_film_fingerprint_into_the_fiche(self):
         (self.root / "media").mkdir()
         (self.root / "media/film.mp4").write_bytes(b"film")
+        write_receipt(self.root)
         r.record_output(self.root, validate=lambda path: True)
         fiche = json.loads((self.root / "provenance-manifest.json").read_text())
         self.assertEqual(
             fiche["film"]["output_sha256"], sha(self.root / "media/film.mp4")
         )
+        pins = json.loads((self.root / "pins.json").read_text())
+        self.assertEqual(fiche["film"]["inputs_sha256"], r.inputs_fingerprint(pins))
         self.assertEqual(r.stale(self.root), [])
+
+    def snapshot(self):
+        return {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+
+    def refused(self, reason):
+        before = self.snapshot()
+        with self.assertRaisesRegex(ValueError, reason):
+            r.record_output(self.root, validate=lambda path: True)
+        self.assertEqual(before, self.snapshot())
+
+    def rendered_film(self):
+        (self.root / "media").mkdir()
+        (self.root / "media/film.mp4").write_bytes(b"film")
+        write_receipt(self.root)
+
+    def test_record_output_refuses_a_film_without_render_receipt(self):
+        self.rendered_film()
+        (self.root / "media/film.mp4.receipt.json").unlink()
+        self.refused("film sans reçu de rendu")
+
+    def test_record_output_refuses_an_input_changed_after_the_render(self):
+        # Revue ShipGuard, constat r1-z01-001 : entrée modifiée après le rendu, sans nouveau rendu.
+        self.rendered_film()
+        (self.root / "clip.wav").write_bytes(b"autre son")
+        self.refused("les entrées ont changé depuis le rendu")
+
+    def test_refreezing_does_not_launder_an_input_changed_after_the_render(self):
+        self.rendered_film()
+        (self.root / "clip.wav").write_bytes(b"autre son")
+        r.refresh(self.root)
+        self.refused("les entrées ont changé depuis le rendu")
+
+    def test_record_output_refuses_the_receipt_of_another_film(self):
+        self.rendered_film()
+        (self.root / "media/film.mp4").write_bytes(b"autre film")
+        self.refused("le reçu de rendu ne correspond pas à ce film")
+
+    def test_record_output_refuses_an_unreadable_receipt(self):
+        self.rendered_film()
+        for text in ("pas du json", "{}", "[]"):
+            with self.subTest(receipt=text):
+                (self.root / "media/film.mp4.receipt.json").write_text(text)
+                self.refused("reçu de rendu illisible")
 
     def test_record_output_refuses_a_missing_film(self):
         with self.assertRaisesRegex(ValueError, "film absent"):
@@ -128,7 +188,9 @@ class RepinTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "film refusé par le garde"):
             r.record_output(self.root, validate=reject)
-        self.assertEqual(before, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
+        self.assertEqual(
+            before, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+        )
 
     def test_record_output_writes_nothing_when_a_pinned_file_is_missing(self):
         (self.root / "media").mkdir()
@@ -145,11 +207,30 @@ class RepinTests(unittest.TestCase):
         (self.root / "clip.wav").write_bytes(b"autre son")
         (self.root / "media").mkdir()
         (self.root / "media/film.mp4").write_bytes(b"film")
-        before = {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
-        for call in (lambda: r.refresh(self.root), lambda: r.record_output(self.root, validate=lambda path: True)):
+        before = self.snapshot()
+        for call in (
+            lambda: r.refresh(self.root),
+            lambda: r.record_output(self.root, validate=lambda path: True),
+        ):
             with self.assertRaisesRegex(ValueError, "constante introuvable"):
                 call()
-            self.assertEqual(before, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
+            self.assertEqual(
+                before,
+                {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()},
+            )
+
+    def test_guard_without_its_declared_names_is_refused(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text().replace('output="media/film.mp4"', ""))
+        with self.assertRaisesRegex(
+            ValueError, "paramètre introuvable dans render_guarded.py : output"
+        ):
+            r.stale(self.root)
+
+    def test_film_without_guard_file_cannot_be_validated(self):
+        (self.root / "render_guarded.py").unlink()
+        with self.assertRaisesRegex(ValueError, "garde du film introuvable"):
+            r.guard_validator(self.root)
 
     def test_record_output_needs_a_guard_that_can_validate(self):
         (self.root / "media").mkdir()
@@ -173,10 +254,19 @@ class RealGuardTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name)
-        for name in ("film-chain", "ff10-hyperframes-guarded-integration", "ff04-room-booking-film"):
-            shutil.copytree(D.parent / name, root / name,
-                            ignore=shutil.ignore_patterns("__pycache__", ".ruff_cache", "*.webm"))
+        for name in (
+            "film-chain",
+            "ff10-hyperframes-guarded-integration",
+            "ff04-room-booking-film",
+        ):
+            shutil.copytree(
+                D.parent / name,
+                root / name,
+                ignore=shutil.ignore_patterns("__pycache__", ".ruff_cache", "*.webm"),
+            )
         self.film = root / "ff04-room-booking-film"
+        # La copie n'a pas été rendue ici : le reçu dit ce que le garde aurait écrit pour ce film.
+        write_receipt(self.film, "media/room-booking.mp4", "input-pins.json")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -198,8 +288,11 @@ class RealGuardTests(unittest.TestCase):
         r.refresh(self.film)
         check = importlib.import_module("check_manifest")
         fiche = json.loads((self.film / "provenance-manifest.json").read_text())
-        found = {x["check"]: (x["status"], x["detail"]) for x in check.check_data(fiche, self.film)
-                 if x["check"] != "open_check"}
+        found = {
+            x["check"]: (x["status"], x["detail"])
+            for x in check.check_data(fiche, self.film)
+            if x["check"] != "open_check"
+        }
         self.assertEqual(found["approval"][0], "FAIL", found["approval"])
         self.assertIn("les entrées ont changé", found["approval"][1])
 

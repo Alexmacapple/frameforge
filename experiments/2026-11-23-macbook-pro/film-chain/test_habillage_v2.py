@@ -126,14 +126,14 @@ class Version2Checks(V2Film):
     def test_v2_without_title(self):
         self.expect(
             "schema",
-            "film : champs inattendus ou manquants",
+            "film : champs inattendus ou manquants ['title']",
             lambda d: d["film"].pop("title"),
         )
 
     def test_v1_with_title(self):
         self.expect(
             "schema",
-            "film : champs inattendus ou manquants",
+            "film : champs inattendus ou manquants ['capture_zoom', 'title']",
             lambda d: d.update(manifest_version=1),
         )
 
@@ -163,6 +163,29 @@ class Version2Checks(V2Film):
 
         self.expect(
             "composition", "titre incrusté différent de la fiche", files_change=change
+        )
+
+    def test_embedded_title_timing_differs_from_fiche(self):
+        def change(files):
+            files["index.html"] = files["index.html"].replace(
+                'id="title" class="clip" data-start="0.2" data-duration="1.2"',
+                'id="title" class="clip" data-start="0.2" data-duration="9"',
+            )
+
+        self.expect(
+            "composition", "titre incrusté différent de la fiche", files_change=change
+        )
+
+    def test_title_with_markup_characters_is_accepted(self):
+        def change(d):
+            d["film"]["title"] = "Salle & option <vidéo>"
+
+        data = v2_fiche()
+        change(data)
+        files = b.render(data)
+        got = self.details(change, lambda f: f.update(files))
+        self.assertEqual(
+            (got["composition"][0], got["texts"][0]), ("PASS", "PASS"), got
         )
 
     def test_no_room_for_the_title(self):

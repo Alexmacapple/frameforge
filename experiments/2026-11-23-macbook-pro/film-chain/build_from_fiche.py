@@ -9,6 +9,7 @@ présent diffère de ce que la fiche génère. Un chemin de fiche en argument vi
 """
 
 import html
+import importlib
 import json
 import sys
 from pathlib import Path
@@ -39,8 +40,9 @@ TITLE_START, TITLE_END = 0.2, 1.4
 
 
 def number(value):
-    """Écrit 10 et non 10.0, 2.78 et non 2.7800000000000002."""
-    return format(round(float(value), 3), "g")
+    """Écrit 10 et non 10.0, 2.78 et non 2.7800000000000002 : au millième, quelle que soit la taille."""
+    text = f"{round(float(value), 3):.3f}".rstrip("0").rstrip(".")
+    return "0" if text in ("-0", "") else text
 
 
 def clock(seconds, separator):
@@ -65,7 +67,7 @@ def composition(fiche):
         'data-width="1920" data-height="1080">'
     )
     video = (
-        f'<video id="form-capture" class="clip" src="{fiche["capture"]["media_ref"]}" muted playsinline '
+        f'<video id="form-capture" class="clip" src="{html.escape(fiche["capture"]["media_ref"])}" muted playsinline '
         f'data-start="0" data-duration="{duration}" data-track-index="0" style="{capture_style}"></video>'
     )
     lines = [root_open, video]
@@ -78,7 +80,7 @@ def composition(fiche):
     for i, scene in enumerate(fiche["scenes"], 1):
         voice, caption = scene["narration"], scene["caption"]
         lines.append(
-            f'<audio id="voice{i}" src="{voice["audio_ref"]}" data-start="{number(voice["start_s"])}" '
+            f'<audio id="voice{i}" src="{html.escape(voice["audio_ref"])}" data-start="{number(voice["start_s"])}" '
             f'data-duration="{number(voice["duration_s"])}" data-track-index="{i}"></audio>'
         )
         lines.append(
@@ -99,8 +101,45 @@ def subtitles(fiche, separator, numbered):
     return "\n".join(blocks)
 
 
+GENERATED_SUFFIXES = (".html", ".txt", ".srt", ".vtt")
+
+
+def unsafe_targets(fiche):
+    """Noms que la génération ne doit pas écrire : hors du dossier, ou déjà pris par une entrée.
+
+    La fiche choisit le nom des fichiers générés. Sans ce contrôle, une fiche qui nomme la
+    capture comme transcription la ferait réécrire.
+    """
+    film = fiche["film"]
+    targets = [film["composition_ref"], film["transcript_ref"], *film["caption_refs"]]
+    taken = {
+        "provenance-manifest.json",
+        fiche["pins_ref"],
+        fiche["capture"]["media_ref"],
+        fiche["capture"]["events_ref"],
+        fiche["source"]["ref"],
+        film["output_ref"],
+        *[scene["narration"]["audio_ref"] for scene in fiche["scenes"]],
+    }
+    return sorted(
+        {
+            str(name)
+            for name in targets
+            if not isinstance(name, str)
+            or Path(name).is_absolute()
+            or ".." in Path(name).parts
+            or not name.endswith(GENERATED_SUFFIXES)
+            or name in taken
+            or targets.count(name) > 1
+        }
+    )
+
+
 def render(fiche):
     """Contenu de chaque fichier, par nom, tel que la fiche le détermine."""
+    unsafe = unsafe_targets(fiche)
+    if unsafe:
+        raise ValueError("nom de fichier généré refusé : " + ", ".join(unsafe))
     film = fiche["film"]
     files = {
         film["composition_ref"]: composition(fiche),
@@ -131,11 +170,32 @@ def stale_files(fiche, root):
 def main():
     # Sans chemin, la fiche du dossier courant ; avec un chemin, celle du film visé.
     paths = [a for a in sys.argv[1:] if not a.startswith("--")]
+    options = [a for a in sys.argv[1:] if a.startswith("--")]
+    # Une option mal tapée ne doit pas devenir « écrire » : elle est refusée.
+    if len(paths) > 1 or any(a != "--check" for a in options):
+        print(
+            json.dumps(
+                {
+                    "status": "BLOCKED",
+                    "reason": "usage : [--check] [chemin de la fiche]",
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 2
     path = (
         Path(paths[0]).resolve() if paths else Path.cwd() / "provenance-manifest.json"
     )
-    fiche, root = json.loads(path.read_text()), path.parent
-    stale = stale_files(fiche, root)
+    try:
+        fiche, root = json.loads(path.read_text()), path.parent
+        # Chargé ici : check_manifest importe ce module pour ses constantes.
+        problems = importlib.import_module("check_manifest").schema_problems(fiche)
+        if problems:
+            raise ValueError("fiche refusée par son schéma : " + " ; ".join(problems))
+        stale = stale_files(fiche, root)
+    except (OSError, ValueError) as exc:
+        print(json.dumps({"status": "BLOCKED", "reason": str(exc)}, ensure_ascii=False))
+        return 2
     if "--check" in sys.argv[1:]:
         print(json.dumps({"status": "FAIL" if stale else "PASS", "stale": stale}))
         return 1 if stale else 0

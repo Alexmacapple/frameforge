@@ -10,6 +10,9 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `repin.py` : refige les empreintes d'un film après un changement voulu. `--check` n'écrit rien.
 - `capture_lib.cjs` : navigateur, pointeur visible, horloge, journal et conversion des captures.
 - `test_repin.py` : tests de `repin.py`.
+- `test_guard_main.py` : verdict, code de sortie et reçu de rendu du garde, sans média.
+- `test_interruption.py` : l'arrêt d'un rendu ne laisse aucun processus en vie.
+- `test_review_findings.py` : un test par constat corrigé de la revue du 23 novembre, sur une copie du film de réservation.
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
@@ -29,7 +32,7 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 4. Écrire `capture.cjs` et capturer.
 5. Écrire le fichier d'empreintes et le `render_guarded.py` du film, puis `python3 repin.py DOSSIER`.
 6. Rendre un brouillon témoin, le qualifier, écrire la référence de sortie, refiger.
-7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
+7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Le garde écrit un reçu à côté du film (`…mp4.receipt.json`, non versionné) : `--record-output` refuse un film sans reçu, ou dont une entrée a changé depuis le rendu. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 
 ## Pièges constatés
