@@ -37,6 +37,26 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Le garde écrit un reçu à côté du film (`…mp4.receipt.json`, non versionné) : `--record-output` refuse un film sans reçu, ou dont une entrée a changé depuis le rendu. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 
+## Installer la voix de synthèse
+
+Les clips de narration sont produits par Kokoro 0.9.4, voix `ff_siwis`, sur ce Mac et sans service distant. L'environnement Python n'est pas versionné ; il se reconstruit depuis `voice-requirements.txt`, qui fige 94 paquets avec leurs empreintes. Depuis la racine du dépôt :
+
+```bash
+uv venv .venv-voice --python 3.12
+uv pip install --python .venv-voice/bin/python --require-hashes -r experiments/2026-11-23-macbook-pro/film-chain/voice-requirements.txt
+```
+
+Puis, pour synthétiser les phrases d'un film qui a son `synthesize_kokoro.py` :
+
+```bash
+HF_HUB_OFFLINE=1 .venv-voice/bin/python CHEMIN_DU_FILM/synthesize_kokoro.py
+```
+
+- `.venv-voice/` pèse environ 900 Mo et n'est pas suivi par Git. Jusqu'au 24 novembre 2026, l'environnement était dans `/tmp`, que macOS vide.
+- Le modèle (`hexgrad/Kokoro-82M`) est lu dans le cache local de Hugging Face. Sur une machine neuve, lancer une première fois sans `HF_HUB_OFFLINE=1` pour le télécharger.
+- `voice-requirements.txt` est figé pour Python 3.12 sur macOS Apple Silicon (macOS 14 ou plus récent, exigence de `torch`).
+- Vérifié le 24 novembre 2026 en resynthétisant hors film les trois phrases de la réservation : deux clips sur trois ressortent identiques à l'octet aux clips approuvés, le premier diffère, comme avant la réinstallation. Un clip approuvé ne se resynthétise donc pas : il se conserve.
+
 ## Pièges constatés
 
 - **Les médias figés n'existent qu'en un exemplaire local.** Une capture, un clip ou un film n'est pas versionné : l'écraser, c'est perdre le film approuvé. `capture_lib.cjs` refuse d'écraser une capture existante ; pour un essai, définir `FF_CAPTURE_OUT`. Une copie des médias des trois films approuvés est conservée hors dépôt, sur le même Mac, dans `~/Claude-worktrees/frameforge-medias-approuves/`, avec ses empreintes ; elle est à refaire après chaque nouvelle approbation.
