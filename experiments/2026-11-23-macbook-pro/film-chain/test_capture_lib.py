@@ -154,5 +154,75 @@ class CaptureDepositTests(unittest.TestCase):
         self.assertEqual(self.left_in_film(), [])
 
 
+WAITING_PAGE = """<!doctype html><html lang="fr"><meta charset="utf-8"><title>attente</title>
+<button id="go">Envoyer</button><p id="result"></p>
+<script>
+window.stamps = {};
+document.getElementById('go').addEventListener('click', () => {
+  setTimeout(() => {
+    document.getElementById('result').textContent = 'fait';
+    document.getElementById('result').classList.add('confirmed');
+    window.stamps.done = Date.now();
+  }, 1000);
+});
+</script></html>
+"""
+
+WAITING_DRIVER = """
+const { record } = require(process.argv[2]);
+record({
+  filmDir: process.argv[3],
+  url: 'file://' + process.argv[4],
+  durationS: 2,
+  mediaRef: 'capture.mp4',
+  eventsRef: 'capture-events.json',
+  play: async ({ page, appear }) => {
+    await page.click('#go');
+    await appear('#result.confirmed');
+    const seen = Date.now();
+    const done = await page.evaluate(() => window.stamps.done);
+    return { observed: { result: await page.locator('#result').innerText() }, late_ms: seen - done };
+  },
+});
+"""
+
+REAL_PLAYWRIGHT = Path(
+    os.environ.get("FF_PLAYWRIGHT")
+    or Path.home() / ".local/share/shipguard-runtime/node_modules/playwright"
+)
+
+
+@unittest.skipUnless(
+    shutil.which("node") and shutil.which("ffmpeg") and REAL_PLAYWRIGHT.is_dir(),
+    "node, ffmpeg et Playwright requis",
+)
+class AwaitedResultTests(unittest.TestCase):
+    """Vrai navigateur : la date d'un résultat attendu est celle de son apparition."""
+
+    def test_awaited_result_is_dated_within_a_few_frames_of_the_page(self):
+        # locator.waitFor espace ses essais jusqu'à une demi-seconde : mesuré de 290 à 490 ms de
+        # retard sur cette même page. appear vérifie à chaque image.
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        (root / "page.html").write_text(WAITING_PAGE)
+        (root / "drive.cjs").write_text(WAITING_DRIVER)
+        (root / "film").mkdir()
+        done = subprocess.run(
+            ["node", root / "drive.cjs", CHAIN / "capture_lib.cjs"]
+            + [root / "film", root / "page.html"],
+            env={"PATH": os.environ["PATH"], "FF_PLAYWRIGHT": str(REAL_PLAYWRIGHT)},
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        self.assertEqual(done.returncode, 0, done.stderr)
+        journal = json.loads((root / "film" / "capture-events.json").read_text())
+        self.assertEqual(journal["observed"], {"result": "fait"})
+        self.assertGreaterEqual(journal["late_ms"], 0)
+        self.assertLess(journal["late_ms"], 100)
+
+
 if __name__ == "__main__":
     unittest.main()

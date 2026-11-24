@@ -34,9 +34,10 @@ const POINTER = `
 const taken = (file) => fs.lstatSync(file, { throwIfNoEntry: false }) !== undefined;
 
 // record({ filmDir, url, durationS, mediaRef, eventsRef, play })
-//   play({ page, at, glide, clickHere, mark }) joue les gestes du film et rend les champs à
-//   ajouter au journal (au moins observed). at(s) attend l'instant s du film ; glide(point, ms)
-//   déplace le pointeur ; clickHere(ms) clique là où il se trouve ; mark(nom) horodate.
+//   play({ page, at, glide, clickHere, mark, appear }) joue les gestes du film et rend les champs
+//   à ajouter au journal (au moins observed). at(s) attend l'instant s du film ; glide(point, ms)
+//   déplace le pointeur ; clickHere(ms) clique là où il se trouve ; mark(nom) horodate ;
+//   appear(sélecteur) attend qu'un élément soit affiché, à une image près.
 async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
   const outDir = process.env.FF_CAPTURE_OUT || filmDir;
   // La capture d'un film est figée par empreinte et n'existe qu'en un exemplaire local :
@@ -84,11 +85,18 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
       pos = dest;
     };
     const clickHere = (delay) => page.mouse.click(pos.x, pos.y, { delay });
+    // Pour dater un résultat qui se fait attendre : la page est relue à chaque image affichée.
+    // locator.waitFor espace ses essais jusqu'à une demi-seconde, et mark() daterait alors le
+    // résultat de 0,3 à 0,5 s trop tard (mesuré le 24 novembre 2026, Playwright 1.64.1).
+    const appear = (selector) => page.waitForFunction((sel) => {
+      const el = document.querySelector(sel);
+      return Boolean(el) && el.getClientRects().length > 0;
+    }, selector);
 
     await page.goto(url);
     mark('page_loaded');
     await page.mouse.move(pos.x, pos.y);
-    const extra = await play({ page, at, glide, clickHere, mark });
+    const extra = await play({ page, at, glide, clickHere, mark, appear });
     // Le journal sert de preuve des résultats : sans observations, il ne prouve rien.
     if (!extra || typeof extra.observed !== 'object' || extra.observed === null) {
       throw new Error('play() doit rendre un objet avec le champ observed');
