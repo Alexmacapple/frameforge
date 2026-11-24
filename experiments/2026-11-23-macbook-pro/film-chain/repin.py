@@ -44,30 +44,41 @@ def settings(film):
         tree = ast.parse((film / "render_guarded.py").read_text())
     except SyntaxError as exc:
         raise ValueError("render_guarded.py illisible : " + str(exc)) from exc
-    # Seuls les arguments nommés d'un appel comptent : un commentaire ou une chaîne qui
-    # contiendrait « pins_ref="…" » ne désigne rien.
-    found = {key: [] for key in ("pins_ref", "reference_ref", "output")}
-    for node in ast.walk(tree):
-        for keyword in node.keywords if isinstance(node, ast.Call) else ():
-            value = keyword.value
-            if (
-                keyword.arg in found
-                and isinstance(value, ast.Constant)
-                and isinstance(value.value, str)
-            ):
-                found[keyword.arg].append(value.value)
-    for problem, wrong in (
-        ("introuvable", [key for key, values in found.items() if not values]),
-        (
-            "déclaré plusieurs fois",
-            [k for k, values in found.items() if len(values) > 1],
-        ),
-    ):
-        if wrong:
-            raise ValueError(
-                f"paramètre {problem} dans render_guarded.py : " + ", ".join(wrong)
-            )
-    return {key: values[0] for key, values in found.items()}
+    # Seul l'appel qui construit GUARD désigne les fichiers du film : un commentaire, une chaîne
+    # ou un autre appel qui porterait « pins_ref="…" » ne désigne rien.
+    guards = [
+        node.value
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "GUARD" for t in node.targets)
+    ]
+    if not guards:
+        raise ValueError("GUARD introuvable dans render_guarded.py")
+    if len(guards) > 1:
+        raise ValueError("GUARD déclaré plusieurs fois dans render_guarded.py")
+    keywords = {
+        k.arg: k.value for k in getattr(guards[0], "keywords", ()) if k.arg is not None
+    }
+    wanted = ("pins_ref", "reference_ref", "output")
+    missing = [key for key in wanted if key not in keywords]
+    if missing:
+        raise ValueError(
+            "paramètre introuvable dans render_guarded.py : " + ", ".join(missing)
+        )
+    # Un nom passé par une variable ne se lit pas sans exécuter le garde : il est refusé plutôt
+    # que deviné.
+    indirect = [
+        key
+        for key in wanted
+        if not isinstance(keywords[key], ast.Constant)
+        or not isinstance(keywords[key].value, str)
+    ]
+    if indirect:
+        raise ValueError(
+            "paramètre qui n'est pas un texte écrit en clair dans render_guarded.py : "
+            + ", ".join(indirect)
+        )
+    return {key: keywords[key].value for key in wanted}
 
 
 def expected(film, pins_text=None):

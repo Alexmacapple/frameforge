@@ -43,6 +43,14 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
   // La capture d'un film est figée par empreinte et n'existe qu'en un exemplaire local :
   // on ne l'écrase jamais. Pour une nouvelle prise, la retirer d'abord ou viser un autre dossier.
   for (const ref of [mediaRef, eventsRef]) {
+    // Un nom de dépôt reste dans le dossier visé : ni chemin absolu, ni « .. », ni sous-dossier
+    // qui serait un lien vers ailleurs.
+    const parts = typeof ref === 'string' ? ref.split(/[\\/]/) : [];
+    const through = parts.slice(0, -1).map((_, i) => path.join(outDir, ...parts.slice(0, i + 1)));
+    if (!parts.length || path.isAbsolute(ref) || parts.includes('..')
+      || through.some((dir) => taken(dir) && fs.lstatSync(dir).isSymbolicLink())) {
+      throw new Error(`nom de dépôt hors du dossier de la capture, refusé : ${ref}`);
+    }
     if (taken(path.join(outDir, ref))) {
       throw new Error(`capture existante, non écrasée : ${path.join(outDir, ref)} (définir FF_CAPTURE_OUT)`);
     }

@@ -14,6 +14,7 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `test_guard_main.py` : verdict, code de sortie et reçu de rendu du garde, sans média.
 - `test_interruption.py` : l'arrêt d'un rendu ne laisse aucun processus en vie.
 - `test_review_findings.py` : un test par constat corrigé de la revue du 23 novembre, sur une copie du film de réservation.
+- `test_codex_findings.py` : un test par constat de la revue indépendante de Codex du 24 novembre (générateur qui écrasait une entrée, nom contenant `&`, mutants illisibles).
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
@@ -43,4 +44,6 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 - **Une nouvelle synthèse de voix peut donner un autre son**, même avec une graine fixe. Elle demande une nouvelle écoute.
 - **Un résultat qui se fait attendre se date avec `appear`, pas avec `locator.waitFor`.** L'attente de Playwright espace ses essais jusqu'à une demi-seconde : le journal datait le résultat de 0,3 à 0,5 s trop tard. `appear(sélecteur)`, fourni à `play`, relit la page à chaque image. Un résultat qui suit aussitôt un clic n'est pas concerné.
 - **Un film approuvé sans journal de capture lisible est en échec.** Pour un brouillon, c'est un manque (UNVERIFIED) ; dès que la fiche dit `REVIEWED` ou `APPROVED_FOR_RELEASE`, c'est un FAIL du contrôle `statuses` : rien ne prouve ce que le film dit avoir observé. Décision du 24 novembre 2026 (issue 15). Le film V5 (`ff10-web-workflow-entrypoint/local`), approuvé à l'écoute avec un journal dans un autre format, est dans ce cas : sa fiche répond FAIL tant que sa capture n'est pas refaite avec `capture_lib.cjs`.
+- **Le garde d'un film nomme ses fichiers en clair.** `repin.py` lit `pins_ref`, `reference_ref` et `output` dans l'appel qui construit `GUARD`, sans exécuter le fichier : un nom passé par une variable est refusé.
+- **Rien n'est écrit à travers un lien symbolique.** Le générateur et la capture refusent un fichier ou un sous-dossier qui est un lien, et un nom qui sort du dossier du film.
 - **Aucun contrôle automatique ne voit un pointeur qui masque un résultat.** Regarder une planche d'images de la capture.
