@@ -49,8 +49,17 @@ def settings(film):
     guards = [
         node.value
         for node in tree.body
-        if isinstance(node, ast.Assign)
-        and any(isinstance(t, ast.Name) and t.id == "GUARD" for t in node.targets)
+        if (
+            isinstance(node, ast.Assign)
+            and any(isinstance(t, ast.Name) and t.id == "GUARD" for t in node.targets)
+        )
+        # « GUARD: FilmGuard = … » est une affectation comme une autre.
+        or (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "GUARD"
+            and node.value is not None
+        )
     ]
     if not guards:
         raise ValueError("GUARD introuvable dans render_guarded.py")

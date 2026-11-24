@@ -270,6 +270,32 @@ class RepinTests(unittest.TestCase):
             r.refresh(self.root)
         self.assertEqual((self.root / "autre.json").read_bytes(), before)
 
+    def test_name_missing_from_guard_is_not_taken_from_another_call(self):
+        # Seconde revue de Codex, constat 10 : ce cas n'était exercé par aucun test.
+        guard = self.root / "render_guarded.py"
+        guard.write_text(
+            guard.read_text().replace(', output="media/film.mp4"', "")
+            + 'OTHER = dict(output="ailleurs/film.mp4")\n'
+        )
+        with self.assertRaisesRegex(
+            ValueError, "paramètre introuvable dans render_guarded.py : output"
+        ):
+            r.settings(self.root)
+
+    def test_annotated_guard_is_read_like_any_other(self):
+        # Constats 7 et 12 : « GUARD: dict = dict(…) » est une affectation comme une autre.
+        guard = self.root / "render_guarded.py"
+        declared = r.settings(self.root)
+        guard.write_text(
+            guard.read_text().replace("GUARD = dict(", "GUARD: dict = dict(")
+        )
+        self.assertEqual(r.settings(self.root), declared)
+        guard.write_text(
+            guard.read_text() + 'GUARD: dict = dict(pins_ref="autre.json")\n'
+        )
+        with self.assertRaisesRegex(ValueError, "GUARD déclaré plusieurs fois"):
+            r.settings(self.root)
+
     def test_guard_assigned_twice_is_refused(self):
         guard = self.root / "render_guarded.py"
         guard.write_text(guard.read_text() + 'GUARD = dict(pins_ref="autre.json")\n')

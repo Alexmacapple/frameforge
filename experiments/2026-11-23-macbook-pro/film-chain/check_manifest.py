@@ -59,12 +59,12 @@ FIELDS = {
 }
 CUE_TIME = re.compile(r"(\d+):(\d+):(\d+)[,.](\d+) --> (\d+):(\d+):(\d+)[,.](\d+)")
 AUDIO = re.compile(
-    r'<audio[^>]*src="([^"]+)"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"'
+    r'<audio[^>]*\ssrc="([^"]+)"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"'
 )
 TITLE = re.compile(
     r'<div id="title"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
-VIDEO = re.compile(r'<video[^>]*src="([^"]+)"')
+VIDEO = re.compile(r'<video[^>]*\ssrc="([^"]+)"')
 CAPTION = re.compile(
     r'<div id="caption\d+"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
@@ -139,7 +139,10 @@ def is_ref(value):
     if not isinstance(value, str) or not value or value != value.strip():
         return False
     path = PurePosixPath(value)
-    return not path.is_absolute() and ".." not in path.parts
+    # « # » et « ? » couperaient le nom dès qu'il est écrit comme adresse dans la composition.
+    return (
+        not path.is_absolute() and ".." not in path.parts and not set(value) & set("#?")
+    )
 
 
 def is_sha(value):
@@ -430,10 +433,14 @@ def check_data(data, root, events=None):
         previous_end = end
     verdict("timeline", problems)
 
-    if events is None and data["capture"]["events_ref"] is not None:
-        events = json.loads((root / data["capture"]["events_ref"]).read_text())
-    # Un journal de forme inattendue n'est pas lu : il est signalé, et rien n'est tenu pour observé.
+    # Un journal absent, illisible ou de forme inattendue n'est pas lu : il est signalé, et rien
+    # n'est tenu pour observé.
     journal = []
+    if events is None and data["capture"]["events_ref"] is not None:
+        try:
+            events = json.loads((root / data["capture"]["events_ref"]).read_text())
+        except (OSError, ValueError):
+            journal = ["journal de capture absent ou illisible"]
     if events is not None and not journal_is_readable(events):
         journal, events = ["journal de capture de forme inattendue"], None
     times = {e["name"]: e["script_s"] for e in events["events"]} if events else {}
@@ -506,11 +513,17 @@ def check_data(data, root, events=None):
     # Sans journal lisible, des scènes qui se disent observées ne sont pas vérifiées. Pour un
     # brouillon c'est un manque ; pour un film approuvé c'est un échec (décision du 24 novembre
     # 2026, issue 15) : l'approbation s'appuie sur ce que le film dit avoir observé.
-    claimed = [s["scene_id"] for s in scenes if s["evidence_status"] == "observed"]
+    # Un journal lisible qui ne dit rien d'une scène ne la prouve pas davantage.
+    claimed = [
+        s["scene_id"]
+        for s in scenes
+        if s["evidence_status"] == "observed"
+        and (events is None or s["result"]["observed_key"] not in events["observed"])
+    ]
     unproven = (
         "scènes déclarées observées sans journal de capture lisible : "
         + ", ".join(claimed)
-        if events is None and claimed
+        if claimed
         else ""
     )
     if unproven and status in ("REVIEWED", "APPROVED_FOR_RELEASE"):
