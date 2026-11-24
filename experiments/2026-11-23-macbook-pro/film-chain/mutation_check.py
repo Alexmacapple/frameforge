@@ -141,7 +141,8 @@ def apply(path, old, new, rank):
         # Un mutant qui ne se compile pas fait échouer les tests à l'import : il serait compté
         # comme vu alors qu'aucun test n'a exercé le contrôle retiré.
         try:
-            ast.parse(mutated)
+            # compile, pas seulement ast.parse : un « break » hors boucle s'analyse sans se compiler.
+            compile(mutated, path.name, "exec")
         except SyntaxError as exc:
             raise ValueError(f"mutant illisible dans {path.name} : {exc}") from exc
     path.write_text(mutated)
@@ -165,8 +166,14 @@ def without_cause(text, at):
             and node.cause is not None
             and offset(node.lineno, node.col_offset) == at
         ):
-            end = offset(node.exc.end_lineno, node.exc.end_col_offset)
-            return text[:end] + text[offset(node.end_lineno, node.end_col_offset) :]
+            # De « from » à la fin de l'instruction ; ce qui précède, parenthèses comprises, reste.
+            exc_end = offset(node.exc.end_lineno, node.exc.end_col_offset)
+            cause = offset(node.cause.lineno, node.cause.col_offset)
+            start = text.rindex("from", exc_end, cause)
+            return (
+                text[:start].rstrip(" \t")
+                + text[offset(node.end_lineno, node.end_col_offset) :]
+            )
     return text
 
 

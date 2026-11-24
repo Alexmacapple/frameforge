@@ -13,6 +13,7 @@ import importlib
 import json
 import os
 import sys
+import unicodedata
 from pathlib import Path
 
 HEAD = (
@@ -143,7 +144,42 @@ def unsafe_targets(fiche):
 
 def same_file_key(name):
     """Forme unique d'un nom de fichier, pour reconnaître deux écritures du même fichier."""
-    return os.path.normpath(name).casefold() if isinstance(name, str) else name
+    if not isinstance(name, str):
+        return name
+    # Un accent s'écrit en un caractère ou en deux : macOS y voit le même fichier.
+    return unicodedata.normalize("NFC", os.path.normpath(name)).casefold()
+
+
+def kept_files(fiche, root, path):
+    """Fichiers du film que la génération ne doit jamais réécrire, quel que soit leur nom.
+
+    La fiche elle-même, le fichier d'empreintes, les médias, la source et le document
+    d'approbation. Les fichiers générés sont eux aussi figés par empreinte : le fichier
+    d'empreintes ne dit donc pas, à lui seul, ce qui est à conserver.
+    """
+    film = fiche["film"]
+    names = [
+        fiche["pins_ref"],
+        fiche["capture"]["media_ref"],
+        fiche["capture"]["events_ref"],
+        fiche["source"]["ref"],
+        film["output_ref"],
+        (film.get("approval") or {}).get("ref"),
+        *[scene["narration"]["audio_ref"] for scene in fiche["scenes"]],
+    ]
+    return [Path(path)] + [Path(root) / name for name in names if isinstance(name, str)]
+
+
+def overwrites_kept_file(root, name, kept):
+    """Vrai si écrire ce nom réécrirait un fichier à conserver, y compris par un lien."""
+    target = Path(root) / name
+    for other in kept:
+        if target.resolve() == other.resolve():
+            return True
+        # Un lien physique donne deux noms au même fichier.
+        if target.exists() and other.exists() and os.path.samefile(target, other):
+            return True
+    return False
 
 
 def through_link(root, name):
@@ -218,6 +254,13 @@ def main():
             raise ValueError(
                 "fichier généré qui passe par un lien, rien n'est écrit : "
                 + ", ".join(linked)
+            )
+        kept = kept_files(fiche, root, path)
+        lost = [name for name in stale if overwrites_kept_file(root, name, kept)]
+        if lost and "--check" not in options:
+            raise ValueError(
+                "la génération réécrirait un fichier du film à conserver, rien n'est écrit : "
+                + ", ".join(lost)
             )
     except (OSError, ValueError) as exc:
         print(json.dumps({"status": "BLOCKED", "reason": str(exc)}, ensure_ascii=False))

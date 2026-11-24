@@ -183,6 +183,12 @@ class CaptureDepositTests(unittest.TestCase):
                 self.assertEqual(list(self.outside.iterdir()), [])
                 self.assertEqual(self.left_in_film(), [])
 
+    def test_backslash_is_an_ordinary_character_in_a_name(self):
+        # Seconde revue de Codex, constat 12 : sur macOS et Linux, « \\ » n'est pas un séparateur.
+        done = self.capture("prise\\..\\capture.mp4")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn("prise\\..\\capture.mp4", self.left_in_film())
+
     def test_reference_in_a_real_subfolder_is_deposited(self):
         (self.film / "prises").mkdir()
         done = self.capture("prises/capture.mp4", "prises/journal.json")

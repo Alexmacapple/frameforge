@@ -37,6 +37,17 @@ Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fi
 7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Le garde écrit un reçu à côté du film (`…mp4.receipt.json`, non versionné) : `--record-output` refuse un film sans reçu, ou dont une entrée a changé depuis le rendu. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 
+## Limites connues
+
+Ces outils rattrapent des erreurs de manipulation. Ils ne résistent pas à quelqu'un qui prépare délibérément le terrain sur la machine. Décision d'Alex du 24 novembre 2026, après la seconde revue indépendante (issue 15) : les cas suivants sont connus et ne sont pas corrigés.
+
+- **Fichier modifié entre deux lectures.** Si le fichier d'empreintes change entre le relevé du garde et son précontrôle, le reçu peut décrire d'autres entrées que celles contrôlées.
+- **Processus qui s'échappe.** Un descendant du rendu qui change de session et efface le jeton de son environnement survit à l'arrêt du rendu.
+- **Dossier remplacé pendant l'écriture.** Un sous-dossier ordinaire au moment du contrôle, remplacé par un lien avant l'écriture, redirige la génération ou la capture.
+- **Cible de génération qui est une entrée figée.** Les fichiers générés sont eux-mêmes figés par empreinte : une fiche qui nomme comme transcription un autre fichier figé le fait réécrire, sauf s'il s'agit de la fiche, du fichier d'empreintes, d'un média, de la source ou du document d'approbation.
+
+Deux refus sont volontaires : le générateur n'accepte qu'un nom écrit sous sa forme simple (`sortie.txt`, pas `./sortie.txt`), et `repin.py` n'accepte que des noms écrits en clair dans l'appel qui construit `GUARD`.
+
 ## Installer la voix de synthèse
 
 Les clips de narration sont produits par Kokoro 0.9.4, voix `ff_siwis`, sur ce Mac et sans service distant. L'environnement Python n'est pas versionné ; il se reconstruit depuis `voice-requirements.txt`, qui fige 94 paquets avec leurs empreintes. Depuis la racine du dépôt :
@@ -66,4 +77,5 @@ HF_HUB_OFFLINE=1 .venv-voice/bin/python CHEMIN_DU_FILM/synthesize_kokoro.py
 - **Un film approuvé sans journal de capture lisible est en échec.** Pour un brouillon, c'est un manque (UNVERIFIED) ; dès que la fiche dit `REVIEWED` ou `APPROVED_FOR_RELEASE`, c'est un FAIL du contrôle `statuses` : rien ne prouve ce que le film dit avoir observé. Décision du 24 novembre 2026 (issue 15). Le film V5 (`ff10-web-workflow-entrypoint/local`), approuvé à l'écoute avec un journal dans un autre format, est dans ce cas : sa fiche répond FAIL tant que sa capture n'est pas refaite avec `capture_lib.cjs`.
 - **Le garde d'un film nomme ses fichiers en clair.** `repin.py` lit `pins_ref`, `reference_ref` et `output` dans l'appel qui construit `GUARD`, sans exécuter le fichier : un nom passé par une variable est refusé.
 - **Rien n'est écrit à travers un lien symbolique.** Le générateur et la capture refusent un fichier ou un sous-dossier qui est un lien, et un nom qui sort du dossier du film.
+- **Un film présent sans son reçu de rendu bloque le rendu suivant.** Cela arrive si le rendu est arrêté entre le dépôt du film et l'écriture du reçu. Le garde répond `…_output_without_receipt` : déplacer le film ailleurs, puis rendre de nouveau.
 - **Aucun contrôle automatique ne voit un pointeur qui masque un résultat.** Regarder une planche d'images de la capture.

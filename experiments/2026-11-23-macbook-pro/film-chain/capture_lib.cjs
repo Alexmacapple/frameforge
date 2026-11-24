@@ -45,7 +45,9 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
   for (const ref of [mediaRef, eventsRef]) {
     // Un nom de dépôt reste dans le dossier visé : ni chemin absolu, ni « .. », ni sous-dossier
     // qui serait un lien vers ailleurs.
-    const parts = typeof ref === 'string' ? ref.split(/[\\/]/) : [];
+    // Seul le séparateur du système découpe un nom : sous macOS et Linux, « \\ » est un caractère
+    // ordinaire.
+    const parts = typeof ref === 'string' ? ref.split(path.sep === '/' ? '/' : /[\\/]/) : [];
     const through = parts.slice(0, -1).map((_, i) => path.join(outDir, ...parts.slice(0, i + 1)));
     if (!parts.length || path.isAbsolute(ref) || parts.includes('..')
       || through.some((dir) => taken(dir) && fs.lstatSync(dir).isSymbolicLink())) {

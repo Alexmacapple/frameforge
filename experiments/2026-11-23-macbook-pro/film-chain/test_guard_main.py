@@ -53,7 +53,7 @@ class GuardCase(unittest.TestCase):
         return code, json.loads(out.getvalue())
 
     def deposit(self, args, **kwargs):
-        args.output.parent.mkdir(parents=True)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(b"film rendu")
         return {"status": "PASS", "output": str(args.output)}
 
@@ -70,6 +70,55 @@ class MainTests(GuardCase):
                 "inputs_sha256": check.inputs_fingerprint(self.pins),
             },
         )
+
+    def test_launcher_receives_the_validator_of_the_film(self):
+        # Seconde revue de Codex, constat 10 : le garde pouvait ne plus transmettre son
+        # validateur sans qu'un test échoue, et le lanceur déposait alors un film non validé.
+        seen = {}
+
+        def render(args, **kwargs):
+            seen.update(kwargs)
+            return self.deposit(args)
+
+        def validator(path):
+            return True
+
+        out = io.StringIO()
+        with (
+            mock.patch.object(film_guard.wrapper, "run", side_effect=render),
+            contextlib.redirect_stdout(out),
+        ):
+            self.guard.main(lambda *a: True, validator)
+        self.assertIs(seen["output_validator"], validator)
+
+    def test_receipt_is_not_written_through_a_link(self):
+        # Constat 1 : un lien posé au nom temporaire du reçu faisait remplacer le film validé
+        # par le texte du reçu, avec un verdict PASS.
+        receipt = film_guard.receipt_path(self.guard.output)
+        receipt.parent.mkdir(parents=True)
+        for trap in (receipt.with_name(receipt.name + ".partial"), receipt):
+            trap.symlink_to(self.guard.output)
+        code, said = self.run_main(self.deposit)
+        self.assertEqual((code, said["status"]), (0, "PASS"))
+        self.assertEqual(self.guard.output.read_bytes(), b"film rendu")
+        self.assertFalse(receipt.is_symlink())
+        self.assertEqual(
+            json.loads(receipt.read_text())["output_sha256"],
+            film_guard.sha(self.guard.output),
+        )
+
+    def test_film_left_without_receipt_is_named_before_any_render(self):
+        # Constat 3 : après une interruption entre le dépôt du film et l'écriture du reçu, la
+        # relance répondait seulement « output_already_exists ».
+        self.guard.output.parent.mkdir(parents=True)
+        self.guard.output.write_bytes(b"film sans recu")
+        render = mock.Mock(side_effect=self.deposit)
+        code, said = self.run_main(render)
+        self.assertEqual((code, said["status"]), (2, "BLOCKED_OR_INTERRUPTED"))
+        self.assertIn("film_output_without_receipt", said["reason"])
+        self.assertIn("le déplacer ailleurs", said["reason"])
+        render.assert_not_called()
+        self.assertEqual(self.guard.output.read_bytes(), b"film sans recu")
 
     def test_refused_render_reports_blocked_code_2_and_writes_no_receipt(self):
         refusals = (

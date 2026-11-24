@@ -14,8 +14,10 @@ de sortie partagent les mêmes références et se lisent ensemble.
 import hashlib
 import importlib
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -87,14 +89,23 @@ def receipt_path(output):
 def write_receipt(output, inputs_sha256):
     """Écrit le reçu en une fois : un reçu à moitié écrit ne doit pas pouvoir être lu."""
     target = receipt_path(output)
-    partial = target.with_name(target.name + ".partial")
-    partial.write_text(
+    text = (
         json.dumps(
             {"output_sha256": sha(output), "inputs_sha256": inputs_sha256}, indent=2
         )
         + "\n"
     )
-    partial.replace(target)
+    # Fichier temporaire neuf, au nom imprévisible : un lien posé d'avance à un nom connu ferait
+    # écrire le reçu ailleurs, jusque dans le film lui-même.
+    handle, partial = tempfile.mkstemp(dir=target.parent, prefix=target.name + ".")
+    try:
+        with os.fdopen(handle, "w") as stream:
+            stream.write(text)
+        # Le remplacement porte sur le nom : un lien au nom du reçu est remplacé, pas suivi.
+        os.replace(partial, target)
+    except BaseException:
+        Path(partial).unlink(missing_ok=True)
+        raise
 
 
 REFERENCE_KEYS = (
@@ -126,8 +137,10 @@ class FilmGuard:
         self.output = self.root / output
         self.pin_manifest, self.pin_html, self.pin_reference = pins
 
-    def refuse(self, reason):
-        return ValueError(f"{self.prefix}_{reason}")
+    def refuse(self, reason, detail=""):
+        return ValueError(
+            f"{self.prefix}_{reason}" + (f" : {detail}" if detail else "")
+        )
 
     def load_fiche(self):
         return json.loads((self.root / "provenance-manifest.json").read_text())
@@ -298,6 +311,14 @@ class FilmGuard:
             output=self.output,
         )
         try:
+            # Un film présent sans son reçu vient d'un rendu arrêté entre le dépôt et le reçu :
+            # le dire, plutôt que laisser le lanceur répondre seulement que le film existe.
+            if self.output.exists() and not receipt_path(self.output).is_file():
+                raise self.refuse(
+                    "output_without_receipt",
+                    "film présent sans reçu de rendu (rendu interrompu ?) : "
+                    "le déplacer ailleurs, puis rendre de nouveau",
+                )
             # Relevé avant le rendu : le précontrôle refuse si ce fichier ou une entrée a changé.
             inputs = fiche_check.inputs_fingerprint(
                 json.loads((self.root / self.pins_ref).read_text())

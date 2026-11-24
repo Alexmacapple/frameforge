@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import tempfile
+import unicodedata
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -135,6 +136,145 @@ class MutantTests(unittest.TestCase):
             target.write_text("def f():\n    return (1)\n")
             with self.assertRaisesRegex(ValueError, "mutant illisible"):
                 mutation_check.apply(target, "return (1)", "return (1", 0)
+
+
+class SecondReviewGenerationTests(GenerationWriteTests):
+    """Seconde revue de Codex (24 novembre 2026), constat 2 : fichiers encore écrasés."""
+
+    def test_two_unicode_spellings_of_a_name_are_the_same_file(self):
+        # « é » en un caractère dans la fiche, en deux dans le nom à générer : même fichier sur
+        # un disque macOS.
+        data = self.fiche()
+        data["capture"]["events_ref"] = unicodedata.normalize("NFC", "relevé.txt")
+        data["film"]["transcript_ref"] = unicodedata.normalize("NFD", "relevé.txt")
+        with self.assertRaisesRegex(ValueError, "nom de fichier généré refusé"):
+            b.render(data)
+
+    def test_other_spelling_on_the_side_of_the_input_is_seen(self):
+        data = self.fiche()
+        data["source"]["ref"] = "./" + data["source"]["ref"]
+        data["film"]["composition_ref"] = self.fiche()["source"]["ref"]
+        with self.assertRaisesRegex(ValueError, "nom de fichier généré refusé"):
+            b.render(data)
+
+    def test_two_generated_files_differing_by_case_are_refused(self):
+        data = self.fiche()
+        data["film"]["transcript_ref"] = data["film"]["composition_ref"].capitalize()
+        with self.assertRaisesRegex(ValueError, "nom de fichier généré refusé"):
+            b.render(data)
+
+    def kept(self, name, change, prepare=None):
+        """La génération refuse d'écrire sur ce fichier, et il garde son contenu."""
+        target = self.root / name
+        target.write_text("à conserver")
+        data = self.fiche()
+        change(data)
+        if prepare:
+            prepare(data)
+        code, said = self.generate(data)
+        self.assertEqual(code, 2, said)
+        self.assertIn("fichier du film à conserver", json.loads(said)["reason"])
+        self.assertEqual(target.read_text(), "à conserver")
+
+    def test_approval_document_is_not_overwritten(self):
+        def change(d):
+            d["film"]["approval"]["ref"] = "accord.txt"
+            d["film"]["transcript_ref"] = "accord.txt"
+
+        self.kept("accord.txt", change)
+
+    def test_file_linked_to_the_approval_document_is_not_overwritten(self):
+        # Lien physique : deux noms, un seul fichier.
+        def link(data):
+            transcript = self.root / data["film"]["transcript_ref"]
+            transcript.unlink()
+            os.link(self.root / data["film"]["approval"]["ref"], transcript)
+
+        self.kept(self.fiche()["film"]["approval"]["ref"], lambda d: None, link)
+
+    def test_fiche_given_under_another_name_is_not_overwritten(self):
+        data = self.fiche()
+        data["film"]["transcript_ref"] = "fiche.txt"
+        (self.root / "fiche.txt").write_text(json.dumps(data))
+        out = io.StringIO()
+        argv = ["outil", str(self.root / "fiche.txt")]
+        with mock.patch.object(sys, "argv", argv), contextlib.redirect_stdout(out):
+            code = b.main()
+        self.assertEqual(code, 2, out.getvalue())
+        self.assertEqual(json.loads((self.root / "fiche.txt").read_text()), data)
+
+
+class SecondReviewCompositionTests(FilmCopy):
+    """Constat 8 : une capture absente ou mal adressée passait le contrôle de composition."""
+
+    def test_video_without_a_real_address_is_refused(self):
+        page = self.root / "index.html"
+        text = page.read_text()
+        self.assertEqual(text.count(' src="capture.mp4"'), 1)
+        page.write_text(text.replace(' src="capture.mp4"', ' data-src="capture.mp4"'))
+        self.expect(
+            "composition", "la composition ne montre pas la seule capture de la fiche"
+        )
+
+    def test_audio_without_a_real_address_is_refused(self):
+        page = self.root / "index.html"
+        text = page.read_text()
+        self.assertEqual(text.count(' src="voice1.wav"'), 1)
+        page.write_text(text.replace(' src="voice1.wav"', ' data-src="voice1.wav"'))
+        self.expect("composition", "piste audio non reconnue dans la composition")
+
+    def test_name_that_an_address_would_cut_is_refused_by_the_schema(self):
+        # « capture#1.mp4 » écrit dans une page désigne le fichier « capture ».
+        for name in ("capture#1.mp4", "capture?v=2.mp4"):
+            with self.subTest(name=name):
+                got = self.details(
+                    lambda d, name=name: d["capture"].update(media_ref=name)
+                )
+                self.assertEqual(got["schema"][0], "FAIL", got["schema"])
+
+
+class SecondReviewJournalTests(FilmCopy):
+    """Constat 9 : un journal de capture absent ou vide court-circuitait le verdict."""
+
+    def test_missing_or_broken_journal_is_a_failure_not_a_traceback(self):
+        journal = self.root / "capture-events.json"
+        for damage in (journal.unlink, lambda: journal.write_text("pas du json")):
+            damage()
+            got = self.details()
+            with self.subTest(journal=journal.exists()):
+                for check in ("gestures", "results", "statuses"):
+                    self.assertEqual(got[check][0], "FAIL", got[check])
+                self.assertIn(
+                    "journal de capture absent ou illisible", got["results"][1]
+                )
+
+    def test_journal_without_observations_fails_the_statuses_of_a_reviewed_film(self):
+        (self.root / "capture-events.json").write_text(
+            json.dumps({"events": [], "observed": {}})
+        )
+        self.expect("statuses", "sans journal de capture lisible")
+
+
+class SecondReviewMutantTests(unittest.TestCase):
+    """Constat 11 : un mutant analysable mais non compilable, et un « raise (X) from exc »."""
+
+    def mutate(self, source, old, new):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "outil.py"
+            target.write_text(source)
+            mutation_check.apply(target, old, new, 0)
+            return target.read_text()
+
+    def test_mutant_that_parses_but_does_not_compile_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "mutant illisible"):
+            self.mutate("while True:\n    break\n", "while True", "if True")
+
+    def test_parenthesised_raise_keeps_its_parentheses(self):
+        source = "try:\n    pass\nexcept OSError as exc:\n    raise (ValueError(1)) from exc\n"
+        self.assertEqual(
+            self.mutate(source, "raise (ValueError(", "(ValueError("),
+            "try:\n    pass\nexcept OSError as exc:\n    (ValueError(1))\n",
+        )
 
 
 if __name__ == "__main__":
