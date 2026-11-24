@@ -155,6 +155,7 @@ Décidé par Alex le 24 novembre 2026, après relecture du découpage selon la m
 - Les issues d'origine FF-05 à FF-13 et FF-15 deviennent des thèmes ; le travail se suit dans les tickets #34 à #49, rattachés à leur thème comme sous-issues.
 - Étiquettes : `ready-for-agent` (un agent peut le faire seul), `ready-for-human` (demande une personne), `needs-info` (attend une décision ou un apport d'Alex).
 - FF-01 et FF-02 sont fermées : les deux expériences de faisabilité ont répondu à leur question ; leurs critères non faits sont listés dans leur commentaire de clôture.
+- Évaluation chiffrée du projet et forces, faiblesses, opportunités, menaces : `EVALUATION-2026-11-24.md`. Verdict : pas encore utile comme outil de production ; le ticket #47 tranchera.
 - FF-13 est fermée : la contre-revue demandée a été rendue et adoptée ; l'ordre de travail se suit ici et dans les tickets.
 - Étiquettes complémentaires : `theme` pour les issues d'origine restées ouvertes, `plus-tard` pour ce qui attend une décision, un apport ou une personne.
 - Les issues d'origine FF-05 à FF-12 et FF-15 restent ouvertes : au 24 novembre, 16 de leurs 66 critères sont prouvés (#49). Aucune n'a tous ses critères cochés.
