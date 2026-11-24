@@ -501,16 +501,21 @@ def check_data(data, root, events=None):
             for s in scenes
             if s["evidence_status"] != "observed"
         ]
-    # Sans journal lisible, des scènes qui se disent observées ne sont pas vérifiées : le dire.
+    # Sans journal lisible, des scènes qui se disent observées ne sont pas vérifiées. Pour un
+    # brouillon c'est un manque ; pour un film approuvé c'est un échec (décision du 24 novembre
+    # 2026, issue 15) : l'approbation s'appuie sur ce que le film dit avoir observé.
     claimed = [s["scene_id"] for s in scenes if s["evidence_status"] == "observed"]
-    verdict_or_unverified(
-        "statuses",
-        problems,
+    unproven = (
         "scènes déclarées observées sans journal de capture lisible : "
         + ", ".join(claimed)
         if events is None and claimed
-        else "",
+        else ""
     )
+    if unproven and status in ("REVIEWED", "APPROVED_FOR_RELEASE"):
+        problems.append(
+            f"film {status} sans journal de capture lisible : " + ", ".join(claimed)
+        )
+    verdict_or_unverified("statuses", problems, unproven)
 
     # Un brouillon n'a ni document d'approbation ni, avant son premier rendu, d'empreinte de film.
     fingerprint, approval_ref = film["output_sha256"], film["approval"]["ref"]

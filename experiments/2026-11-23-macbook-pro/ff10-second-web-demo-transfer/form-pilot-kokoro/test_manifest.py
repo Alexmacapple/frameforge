@@ -151,16 +151,24 @@ class ManifestTests(unittest.TestCase):
 
         self.assertIn("approval", failed(mutated(change)))
 
-    def test_second_film_fits_with_declared_gaps(self):
+    def test_second_film_fails_only_for_its_missing_journal(self):
         # Film V5 : source publique sans empreinte, capture ralentie, journal dans un autre format,
         # et approbation jamais rattachée aux entrées du film (aucune empreinte d'entrées).
-        path = D.parents[1] / "ff10-web-workflow-entrypoint/local/provenance-manifest.json"
+        # Depuis le 24 novembre 2026, un film approuvé sans journal lisible est en échec.
+        path = (
+            D.parents[1] / "ff10-web-workflow-entrypoint/local/provenance-manifest.json"
+        )
         results = m.check_data(json.loads(path.read_text()), path.parent)
-        self.assertEqual(failed(results), [])
+        self.assertEqual(failed(results), ["statuses"])
         got = statuses(results)
         for check in ("source", "gestures", "results", "approval"):
             self.assertEqual(got[check], "UNVERIFIED", check)
-        for check in ("schema", "texts", "captions", "composition", "timeline",
+        for check in (
+            "schema",
+            "texts",
+            "captions",
+            "composition",
+            "timeline",
         ):
             self.assertEqual(got[check], "PASS", check)
 
@@ -187,7 +195,9 @@ def copied_film(tmp):
     (Path(tmp) / "form-pilot").mkdir()
     for name in TEXT_FILES:
         shutil.copyfile(D / name, root / name)
-    shutil.copyfile(D.parent / "form-pilot/form.html", Path(tmp) / "form-pilot/form.html")
+    shutil.copyfile(
+        D.parent / "form-pilot/form.html", Path(tmp) / "form-pilot/form.html"
+    )
     approval = Path(MANIFEST["film"]["approval"]["ref"]).name
     shutil.copyfile(D.parent / approval, Path(tmp) / approval)
     return root

@@ -227,10 +227,27 @@ class FicheCheckTests(unittest.TestCase):
             lambda d: d["source"].update(sha256=None),
         )
 
-    def test_reviewed_film_without_journal_is_not_reported_as_passed(self):
+    def test_reviewed_film_without_journal_fails(self):
+        # Décision du 24 novembre 2026 (issue 15) : sans journal, rien ne prouve ce qu'un film
+        # approuvé dit avoir observé. Ce n'est plus un simple manque.
+        for status in ("REVIEWED", "APPROVED_FOR_RELEASE"):
+
+            def change(d, status=status):
+                d["capture"].update(events_ref=None)
+                d["film"]["approval"]["status"] = status
+
+            self.expect(
+                "statuses", f"film {status} sans journal de capture lisible", change
+            )
+
+    def test_draft_film_without_journal_stays_unverified(self):
+        def change(d):
+            d["capture"].update(events_ref=None)
+            d["film"]["approval"]["status"] = "DRAFT"
+
         for name, root in FILMS.items():
             with self.subTest(film=name):
-                found = details(root, lambda d: d["capture"].update(events_ref=None))
+                found = details(root, change)
                 self.assertEqual(found["statuses"][0], "UNVERIFIED", found["statuses"])
                 self.assertIn("sans journal de capture lisible", found["statuses"][1])
 
