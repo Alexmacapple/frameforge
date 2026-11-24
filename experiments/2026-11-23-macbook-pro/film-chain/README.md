@@ -14,11 +14,11 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `test_guard_main.py` : verdict, code de sortie et reçu de rendu du garde, sans média.
 - `test_interruption.py` : l'arrêt d'un rendu ne laisse aucun processus en vie.
 - `test_review_findings.py` : un test par constat corrigé de la revue du 23 novembre, sur une copie du film de réservation.
-- `test_codex_findings.py` : un test par constat de la revue indépendante de Codex du 24 novembre (générateur qui écrasait une entrée, nom contenant `&`, mutants illisibles).
+- `test_codex_findings.py` : un test par constat des deux revues indépendantes de Codex du 24 novembre (générateur qui écrasait une entrée ou la fiche, composition mal adressée, journal de capture absent ou vide, mutants illisibles).
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
-- `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. À relancer après tout ajout de contrôle ; il dure quelques minutes et ne modifie rien dans le dépôt.
+- `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. Il rejoue toutes les suites pour chacun des 95 contrôles : environ 45 minutes sur ce Mac au 24 novembre 2026. À lancer en arrière-plan, une fois après une série de changements du garde plutôt qu'à chaque PR ; il ne modifie rien dans le dépôt. Ne rien modifier dans `film-chain` pendant sa première minute, le temps qu'il copie les fichiers.
 
 Les tests propres à un film (gestes, fichiers générés) restent dans son dossier.
 
