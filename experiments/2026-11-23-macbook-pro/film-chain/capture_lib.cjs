@@ -29,6 +29,10 @@ const POINTER = `
   document.addEventListener('mouseup', () => { setTimeout(() => { dot.style.boxShadow = 'none'; }, 350); }, true);
 })();`;
 
+// Un nom est pris dès qu'il existe, même si c'est un lien qui ne mène nulle part : existsSync
+// suit les liens et dirait le nom libre.
+const taken = (file) => fs.lstatSync(file, { throwIfNoEntry: false }) !== undefined;
+
 // record({ filmDir, url, durationS, mediaRef, eventsRef, play })
 //   play({ page, at, glide, clickHere, mark }) joue les gestes du film et rend les champs à
 //   ajouter au journal (au moins observed). at(s) attend l'instant s du film ; glide(point, ms)
@@ -38,9 +42,14 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
   // La capture d'un film est figée par empreinte et n'existe qu'en un exemplaire local :
   // on ne l'écrase jamais. Pour une nouvelle prise, la retirer d'abord ou viser un autre dossier.
   for (const ref of [mediaRef, eventsRef]) {
-    if (fs.existsSync(path.join(outDir, ref))) {
+    if (taken(path.join(outDir, ref))) {
       throw new Error(`capture existante, non écrasée : ${path.join(outDir, ref)} (définir FF_CAPTURE_OUT)`);
     }
+  }
+  // La prise brute va dans media : si ce nom est un lien, elle sortirait du dossier visé.
+  const media = path.join(outDir, 'media');
+  if (taken(media) && fs.lstatSync(media).isSymbolicLink()) {
+    throw new Error(`media est un lien, rien n'est écrit à travers : ${media}`);
   }
   // Tout est produit dans un dossier de travail, puis posé à son nom final sans écraser : une
   // interruption ne laisse ni capture partielle au nom du film, ni fichier à moitié écrit.
@@ -102,12 +111,17 @@ async function capture({ filmDir, url, durationS, mediaRef, eventsRef, play }) {
     // linkSync refuse un nom déjà pris : le contrôle fait au début ne suffit pas si un fichier
     // est apparu entre-temps.
     fs.linkSync(converted, path.join(outDir, mediaRef));
-    fs.linkSync(journal, path.join(outDir, eventsRef));
+    try {
+      fs.linkSync(journal, path.join(outDir, eventsRef));
+    } catch (e) {
+      // Pas de capture sans son journal : celle qui vient d'être posée est retirée.
+      fs.unlinkSync(path.join(outDir, mediaRef));
+      throw e;
+    }
     // La prise brute est gardée pour examen, sous un nom libre : une prise précédente reste.
-    const media = path.join(outDir, 'media');
     fs.mkdirSync(media, { recursive: true });
     let raw = path.join(media, 'capture-pointer.webm');
-    for (let n = 2; fs.existsSync(raw); n++) raw = path.join(media, `capture-pointer-${n}.webm`);
+    for (let n = 2; taken(raw); n++) raw = path.join(media, `capture-pointer-${n}.webm`);
     fs.copyFileSync(video, raw, fs.constants.COPYFILE_EXCL);
     console.log(JSON.stringify(report));
   } finally {
