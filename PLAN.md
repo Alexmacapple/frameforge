@@ -110,3 +110,29 @@ Les commentaires d'état du 23 novembre donnent le détail. FF-03 et FF-04 sont 
 ### Règle de travail
 
 Adoptée par Alex le 23 novembre 2026. Tout changement de `film-chain/` ou du garde d'un film passe par une branche et une PR, relue avant fusion. Les comptes rendus d'expérience peuvent rester en commits directs.
+
+## État réel au soir du 24 novembre 2026
+
+Section rédigée par un agent à la demande d'Alex. Elle met à jour la précédente sans la réécrire, et n'autorise aucune diffusion.
+
+### Où en sont les quatre expériences
+
+1. **Recette du film précis : partielle, inchangée.** Droits et confidentialité du lot relevés dans `experiments/2026-11-23-macbook-pro/LOT-CONFIDENTIALITY-AND-RIGHTS-2026-11-23.md` ; la licence de la voix `ff_siwis` reste à faire confirmer par une personne compétente. Restent, et demandent une personne : compréhension sans l'image par quelqu'un qui découvre le film, voix comparée aux sous-titres, sous-titres externes dans un lecteur de destination à définir.
+2. **Cas temporel adversarial : fait.** Phrase qui déborde (`ff06-overflowing-sentence`, #22) et geste plus lent que la voix (`ff06-slow-gesture`, #26) : sans garde, le film fautif sort sans avertissement ; avec le contrôle de fiche, il est refusé et la version ajustée ne perd rien. Visionnage humain des versions ajustées non fait. Le retard du journal de capture relevé dans cet essai a une cause établie et corrigée (#31). FF-06 reste ouverte : chaque film est calé par un plan de temps écrit à la main.
+3. **Révision et reprise : faite.** `ff10-revision-and-resume` (#23) : une ancienne approbation ne couvre pas la version corrigée, l'interruption ne dégrade aucun fichier, la reprise se fait par la même commande. Le défaut constaté, des processus laissés en vie après interruption, est corrigé (#24, #29). Écoute et visionnage humains de la version corrigée non faits.
+4. **Deux rushes sans navigateur (FF-11) : inchangé.** L'essai attend des vidéos fournies par Alex.
+
+### Garde de rendu (FF-15)
+
+- Deux soupçons de la première contre-revue rejoués et corrigés (#30).
+- Politique tranchée par Alex le 24 novembre : un film approuvé sans journal de capture lisible est en échec (#32). La fiche du film V5 répond FAIL sur ce point tant que sa capture n'est pas refaite.
+- Revue indépendante de Codex sur 3524a8f : six constats reproduits, cinq corrigés (#33).
+- **Reste ouvert :** le constat 3 de cette revue. L'empreinte des entrées exclut la fiche ; une fiche modifiée après approbation, puis refigée, garde son approbation. Le corriger demande d'inscrire une empreinte de la fiche dans les fiches des films approuvés : décision d'Alex.
+- Non couvert par la revue de Codex : écrasement d'un rendu, dépôt après interruption, arrêt des processus.
+
+### Ordre de travail
+
+1. Décider du constat 3 de la revue de Codex.
+2. Finir l'expérience 1 : une écoute sans l'image par une personne qui découvre le film, la voix comparée aux sous-titres, un lecteur de destination pour les sous-titres externes, la licence de la voix.
+3. Expérience 4 : deux rushes sans navigateur, quand les vidéos sont fournies.
+4. Aucun nouvel outil avant la fin de l'expérience 4, sauf pour corriger un écart constaté. FF-12 reste reportée après l'expérience 4.
