@@ -227,6 +227,32 @@ class RepinTests(unittest.TestCase):
         ):
             r.stale(self.root)
 
+    def test_names_come_from_the_guard_call_not_from_a_comment_or_a_string(self):
+        # Soupçon de l'issue 15 : le premier texte « pins_ref="…" » du fichier l'emportait.
+        guard = self.root / "render_guarded.py"
+        declared = r.settings(self.root)
+        for decoy in (
+            '# ancien nom : pins_ref="autre.json"\n',
+            "NOTE = 'output=\"ailleurs/film.mp4\"'\n",
+        ):
+            with self.subTest(decoy=decoy):
+                guard.write_text(decoy + guard.read_text())
+                self.assertEqual(r.settings(self.root), declared)
+                self.assertEqual(r.stale(self.root), [])
+
+    def test_name_declared_twice_is_refused(self):
+        guard = self.root / "render_guarded.py"
+        guard.write_text(guard.read_text() + 'OTHER = dict(pins_ref="autre.json")\n')
+        with self.assertRaisesRegex(
+            ValueError, "paramètre déclaré plusieurs fois .* pins_ref"
+        ):
+            r.stale(self.root)
+
+    def test_guard_that_is_not_python_is_refused(self):
+        (self.root / "render_guarded.py").write_text("GUARD = dict(\n")
+        with self.assertRaisesRegex(ValueError, "render_guarded.py illisible"):
+            r.stale(self.root)
+
     def test_film_without_guard_file_cannot_be_validated(self):
         (self.root / "render_guarded.py").unlink()
         with self.assertRaisesRegex(ValueError, "garde du film introuvable"):
