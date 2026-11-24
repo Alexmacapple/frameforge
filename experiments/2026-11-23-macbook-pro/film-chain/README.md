@@ -26,6 +26,13 @@ Les tests propres à un film (gestes, fichiers générés) restent dans son doss
 
 Sa fiche, sa page filmée, ses gestes (`capture.cjs`), ses clips de voix, son fichier d'empreintes, son `render_guarded.py` réduit à ses paramètres, et ses tests.
 
+## Deux gardes antérieurs, hors de cette chaîne
+
+Deux dossiers gardent leur propre garde, écrit avant `film-chain` : ils ne sont pas migrés, et les contrôles de ce dossier ne s'y appliquent pas.
+
+- `ff10-second-web-demo-transfer/form-pilot/` : premier pilote du formulaire, avec l'ancienne voix. Il n'a pas de fiche. Il est remplacé par `form-pilot-kokoro/`, qui reprend sa page et sa capture comme sources : ne pas modifier ni supprimer `form.html` et ses médias. Ses neuf tests passent (relevé du 24 novembre 2026). Décision du même jour : le laisser tel quel, comme trace d'essai ; lui écrire une fiche reviendrait à documenter un film que personne ne rendra de nouveau.
+- `ff10-web-workflow-entrypoint/local/` : film V5, filmé sur un site public. Sa fiche répond FAIL depuis qu'un film approuvé doit avoir un journal de capture lisible. Le remettre sur cette chaîne demande une nouvelle capture du site, donc un nouveau film et une nouvelle approbation : décision en attente (ticket 46).
+
 ## Fabriquer un film neuf, dans l'ordre
 
 1. Écrire la fiche avec les phrases, statut `DRAFT`, sans empreinte de film.
