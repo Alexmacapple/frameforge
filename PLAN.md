@@ -147,3 +147,12 @@ Section rédigée par un agent à la demande d'Alex. Elle met à jour la précé
 - **FF-13** : garder ouverte jusqu'à la fin des quatre expériences.
 - **FF-15** : garder ouverte pour le constat 3 de la revue de Codex et pour ce que cette revue n'a pas couvert.
 - **FF-01, FF-02, FF-05** : inchangées depuis le relevé du 23 novembre.
+
+### Suivi par tickets
+
+Décidé par Alex le 24 novembre 2026, après relecture du découpage selon la méthode de Matt Pocock (tranches complètes, blocages déclarés, étiquette qui dit qui peut agir). Ce paragraphe remplace l'ordre de travail et l'état de FF-01 et FF-02 donnés plus haut.
+
+- Les issues d'origine FF-05 à FF-13 et FF-15 deviennent des thèmes ; le travail se suit dans les tickets #34 à #49, rattachés à leur thème comme sous-issues.
+- Étiquettes : `ready-for-agent` (un agent peut le faire seul), `ready-for-human` (demande une personne), `needs-info` (attend une décision ou un apport d'Alex).
+- FF-01 et FF-02 sont fermées : les deux expériences de faisabilité ont répondu à leur question ; leurs critères non faits sont listés dans leur commentaire de clôture.
+- **Changement d'ordre :** un vrai film de 30 à 60 secondes dont Alex a besoin (#47) passe avant le montage de rushes (FF-11). Le temps passé et les interventions humaines y sont mesurés.
