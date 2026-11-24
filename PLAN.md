@@ -136,3 +136,14 @@ Section rédigée par un agent à la demande d'Alex. Elle met à jour la précé
 2. Finir l'expérience 1 : une écoute sans l'image par une personne qui découvre le film, la voix comparée aux sous-titres, un lecteur de destination pour les sous-titres externes, la licence de la voix.
 3. Expérience 4 : deux rushes sans navigateur, quand les vidéos sont fournies.
 4. Aucun nouvel outil avant la fin de l'expérience 4, sauf pour corriger un écart constaté. FF-12 reste reportée après l'expérience 4.
+
+### État des issues
+
+- **FF-06** : garder ouverte. Les deux cas adversariaux sont essayés ; il n'existe pas de synchronisation générale, et aucun film ne se sert encore de `appear`.
+- **FF-07, FF-08, FF-09** : garder ouvertes. Elles attendent la fin de l'expérience 1.
+- **FF-10** : garder ouverte. Révision et reprise essayées ; tolérances de comparaison non documentées.
+- **FF-11** : garder ouverte. Expérience 4.
+- **FF-12** : garder ouverte, non commencée.
+- **FF-13** : garder ouverte jusqu'à la fin des quatre expériences.
+- **FF-15** : garder ouverte pour le constat 3 de la revue de Codex et pour ce que cette revue n'a pas couvert.
+- **FF-01, FF-02, FF-05** : inchangées depuis le relevé du 23 novembre.
