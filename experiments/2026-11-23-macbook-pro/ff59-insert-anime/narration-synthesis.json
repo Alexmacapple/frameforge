@@ -1,0 +1,26 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice1.wav",
+      "text": "À l'ouverture, le focus entre dans la fenêtre.",
+      "duration_s": 2.875,
+      "sha256": "3d85f77c15f8b7ac0874ef84bc1c10818eaf9830110b127b35b5f3c2478d62d1"
+    },
+    {
+      "audio_ref": "voice2.wav",
+      "text": "Tab le fait tourner entre Annuler et Supprimer, sans en sortir.",
+      "duration_s": 3.525,
+      "sha256": "4e048ba22abee945605c14a787ef4c8c5effdbcf11d8fd2f585db647fbcf2681"
+    },
+    {
+      "audio_ref": "voice3.wav",
+      "text": "Échap ferme la fenêtre et rend le focus au bouton de départ.",
+      "duration_s": 3.625,
+      "sha256": "fc8ba787ba75e27eaf5ed820288f9870da04e46dff989c515a86d983af5d621d"
+    }
+  ]
+}

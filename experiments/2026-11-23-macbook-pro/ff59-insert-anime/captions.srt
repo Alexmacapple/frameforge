@@ -1,0 +1,14 @@
+1
+00:00:00,400 --> 00:00:03,575
+À l'ouverture, le focus entre dans la
+fenêtre.
+
+2
+00:00:03,675 --> 00:00:07,500
+Tab le fait tourner entre Annuler et
+Supprimer, sans en sortir.
+
+3
+00:00:07,600 --> 00:00:11,525
+Échap ferme la fenêtre et rend le focus au
+bouton de départ.
