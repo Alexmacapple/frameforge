@@ -4,7 +4,7 @@ Usage :
   python3 witness_reference.py DOSSIER_DU_FILM                 rend le témoin, puis écrit la référence
   python3 witness_reference.py DOSSIER_DU_FILM --from TEMOIN   écrit la référence d'un témoin déjà rendu
 
-Le témoin est rendu par HyperFrames 0.8.33, avec les mêmes options que le garde, sur une copie des
+Le témoin est rendu par la commande même du garde (HyperFrames 0.8.33, sans réseau), sur une copie des
 entrées que déclare render_guarded.py, sous media/<film>-draft.mp4 ; un témoin existant n'est pas
 écrasé. La télémétrie de HyperFrames est coupée pour ce rendu. La référence est mesurée avec les
 fonctions mêmes du garde : empreintes du flux vidéo, du son et des paquets, étiquettes du conteneur.
@@ -30,7 +30,8 @@ CHAIN = Path(__file__).resolve().parent
 sys.path.insert(0, str(CHAIN))
 film_guard = importlib.import_module("film_guard")
 FPS = 30
-RENDER = ["npx", "--yes", "hyperframes@0.8.33", "render"]
+# Même commande que le garde : HyperFrames 0.8.33, mêmes options, sans réseau sortant.
+render_command = film_guard.wrapper.render_command
 NO_TELEMETRY = {"HYPERFRAMES_NO_TELEMETRY": "1", "DO_NOT_TRACK": "1"}
 
 
@@ -65,13 +66,7 @@ def render_witness(film):
                 shutil.copyfile(film / name, work / name)
         rendered = Path(temp) / "rendered.mp4"
         subprocess.run(
-            [
-                *RENDER,
-                str(work),
-                "--output=" + str(rendered),
-                "--workers=2",
-                "--no-best-effort",
-            ],
+            render_command(work, rendered),
             check=True,
             stdout=subprocess.DEVNULL,
             env=dict(os.environ, **NO_TELEMETRY),
