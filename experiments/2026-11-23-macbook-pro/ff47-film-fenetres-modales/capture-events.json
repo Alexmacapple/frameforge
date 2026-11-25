@@ -1,0 +1,86 @@
+{
+  "observed": {
+    "bad_focus_after_open": "open-bad",
+    "bad_focus_after_tab": "help-link",
+    "bad_open_after_escape": true,
+    "bad_closed_by_cancel": true,
+    "good_focus_after_open": "good-cancel",
+    "good_dialog_named": true,
+    "good_focus_after_one_tab": "good-delete",
+    "good_focus_after_two_tabs": "good-cancel",
+    "good_focus_after_escape": "open-good",
+    "good_open_after_escape": false,
+    "focus_after_resume": "next-step"
+  },
+  "events": [
+    {
+      "name": "page_loaded",
+      "script_s": 0.019
+    },
+    {
+      "name": "bad_open_clicked",
+      "script_s": 4.638
+    },
+    {
+      "name": "bad_dialog_visible",
+      "script_s": 4.641
+    },
+    {
+      "name": "bad_tab_pressed",
+      "script_s": 11.158
+    },
+    {
+      "name": "bad_focus_left",
+      "script_s": 11.161
+    },
+    {
+      "name": "bad_escape_pressed",
+      "script_s": 18.479
+    },
+    {
+      "name": "bad_still_open",
+      "script_s": 18.884
+    },
+    {
+      "name": "bad_cancel_clicked",
+      "script_s": 21.878
+    },
+    {
+      "name": "good_open_clicked",
+      "script_s": 27.616
+    },
+    {
+      "name": "good_focus_inside",
+      "script_s": 27.618
+    },
+    {
+      "name": "good_tab1_pressed",
+      "script_s": 33.731
+    },
+    {
+      "name": "good_tab2_pressed",
+      "script_s": 35.729
+    },
+    {
+      "name": "good_focus_wrapped",
+      "script_s": 35.731
+    },
+    {
+      "name": "good_escape_pressed",
+      "script_s": 40.654
+    },
+    {
+      "name": "good_focus_restored",
+      "script_s": 40.656
+    },
+    {
+      "name": "resume_tab_pressed",
+      "script_s": 47.605
+    },
+    {
+      "name": "resume_focus_next",
+      "script_s": 47.607
+    }
+  ],
+  "pointer": "dessiné par script injecté, positions des événements souris réels"
+}

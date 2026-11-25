@@ -1,0 +1,22 @@
+WEBVTT
+
+00:00:01.800 --> 00:00:09.250
+Version fautive. On clique sur Supprimer mon compte. La fenêtre s'ouvre, mais le focus reste derrière, sur le bouton de la page.
+
+00:00:10.150 --> 00:00:16.575
+On appuie sur Tab. Le focus part sur le lien Consulter l'aide, derrière la fenêtre. On ne sait plus où l'on est.
+
+00:00:17.475 --> 00:00:23.525
+On appuie sur Échap. Rien ne se passe, la fenêtre reste ouverte. On la ferme à la souris, avec Annuler.
+
+00:00:24.425 --> 00:00:31.825
+Version corrigée. On clique de nouveau sur Supprimer mon compte. Le focus entre dans la fenêtre, sur Annuler, l'action la moins risquée.
+
+00:00:32.725 --> 00:00:38.750
+Deux appuis sur Tab. Le focus passe sur Supprimer, puis revient sur Annuler. Il reste dans la fenêtre.
+
+00:00:39.650 --> 00:00:45.500
+On appuie sur Échap. La fenêtre se ferme, et le focus revient sur le bouton qui l'avait ouverte.
+
+00:00:46.400 --> 00:00:51.975
+Un dernier appui sur Tab mène à l'étape suivante. Le parcours reprend là où il s'était arrêté.
