@@ -12,6 +12,7 @@ import html
 import importlib
 import json
 import os
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -39,6 +40,85 @@ TITLE_STYLE = CARTOUCHE_STYLE.replace(
 )
 # Le titre s'affiche de TITLE_START à TITLE_END ; le premier sous-titre ne doit pas commencer avant.
 TITLE_START, TITLE_END = 0.2, 1.4
+# Version 3 : un sous-titre tient en CUE_LINES lignes de LINE_CHARS caractères au plus. Ordre de
+# grandeur courant du sous-titrage (deux lignes d'une quarantaine de caractères) ; la valeur exacte
+# reste à confronter au lecteur de destination (#37).
+LINE_CHARS, CUE_LINES = 42, 2
+
+
+def wrap(text):
+    """Lignes remplies mot à mot jusqu'à LINE_CHARS ; un mot plus long garde sa ligne, entier."""
+    lines = []
+    for word in text.split(" "):
+        if lines and len(lines[-1]) + 1 + len(word) <= LINE_CHARS:
+            lines[-1] += " " + word
+        else:
+            lines.append(word)
+    return lines
+
+
+def fits(text):
+    return len(wrap(text)) <= CUE_LINES
+
+
+# Coupures possibles, de la meilleure à la pire : fin de phrase, ponctuation dans la phrase.
+BREAKS = (re.compile(r"(?<=[.!?…])\s+"), re.compile(r"(?<=[,;:])\s+"))
+
+
+def pieces(text, level=0):
+    """Morceaux qui tiennent chacun dans un sous-titre, coupés au meilleur endroit possible."""
+    if fits(text):
+        return [text]
+    if level == len(BREAKS):
+        # Plus de ponctuation : on coupe entre deux mots, sous-titre plein par sous-titre plein.
+        lines = wrap(text)
+        return [
+            " ".join(lines[i : i + CUE_LINES]) for i in range(0, len(lines), CUE_LINES)
+        ]
+    parts = BREAKS[level].split(text)
+    if len(parts) == 1:
+        return pieces(text, level + 1)
+    return [p for part in parts for p in pieces(part, level + 1)]
+
+
+def split_caption(text):
+    """Découpe une phrase en sous-titres de CUE_LINES lignes au plus, rendus ligne par ligne.
+
+    Les morceaux voisins sont regroupés tant que le sous-titre tient : on coupe d'abord aux fins
+    de phrase, puis aux virgules et points-virgules, et entre deux mots seulement en dernier
+    recours. Aucun mot n'est coupé, aucun n'est perdu.
+    """
+    cues = []
+    for piece in pieces(text):
+        if cues and fits(cues[-1] + " " + piece):
+            cues[-1] += " " + piece
+        else:
+            cues.append(piece)
+    return [wrap(cue) for cue in cues]
+
+
+def caption_cues(fiche):
+    """Sous-titres de chaque scène : liste de (début, fin, lignes).
+
+    Versions 1 et 2 : un sous-titre par phrase, sur une ligne, aux repères de la fiche. Version 3 :
+    la phrase est découpée et sa fenêtre partagée au prorata des caractères, sans trou ; le premier
+    morceau commence et le dernier finit aux repères de la fiche.
+    """
+    out = []
+    for scene in fiche["scenes"]:
+        text, window = scene["narration"]["text"], scene["caption"]
+        start, end = window["start_s"], window["end_s"]
+        if fiche["manifest_version"] < 3:
+            out.append([(start, end, [text])])
+            continue
+        parts = split_caption(text)
+        sizes = [len(" ".join(p)) for p in parts]
+        bounds = [start]
+        for i in range(1, len(parts)):
+            bounds.append(round(start + (end - start) * sum(sizes[:i]) / sum(sizes), 3))
+        bounds.append(end)
+        out.append([(bounds[i], bounds[i + 1], p) for i, p in enumerate(parts)])
+    return out
 
 
 def number(value):
@@ -60,7 +140,7 @@ def video_style(zoom):
 
 
 def composition(fiche):
-    v2 = fiche["manifest_version"] == 2
+    v2 = fiche["manifest_version"] >= 2
     caption_style = CARTOUCHE_STYLE if v2 else CAPTION_STYLE
     capture_style = video_style(fiche["film"]["capture_zoom"]) if v2 else VIDEO_STYLE
     duration = number(fiche["film"]["duration_s"])
@@ -79,26 +159,31 @@ def composition(fiche):
             f'data-duration="{number(TITLE_END - TITLE_START)}" data-track-index="7" '
             f'style="{TITLE_STYLE}">{html.escape(fiche["film"]["title"], quote=False)}</div>'
         )
-    for i, scene in enumerate(fiche["scenes"], 1):
-        voice, caption = scene["narration"], scene["caption"]
+    shown = 0
+    for i, (scene, cues) in enumerate(zip(fiche["scenes"], caption_cues(fiche)), 1):
+        voice = scene["narration"]
         lines.append(
             f'<audio id="voice{i}" src="{html.escape(voice["audio_ref"])}" data-start="{number(voice["start_s"])}" '
             f'data-duration="{number(voice["duration_s"])}" data-track-index="{i}"></audio>'
         )
-        lines.append(
-            f'<div id="caption{i}" class="clip" data-start="{number(caption["start_s"])}" '
-            f'data-duration="{number(caption["end_s"] - caption["start_s"])}" data-track-index="6" '
-            f'style="{caption_style}">{html.escape(voice["text"], quote=False)}</div>'
-        )
+        # Les lignes d'un sous-titre se suivent : le cartouche les replie à sa largeur.
+        for start, end, text in cues:
+            shown += 1
+            lines.append(
+                f'<div id="caption{shown}" class="clip" data-start="{number(start)}" '
+                f'data-duration="{number(end - start)}" data-track-index="6" '
+                f'style="{caption_style}">{html.escape(" ".join(text), quote=False)}</div>'
+            )
     return (HEAD_V2 if v2 else HEAD) + "\n".join(lines) + "\n</div></body></html>\n"
 
 
 def subtitles(fiche, separator, numbered):
     blocks = []
-    for i, scene in enumerate(fiche["scenes"], 1):
-        cue = f"{clock(scene['caption']['start_s'], separator)} --> {clock(scene['caption']['end_s'], separator)}"
+    flat = [cue for cues in caption_cues(fiche) for cue in cues]
+    for i, (start, end, text) in enumerate(flat, 1):
+        cue = f"{clock(start, separator)} --> {clock(end, separator)}"
         blocks.append(
-            (f"{i}\n" if numbered else "") + f"{cue}\n{scene['narration']['text']}\n"
+            (f"{i}\n" if numbered else "") + f"{cue}\n" + "\n".join(text) + "\n"
         )
     return "\n".join(blocks)
 

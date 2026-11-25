@@ -49,6 +49,7 @@ SUITES = (
             "test_review_findings",
             "test_codex_findings",
             "test_outils_fiche",
+            "test_soustitres_v3",
         ),
     ),
     (

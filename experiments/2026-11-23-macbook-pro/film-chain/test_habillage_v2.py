@@ -120,7 +120,7 @@ class Version2Checks(V2Film):
         self.expect(
             "schema",
             "version de fiche inconnue",
-            lambda d: d.update(manifest_version=3),
+            lambda d: d.update(manifest_version=4),
         )
 
     def test_v2_without_title(self):
