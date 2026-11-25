@@ -20,7 +20,7 @@ from html import unescape
 from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_from_fiche import TITLE_END, TITLE_START
+from build_from_fiche import TITLE_END, TITLE_START, caption_cues
 
 SHOT_TYPES = {"fixed", "continuous_action", "title_card", "honest_cut", "result"}
 EVIDENCE = {"observed", "reasoned", "planned", "unverified", "failed"}
@@ -241,9 +241,10 @@ def schema_problems(data):
 
     if same(data, "root", "fiche"):
         version = data["manifest_version"]
-        if type(version) is not int or version not in (1, 2):
+        # Version 3 : les champs de la version 2, et des sous-titres découpés.
+        if type(version) is not int or version not in (1, 2, 3):
             problems.append(f"version de fiche inconnue : {version!r}")
-        v2 = FIELDS["film_v2"] if version == 2 else frozenset()
+        v2 = FIELDS["film_v2"] if version in (2, 3) else frozenset()
         if same(data["film"], "film", "film", v2):
             same(data["film"]["approval"], "approval", "film.approval")
             if v2:
@@ -363,19 +364,21 @@ def check_data(data, root, events=None):
         if transcript == spoken_and_shown
         else ["la transcription diffère de la narration"]
     )
+    # Sous-titres attendus : un par phrase jusqu'à la version 2, les morceaux de chaque phrase
+    # ensuite. Les lignes d'un sous-titre sont écrites l'une sous l'autre dans les fichiers.
+    wanted_cues = [cue for cues in caption_cues(data) for cue in cues]
     problems += [
         f"{ref} : texte différent"
         for ref, c in caption_files.items()
-        if [x[2] for x in c] != texts
+        if [x[2] for x in c] != ["\n".join(w[2]) for w in wanted_cues]
     ]
     verdict("texts", problems)
 
     problems = []
     for ref, file_cues in caption_files.items():
-        if len(file_cues) != len(scenes) or any(
-            not near(c[0], s["caption"]["start_s"])
-            or not near(c[1], s["caption"]["end_s"])
-            for c, s in zip(file_cues, scenes)
+        if len(file_cues) != len(wanted_cues) or any(
+            not near(c[0], w[0]) or not near(c[1], w[1])
+            for c, w in zip(file_cues, wanted_cues)
         ):
             problems.append(f"{ref} : repères différents de la fiche")
     verdict("captions", problems)
@@ -400,12 +403,12 @@ def check_data(data, root, events=None):
         for a, n in zip(audio, narrations)
     ):
         problems.append("pistes de narration différentes de la composition")
-    if len(divs) != len(scenes) or any(
-        not near(d[0], s["caption"]["start_s"])
-        or not near(d[1], s["caption"]["end_s"] - s["caption"]["start_s"])
+    if len(divs) != len(wanted_cues) or any(
+        not near(d[0], w[0])
+        or not near(d[1], w[1] - w[0])
         # Le texte est écrit échappé dans la page : il se compare une fois rendu lisible.
-        or unescape(d[2]) != s["narration"]["text"]
-        for d, s in zip(divs, scenes)
+        or unescape(d[2]) != " ".join(w[2])
+        for d, w in zip(divs, wanted_cues)
     ):
         problems.append("sous-titres incrustés différents de la fiche")
     titles = [(float(t[0]), float(t[1]), unescape(t[2])) for t in TITLE.findall(page)]

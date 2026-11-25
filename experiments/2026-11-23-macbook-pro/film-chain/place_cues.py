@@ -51,7 +51,7 @@ def place(fiche, root, first, gap, pad, tail):
         raise ValueError(
             "fiche d'un film déjà rendu : ses repères décrivent ce film, rien n'est écrit"
         )
-    if fiche.get("manifest_version") == 2 and first < TITLE_END:
+    if fiche.get("manifest_version") in (2, 3) and first < TITLE_END:
         raise ValueError(
             f"premier repère à {first} s, avant la fin du titre d'ouverture ({TITLE_END} s)"
         )
