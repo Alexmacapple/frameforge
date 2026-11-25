@@ -58,7 +58,7 @@ SCRIPT = r"""
   const mix = (a, b, k) => a + (b - a) * k;
   // Position à l'écran, mesurée par rapport à l'image entière, agrandissement de la fenêtre compris.
   const box = (id) => {
-    const r = $(id).getBoundingClientRect(), o = $("root").getBoundingClientRect();
+    const r = $(id).getBoundingClientRect(), o = $("__ROOT__").getBoundingClientRect();
     return [r.left - o.left, r.top - o.top, r.width, r.height];
   };
   let cur = 0;
@@ -116,7 +116,7 @@ SCRIPT = r"""
     timeScale() { return 1; },
   };
   window.__timelines = window.__timelines || {};
-  window.__timelines["main"] = timeline;
+  window.__timelines["__KEY__"] = timeline;
   at(0);
 })();
 """
@@ -146,6 +146,55 @@ STYLE = """
 """
 
 
+# Les éléments animés, un bloc par ligne de la composition.
+VISUALS = [
+    (
+        '<div id="page"><h2>Supprimer son compte</h2>'
+        '<div id="page-button" class="button">Supprimer mon compte</div></div>'
+    ),
+    '<div id="backdrop"></div>',
+    (
+        '<div id="dialog"><h2>Supprimer votre compte ?</h2>'
+        "<p>Cette action est définitive.</p>"
+        '<svg id="loop" viewBox="0 0 820 440"><path id="loop-path" fill="none" '
+        'stroke="#f76707" stroke-width="4" stroke-linecap="round" opacity=".7" '
+        'd="M 30 294 A 310 78 0 1 0 650 294 A 310 78 0 1 0 30 294"/></svg>'
+        '<div id="cancel" class="button">Annuler</div>'
+        '<div id="delete" class="button">Supprimer</div></div>'
+    ),
+    '<div id="ring"></div>',
+    '<div id="key">Tab</div>',
+]
+
+
+def script(times, duration, root_id, key):
+    """Animation : instants des trois phrases, durée, racine mesurée, clé de la timeline."""
+    return (
+        SCRIPT.replace("__TIMES__", json.dumps(times))
+        .replace("__DURATION__", b.number(duration))
+        .replace("__ROOT__", root_id)
+        .replace("__KEY__", key)
+    )
+
+
+def embedded(times, duration):
+    """Sous-composition pour un film : l'animation seule, sans voix ni sous-titres.
+
+    Voix et sous-titres viennent de la fiche du film. La racine et la clé de la timeline portent
+    leur propre nom, pour ne pas se confondre avec celles du film.
+    """
+    return (
+        b.HEAD_V2.replace("</style>", STYLE.replace("\n", "") + "</style>")
+        + f'<div id="insert-root" data-composition-id="insert" data-start="0" '
+        f'data-duration="{b.number(duration)}" data-width="1920" data-height="1080" '
+        # Fond déclaré : l'insert couvre la capture, qui s'arrête quand il commence.
+        'style="position:absolute;inset:0;background:#f6f7fa">\n'
+        + "\n".join(VISUALS)
+        + f"\n<script>{script(times, duration, 'insert-root', 'insert')}</script>"
+        + "\n</div></body></html>\n"
+    )
+
+
 def composition(steps, duration):
     fiche = pseudo_fiche(steps)
     parts = [
@@ -154,22 +203,7 @@ def composition(steps, duration):
             f'<div id="root" data-composition-id="main" data-start="0" '
             f'data-duration="{b.number(duration)}" data-width="1920" data-height="1080">'
         ),
-        (
-            '<div id="page"><h2>Supprimer son compte</h2>'
-            '<div id="page-button" class="button">Supprimer mon compte</div></div>'
-        ),
-        '<div id="backdrop"></div>',
-        (
-            '<div id="dialog"><h2>Supprimer votre compte ?</h2>'
-            "<p>Cette action est définitive.</p>"
-            '<svg id="loop" viewBox="0 0 820 440"><path id="loop-path" fill="none" '
-            'stroke="#f76707" stroke-width="4" stroke-linecap="round" opacity=".7" '
-            'd="M 30 294 A 310 78 0 1 0 650 294 A 310 78 0 1 0 30 294"/></svg>'
-            '<div id="cancel" class="button">Annuler</div>'
-            '<div id="delete" class="button">Supprimer</div></div>'
-        ),
-        '<div id="ring"></div>',
-        '<div id="key">Tab</div>',
+        *VISUALS,
     ]
     for i, (clip, start, _) in enumerate(steps, 1):
         parts.append(
@@ -185,11 +219,8 @@ def composition(steps, duration):
                 f'data-duration="{b.number(end - start)}" '
                 f'style="{b.CARTOUCHE_STYLE}">{" ".join(lines)}</div>'
             )
-    times = json.dumps([start for _, start, _ in steps])
-    script = SCRIPT.replace("__TIMES__", times).replace(
-        "__DURATION__", b.number(duration)
-    )
-    parts.append(f"<script>{script}</script>")
+    times = [start for _, start, _ in steps]
+    parts.append(f"<script>{script(times, duration, 'root', 'main')}</script>")
     return "\n".join(parts) + "\n</div></body></html>\n"
 
 

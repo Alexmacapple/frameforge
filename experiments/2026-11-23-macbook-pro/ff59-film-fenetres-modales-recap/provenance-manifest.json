@@ -1,0 +1,234 @@
+{
+  "manifest_version": 4,
+  "pins_ref": "input-pins.json",
+  "film": {
+    "id": "fenetres-modales-recap",
+    "duration_s": 66,
+    "composition_ref": "index.html",
+    "transcript_ref": "transcript.txt",
+    "caption_refs": [
+      "captions.srt",
+      "captions.vtt"
+    ],
+    "output_ref": "media/fenetres-modales-recap.mp4",
+    "output_sha256": "3720625a99a418023dce88720e4163f0f4bc776a8c3399ae251f32bf1ec71af6",
+    "inputs_sha256": "224fadbd8c12e005b5f8424055b2cfa0869f7a9043b1c18c2c66d2095d30f8db",
+    "approval": {
+      "status": "REVIEWED",
+      "ref": "EDITORIAL-APPROVAL.md"
+    },
+    "open_checks": [
+      "Compréhension du film sans l'image (ticket 35)",
+      "Conformité de la voix au texte de narration (ticket 36)",
+      "Prononciation de Tab et Échap par la voix de synthèse",
+      "Aucun lecteur d'écran testé : le film montre le focus clavier, pas une restitution vocale",
+      "Récapitulatif animé : non écouté sans l'image ni comparé à ses sous-titres (tickets 35 et 36)"
+    ],
+    "title": "Fenêtres modales : le focus au clavier",
+    "capture_zoom": 1
+  },
+  "source": {
+    "ref": "modales.html",
+    "sha256": "e11bd1fc8c0fcc750419ccc198e40934b1252427f7a63c9cea73e9593f3d2093",
+    "authorization": "Fixture locale du dépôt, écrite pour ce film, données fictives, aucun compte ni session réels.",
+    "captured_on": "2026-11-25"
+  },
+  "capture": {
+    "media_ref": "capture.mp4",
+    "events_ref": "capture-events.json"
+  },
+  "scenes": [
+    {
+      "scene_id": "fautive-ouverture",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "bad_open_clicked",
+        "bad_dialog_visible"
+      ],
+      "result": {
+        "event": "bad_dialog_visible",
+        "observed_key": "bad_focus_after_open",
+        "expected": "open-bad"
+      },
+      "narration": {
+        "text": "Version fautive. On clique sur Supprimer mon compte. La fenêtre s'ouvre, mais le focus reste derrière, sur le bouton de la page.",
+        "audio_ref": "voice1.wav",
+        "start_s": 1.8,
+        "duration_s": 7.15
+      },
+      "caption": {
+        "start_s": 1.8,
+        "end_s": 9.25
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "fautive-tab",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "bad_tab_pressed",
+        "bad_focus_left"
+      ],
+      "result": {
+        "event": "bad_focus_left",
+        "observed_key": "bad_focus_after_tab",
+        "expected": "help-link"
+      },
+      "narration": {
+        "text": "On appuie sur Tab. Le focus part sur le lien Consulter l'aide, derrière la fenêtre. On ne sait plus où l'on est.",
+        "audio_ref": "voice2.wav",
+        "start_s": 10.15,
+        "duration_s": 6.125
+      },
+      "caption": {
+        "start_s": 10.15,
+        "end_s": 16.575
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "fautive-echap",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "bad_escape_pressed",
+        "bad_still_open",
+        "bad_cancel_clicked"
+      ],
+      "result": {
+        "event": "bad_still_open",
+        "observed_key": "bad_open_after_escape",
+        "expected": true
+      },
+      "narration": {
+        "text": "On appuie sur Échap. Rien ne se passe, la fenêtre reste ouverte. On la ferme à la souris, avec Annuler.",
+        "audio_ref": "voice3.wav",
+        "start_s": 17.475,
+        "duration_s": 5.75
+      },
+      "caption": {
+        "start_s": 17.475,
+        "end_s": 23.525
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "corrigee-ouverture",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "good_open_clicked",
+        "good_focus_inside"
+      ],
+      "result": {
+        "event": "good_focus_inside",
+        "observed_key": "good_focus_after_open",
+        "expected": "good-cancel"
+      },
+      "narration": {
+        "text": "Version corrigée. On clique de nouveau sur Supprimer mon compte. Le focus entre dans la fenêtre, sur Annuler, l'action la moins risquée.",
+        "audio_ref": "voice4.wav",
+        "start_s": 24.425,
+        "duration_s": 7.1
+      },
+      "caption": {
+        "start_s": 24.425,
+        "end_s": 31.825
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "corrigee-tab",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "good_tab1_pressed",
+        "good_tab2_pressed",
+        "good_focus_wrapped"
+      ],
+      "result": {
+        "event": "good_focus_wrapped",
+        "observed_key": "good_focus_after_two_tabs",
+        "expected": "good-cancel"
+      },
+      "narration": {
+        "text": "Deux appuis sur Tab. Le focus passe sur Supprimer, puis revient sur Annuler. Il reste dans la fenêtre.",
+        "audio_ref": "voice5.wav",
+        "start_s": 32.725,
+        "duration_s": 5.725
+      },
+      "caption": {
+        "start_s": 32.725,
+        "end_s": 38.75
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "corrigee-echap",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "good_escape_pressed",
+        "good_focus_restored"
+      ],
+      "result": {
+        "event": "good_focus_restored",
+        "observed_key": "good_focus_after_escape",
+        "expected": "open-good"
+      },
+      "narration": {
+        "text": "On appuie sur Échap. La fenêtre se ferme, et le focus revient sur le bouton qui l'avait ouverte.",
+        "audio_ref": "voice6.wav",
+        "start_s": 39.65,
+        "duration_s": 5.55
+      },
+      "caption": {
+        "start_s": 39.65,
+        "end_s": 45.5
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "reprise-parcours",
+      "shot_type": "continuous_action",
+      "gesture_events": [
+        "resume_tab_pressed",
+        "resume_focus_next"
+      ],
+      "result": {
+        "event": "resume_focus_next",
+        "observed_key": "focus_after_resume",
+        "expected": "next-step"
+      },
+      "narration": {
+        "text": "Un dernier appui sur Tab mène à l'étape suivante. Le parcours reprend là où il s'était arrêté.",
+        "audio_ref": "voice7.wav",
+        "start_s": 46.4,
+        "duration_s": 5.275
+      },
+      "caption": {
+        "start_s": 46.4,
+        "end_s": 51.975
+      },
+      "evidence_status": "observed"
+    },
+    {
+      "scene_id": "recapitulatif",
+      "shot_type": "insert",
+      "insert_ref": "compositions/recapitulatif.html",
+      "gesture_events": [],
+      "result": {
+        "event": null,
+        "observed_key": null,
+        "expected": null
+      },
+      "narration": {
+        "text": "À l'ouverture, le focus entre dans la fenêtre. Tab le fait tourner entre Annuler et Supprimer, sans en sortir. Échap ferme la fenêtre et rend le focus au bouton de départ.",
+        "audio_ref": "voice8.wav",
+        "start_s": 52.875,
+        "duration_s": 10.825
+      },
+      "caption": {
+        "start_s": 52.875,
+        "end_s": 64.0
+      },
+      "evidence_status": "reasoned"
+    }
+  ]
+}

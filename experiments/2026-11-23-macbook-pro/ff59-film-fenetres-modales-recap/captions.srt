@@ -1,0 +1,84 @@
+1
+00:00:01,800 --> 00:00:04,850
+Version fautive. On clique sur Supprimer
+mon compte.
+
+2
+00:00:04,850 --> 00:00:09,250
+La fenêtre s'ouvre, mais le focus reste
+derrière, sur le bouton de la page.
+
+3
+00:00:10,150 --> 00:00:11,201
+On appuie sur Tab.
+
+4
+00:00:11,201 --> 00:00:14,940
+Le focus part sur le lien Consulter
+l'aide, derrière la fenêtre.
+
+5
+00:00:14,940 --> 00:00:16,575
+On ne sait plus où l'on est.
+
+6
+00:00:17,475 --> 00:00:21,271
+On appuie sur Échap. Rien ne se passe, la
+fenêtre reste ouverte.
+
+7
+00:00:21,271 --> 00:00:23,525
+On la ferme à la souris, avec Annuler.
+
+8
+00:00:24,425 --> 00:00:27,933
+Version corrigée. On clique de nouveau sur
+Supprimer mon compte.
+
+9
+00:00:27,933 --> 00:00:31,825
+Le focus entre dans la fenêtre, sur
+Annuler, l'action la moins risquée.
+
+10
+00:00:32,725 --> 00:00:37,259
+Deux appuis sur Tab. Le focus passe sur
+Supprimer, puis revient sur Annuler.
+
+11
+00:00:37,259 --> 00:00:38,750
+Il reste dans la fenêtre.
+
+12
+00:00:39,650 --> 00:00:40,882
+On appuie sur Échap.
+
+13
+00:00:40,882 --> 00:00:45,500
+La fenêtre se ferme, et le focus revient
+sur le bouton qui l'avait ouverte.
+
+14
+00:00:46,400 --> 00:00:49,337
+Un dernier appui sur Tab mène à l'étape
+suivante.
+
+15
+00:00:49,337 --> 00:00:51,975
+Le parcours reprend là où il s'était
+arrêté.
+
+16
+00:00:52,875 --> 00:00:55,903
+À l'ouverture, le focus entre dans la
+fenêtre.
+
+17
+00:00:55,903 --> 00:01:00,050
+Tab le fait tourner entre Annuler et
+Supprimer, sans en sortir.
+
+18
+00:01:00,050 --> 00:01:04,000
+Échap ferme la fenêtre et rend le focus au
+bouton de départ.

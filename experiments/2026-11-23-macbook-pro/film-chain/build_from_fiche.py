@@ -97,6 +97,31 @@ def split_caption(text):
     return [wrap(cue) for cue in cues]
 
 
+# Version 4 : une scène « insert » montre une sous-composition HyperFrames à la place de la capture.
+# Le fichier de l'insert déclare cet identifiant et y inscrit sa timeline (window.__timelines).
+INSERT_ID = "insert"
+
+
+def inserts(fiche):
+    return [s for s in fiche["scenes"] if s["shot_type"] == "insert"]
+
+
+def capture_end(fiche):
+    """La capture joue jusqu'au début du premier insert, ou jusqu'à la fin du film."""
+    found = inserts(fiche)
+    return found[0]["narration"]["start_s"] if found else fiche["film"]["duration_s"]
+
+
+def insert_windows(fiche):
+    """(fichier, début, durée) de chaque insert : de sa phrase jusqu'au suivant, ou à la fin."""
+    found = inserts(fiche)
+    starts = [s["narration"]["start_s"] for s in found] + [fiche["film"]["duration_s"]]
+    return [
+        (s["insert_ref"], starts[i], starts[i + 1] - starts[i])
+        for i, s in enumerate(found)
+    ]
+
+
 def caption_cues(fiche):
     """Sous-titres de chaque scène : liste de (début, fin, lignes).
 
@@ -150,9 +175,17 @@ def composition(fiche):
     )
     video = (
         f'<video id="form-capture" class="clip" src="{html.escape(fiche["capture"]["media_ref"])}" muted playsinline '
-        f'data-start="0" data-duration="{duration}" data-track-index="0" style="{capture_style}"></video>'
+        f'data-start="0" data-duration="{number(capture_end(fiche))}" data-track-index="0" '
+        f'style="{capture_style}"></video>'
     )
     lines = [root_open, video]
+    # Placé juste après la capture : le titre et les sous-titres, écrits ensuite, passent devant.
+    for ref, start, length in insert_windows(fiche):
+        lines.append(
+            f'<div id="insert1" class="clip" data-composition-id="{INSERT_ID}" '
+            f'data-composition-src="{html.escape(ref)}" data-start="{number(start)}" '
+            f'data-duration="{number(length)}" data-track-index="5"></div>'
+        )
     if v2:
         lines.append(
             f'<div id="title" class="clip" data-start="{number(TITLE_START)}" '
