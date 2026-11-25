@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le focus clavier dans une fenêtre modale</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0e1621; }
+  #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #0e1621; }
+  #stage { position: absolute; inset: 0; width: 1920px; height: 1080px; display: block; }
+  /* Police système locale déclarée ici : HyperFrames ne la remplace pas et ne télécharge rien. */
+  @font-face { font-family: "FocusSans"; src: local("AvenirNext-Regular"), local("Avenir Next Regular"); font-weight: 400; }
+  @font-face { font-family: "FocusSans"; src: local("AvenirNext-Medium"), local("Avenir Next Medium"); font-weight: 500; }
+  @font-face { font-family: "FocusSans"; src: local("AvenirNext-DemiBold"), local("Avenir Next Demi Bold"); font-weight: 600; }
+  @font-face { font-family: "FocusSans"; src: local("AvenirNext-Bold"), local("Avenir Next Bold"); font-weight: 700; }
+  text { font-family: "FocusSans", sans-serif; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="focus-modale" data-width="1920" data-height="1080" data-start="0" data-duration="16">
+<svg id="stage" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clipIntro"><rect id="clipIntroR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipCard"><rect id="clipCardR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipOpenerLabel"><rect id="clipOpenerLabelR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipPanel"><rect id="clipPanelR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipSlot1"><rect id="clipSlot1R" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipSlot2"><rect id="clipSlot2R" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipBtnA"><rect id="clipBtnAR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipBtnS"><rect id="clipBtnSR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipKey"><rect id="clipKeyR" x="0" y="0" width="0" height="0"/></clipPath>
+    <clipPath id="clipBar"><rect id="clipBarR" x="0" y="0" width="0" height="0"/></clipPath>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow id="shadowFx" dx="0" dy="24" stdDeviation="28" flood-color="#000" flood-opacity="0"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1920" height="1080" fill="#0e1621"/>
+
+  <!-- Étiquette d'ouverture : elle sort du point puis y rentre -->
+  <g clip-path="url(#clipIntro)">
+    <text id="introLabel" x="0" y="0" font-size="46" font-weight="600" fill="#ffb27a" dominant-baseline="central">Le focus clavier</text>
+  </g>
+
+  <!-- La page : née du bouton -->
+  <rect id="card" x="0" y="0" width="0" height="0" fill="#ffffff" visibility="hidden"/>
+  <g clip-path="url(#clipCard)">
+    <text id="heading" x="190" y="232" font-size="46" font-weight="700" fill="#17212d" dominant-baseline="central">Supprimer son compte</text>
+    <text id="cardSub" x="190" y="290" font-size="30" font-weight="500" fill="#3a4654" dominant-baseline="central">Le focus entre, reste, puis revient.</text>
+    <text id="link" x="770" y="420" font-size="36" font-weight="500" fill="#0b57d0" dominant-baseline="central">Étape suivante</text>
+    <rect id="linkLine" x="770" y="442" width="0" height="3" fill="#0b57d0"/>
+  </g>
+
+  <!-- Le bouton d'ouverture : né de l'anneau -->
+  <rect id="opener" x="0" y="0" width="0" height="0" visibility="hidden"/>
+  <g clip-path="url(#clipOpenerLabel)">
+    <text id="openerLabel" x="0" y="0" font-size="36" font-weight="600" fill="#17212d" text-anchor="middle" dominant-baseline="central">Supprimer mon compte</text>
+  </g>
+
+  <!-- Arrière-plan rendu inerte -->
+  <rect id="overlay" x="0" y="0" width="1920" height="1080" fill="#070b11" opacity="0"/>
+
+  <!-- La fenêtre : née d'une copie du bouton -->
+  <g id="dialog" visibility="hidden">
+    <rect id="panel" x="0" y="0" width="0" height="0" fill="#ffffff" filter="url(#shadow)"/>
+    <g clip-path="url(#clipPanel)">
+      <text id="desc" x="1136" y="330" font-size="32" font-weight="500" fill="#3a4654" dominant-baseline="central">Cette action est définitive.</text>
+      <rect id="btnS" x="0" y="0" width="0" height="0"/>
+      <rect id="btnA" x="0" y="0" width="0" height="0"/>
+    </g>
+    <g clip-path="url(#clipBtnA)"><text id="lblA" x="0" y="0" font-size="34" font-weight="600" fill="#17212d" text-anchor="middle" dominant-baseline="central">Annuler</text></g>
+    <g clip-path="url(#clipBtnS)"><text id="lblS" x="0" y="0" font-size="34" font-weight="600" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Supprimer</text></g>
+    <g clip-path="url(#clipPanel)">
+    <text id="wSupprimer" font-size="48" font-weight="600" fill="#17212d" dominant-baseline="central">Supprimer</text>
+    <g clip-path="url(#clipSlot1)">
+      <text id="wMon" font-size="48" font-weight="600" fill="#17212d" dominant-baseline="central">mon</text>
+      <text id="wVotre" font-size="48" font-weight="600" fill="#17212d" dominant-baseline="central">votre</text>
+    </g>
+    <text id="wCompte" font-size="48" font-weight="600" fill="#17212d" dominant-baseline="central">compte</text>
+    <g clip-path="url(#clipSlot2)">
+      <text id="wQ" font-size="48" font-weight="600" fill="#17212d" dominant-baseline="central">?</text>
+    </g>
+    </g>
+  </g>
+
+  <!-- L'anneau de focus -->
+  <rect id="ring" x="0" y="0" width="0" height="0" fill="#e8590c" stroke="#e8590c" stroke-width="7"/>
+  <g clip-path="url(#clipPanel)">
+    <rect id="wrapOut" x="0" y="0" width="0" height="0" fill="none" stroke="#e8590c" stroke-width="7" visibility="hidden"/>
+    <rect id="wrapIn" x="0" y="0" width="0" height="0" fill="none" stroke="#e8590c" stroke-width="7" visibility="hidden"/>
+  </g>
+
+  <!-- Touche et légende : nées d'une copie de l'anneau -->
+  <rect id="bar" x="0" y="0" width="0" height="0" visibility="hidden"/>
+  <g clip-path="url(#clipBar)">
+    <text id="cap0" font-size="36" fill="#17212d" dominant-baseline="central" visibility="hidden"><tspan font-weight="700">Entre</tspan><tspan font-weight="500"> — le focus passe dans la fenêtre, sur Annuler.</tspan></text>
+    <text id="cap1" font-size="36" fill="#17212d" dominant-baseline="central" visibility="hidden"><tspan font-weight="700">Reste</tspan><tspan font-weight="500"> — Tab tourne entre les boutons, sans sortir.</tspan></text>
+    <text id="cap2" font-size="36" fill="#17212d" dominant-baseline="central" visibility="hidden"><tspan font-weight="700">Revient</tspan><tspan font-weight="500"> — la fenêtre se ferme, retour au bouton.</tspan></text>
+    <text id="cap3" font-size="36" fill="#17212d" dominant-baseline="central" visibility="hidden"><tspan font-weight="700">Reprend</tspan><tspan font-weight="500"> — le parcours continue où il s'était arrêté.</tspan></text>
+  </g>
+  <rect id="key" x="0" y="0" width="0" height="0" visibility="hidden"/>
+  <g clip-path="url(#clipKey)">
+    <text id="keyEntree" font-size="34" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Entrée</text>
+    <text id="keyTab1" font-size="34" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Tab ⇥</text>
+    <text id="keyEchap" font-size="34" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Échap</text>
+    <text id="keyTab2" font-size="34" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">Tab ⇥</text>
+  </g>
+</svg>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var DURATION = 16;
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---------- Courbes ----------
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var lerp = function (a, b, p) { return a + (b - a) * p; };
+  var seg = function (t, t0, t1) { return t1 <= t0 ? (t >= t1 ? 1 : 0) : clamp((t - t0) / (t1 - t0), 0, 1); };
+  var inOut = function (p) { return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; };
+  var inCubic = function (p) { return p * p * p; };
+  var outCubic = function (p) { return 1 - Math.pow(1 - p, 3); };
+  var backOut = function (s) { return function (p) { var q = p - 1; return 1 + (s + 1) * q * q * q + s * q * q; }; };
+  var backInOut = function (s) {
+    var c = s * 1.525;
+    return function (p) {
+      return p < 0.5
+        ? (Math.pow(2 * p, 2) * ((c + 1) * 2 * p - c)) / 2
+        : (Math.pow(2 * p - 2, 2) * ((c + 1) * (p * 2 - 2) + c) + 2) / 2;
+    };
+  };
+  var softBack = backOut(1.1);
+  var travel = backInOut(0.55);   // anticipation, léger dépassement, stabilisation
+
+  function hex(c) { return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; }
+  function mix(a, b, p) {
+    var A = hex(a), B = hex(b); p = clamp(p, 0, 1);
+    return "rgb(" + Math.round(lerp(A[0], B[0], p)) + "," + Math.round(lerp(A[1], B[1], p)) + "," + Math.round(lerp(A[2], B[2], p)) + ")";
+  }
+  function lr(a, b, p) { return { x: lerp(a.x, b.x, p), y: lerp(a.y, b.y, p), w: lerp(a.w, b.w, p), h: lerp(a.h, b.h, p), r: lerp(a.r, b.r, p) }; }
+  function setRect(el, r) {
+    el.setAttribute("x", r.x); el.setAttribute("y", r.y);
+    el.setAttribute("width", Math.max(0, r.w)); el.setAttribute("height", Math.max(0, r.h));
+    var rr = Math.max(0, Math.min(r.r, r.w / 2, r.h / 2));
+    el.setAttribute("rx", rr); el.setAttribute("ry", rr);
+  }
+  function show(el, on) { el.setAttribute("visibility", on ? "visible" : "hidden"); }
+  function ringOf(b) { return { x: b.x - 8.5, y: b.y - 8.5, w: b.w + 17, h: b.h + 17, r: b.r + 7 }; }
+  function inset(b, d, r) { return { x: b.x + d, y: b.y + d, w: b.w - 2 * d, h: b.h - 2 * d, r: r }; }
+  function shift(b, dx, dy) { return { x: b.x + dx, y: b.y + dy, w: b.w, h: b.h, r: b.r }; }
+
+  // Pistes à images clés : [{t, v, e}] ; e = courbe d'arrivée sur cette clé.
+  function track(t, kfs, interp) {
+    if (t <= kfs[0].t) return { v: kfs[0].v, i: -1, p: 0 };
+    for (var i = 0; i < kfs.length - 1; i++) {
+      var a = kfs[i], b = kfs[i + 1];
+      if (t < b.t) {
+        var p = seg(t, a.t, b.t);
+        var e = (b.e || inOut)(p);
+        return { v: interp(a.v, b.v, e), i: i, p: p };
+      }
+    }
+    return { v: kfs[kfs.length - 1].v, i: kfs.length, p: 1 };
+  }
+
+  // ---------- Mesures (polices système, aucun réseau) ----------
+  function textW(el) { return el.getComputedTextLength(); }
+
+  // ---------- Géométrie ----------
+  var CARD = { x: 120, y: 150, w: 1010, h: 560, r: 28 };
+  var OPENER = { x: 190, y: 365, w: 520, h: 110, r: 14 };
+  var PANEL = { x: 1080, y: 180, w: 740, h: 380, r: 26 };
+  var BTN_A = { x: 1136, y: 420, w: 220, h: 96, r: 12 };
+  var BTN_S = { x: 1380, y: 420, w: 250, h: 96, r: 12 };
+  var CHIP = { x: 1136, y: 420, w: 494, h: 96, r: 12 };
+  var DOT = { cx: 784, cy: 540 };
+  var BAR_Y = 830, BAR_H = 120, KEY_PAD = 18, KEY_W = 196;
+  var KEY_PILL = { x: 960 - (KEY_W + 2 * KEY_PAD) / 2, y: BAR_Y, w: KEY_W + 2 * KEY_PAD, h: BAR_H, r: 30 };
+
+  var BARS, FB, FT, LBL_X0, LBL_Y, LINK, PRESSES, R_A, R_LINK, R_OPEN, R_S, S0, TITLE_X, TITLE_Y, W, WRAP0, WRAP1, arcs, barTrack, capW, caps, dot, labelTotal, linkW, ringTrack, titleScale, titleTotal, wSp, lastSig = null;
+  function build() {
+    linkW = textW($("link"));
+    LINK = { x: 770 - 2, y: 420 - 26, w: linkW + 4, h: 52, r: 4 };
+    $("linkLine").setAttribute("width", linkW);
+  
+    R_OPEN = ringOf(OPENER), R_A = ringOf(BTN_A), R_S = ringOf(BTN_S), R_LINK = ringOf(LINK);
+    dot = function (d) { return { x: DOT.cx - d / 2, y: DOT.cy - d / 2, w: d, h: d, r: d / 2 }; };
+  
+    // Mots du titre : position mesurée à 48 px, mise à l'échelle pour l'étiquette du bouton (36 px).
+    FT = 48, FB = 36, S0 = FB / FT;
+    wSp = (function () { var e = $("wSupprimer"); e.textContent = "Supprimer "; var w = textW(e); e.textContent = "Supprimer"; return w - textW(e); })();
+    W = {
+      sup: textW($("wSupprimer")), mon: textW($("wMon")), votre: textW($("wVotre")),
+      compte: textW($("wCompte")), q: textW($("wQ"))
+    };
+    labelTotal = (W.sup + wSp + W.mon + wSp + W.compte) * S0;
+    LBL_X0 = OPENER.x + OPENER.w / 2 - labelTotal / 2, LBL_Y = OPENER.y + OPENER.h / 2;
+    TITLE_X = 1136, TITLE_Y = 266;
+    titleTotal = W.sup + wSp + W.votre + wSp + W.compte + wSp + W.q;
+    titleScale = Math.min(1, (PANEL.w - 112) / titleTotal);
+  
+    // Légendes
+    caps = [$("cap0"), $("cap1"), $("cap2"), $("cap3")];
+    capW = caps.map(textW);
+    function barRect(i) {
+      var w = KEY_PAD + KEY_W + 34 + capW[i] + 46;
+      return { x: 960 - w / 2, y: BAR_Y, w: w, h: BAR_H, r: 30 };
+    }
+    BARS = [0, 1, 2, 3].map(barRect);
+  
+    // ---------- Partition ----------
+    PRESSES = [4.05, 7.25, 8.2, 10.55, 13.65];
+    WRAP0 = 8.25, WRAP1 = 8.95;
+  
+    ringTrack = [
+      { t: 0, v: dot(16) }, { t: 0.35, v: dot(20), e: softBack }, { t: 1.35, v: dot(20) },
+      { t: 2.1, v: R_OPEN, e: backInOut(0.7) },
+      { t: 4.65, v: R_OPEN }, { t: 5.6, v: R_A, e: travel },
+      { t: 7.3, v: R_A }, { t: 7.8, v: R_S, e: travel },
+      { t: WRAP0, v: R_S }, { t: WRAP1, v: R_A, e: function (p) { return p >= 1 ? 1 : 0; } },
+      { t: 10.7, v: R_A }, { t: 11.7, v: R_OPEN, e: travel },
+      { t: 13.7, v: R_OPEN }, { t: 14.2, v: R_LINK, e: travel }
+    ];
+    arcs = [ { t0: 1.35, t1: 2.1, a: -70 }, { t0: 4.65, t1: 5.6, a: -90 }, { t0: 10.7, t1: 11.7, a: -90 }, { t0: 7.3, t1: 7.8, a: -18 }, { t0: 13.7, t1: 14.2, a: -30 } ];
+  
+    barTrack = [
+      { t: 2.9, v: R_OPEN }, { t: 3.55, v: KEY_PILL, e: backInOut(0.6) },
+      { t: 4.5, v: KEY_PILL }, { t: 5.2, v: BARS[0], e: softBack },
+      { t: 6.6, v: BARS[0] }, { t: 6.95, v: KEY_PILL, e: inOut },
+      { t: 7.4, v: KEY_PILL }, { t: 8.0, v: BARS[1], e: softBack },
+      { t: 9.9, v: BARS[1] }, { t: 10.25, v: KEY_PILL, e: inOut },
+      { t: 11.0, v: KEY_PILL }, { t: 11.6, v: BARS[2], e: softBack },
+      { t: 13.0, v: BARS[2] }, { t: 13.35, v: KEY_PILL, e: inOut },
+      { t: 13.85, v: KEY_PILL }, { t: 14.45, v: BARS[3], e: softBack }
+    ];
+  }
+  var capWindows = [ [4.5, 6.95], [7.4, 10.25], [11.0, 13.35], [13.85, 99] ];
+  var keyLabels = [ { el: $("keyEntree"), in: 3.65, out: 6.85 }, { el: $("keyTab1"), in: 6.85, out: 10.15 },
+                    { el: $("keyEchap"), in: 10.15, out: 13.25 }, { el: $("keyTab2"), in: 13.25, out: 99 } ];
+
+  function openClose(t, o0, o1, c0, c1, e) {
+    e = e || inOut;
+    if (t < c0) return e(seg(t, o0, o1));
+    return 1 - e(seg(t, c0, c1));
+  }
+  function pressDepth(t) {
+    var d = 0;
+    for (var i = 0; i < PRESSES.length; i++) {
+      var tp = PRESSES[i];
+      if (t >= tp && t < tp + 0.09) d = inCubic(seg(t, tp, tp + 0.09));
+      else if (t >= tp + 0.09 && t < tp + 0.4) d = 1 - backOut(2.2)(seg(t, tp + 0.09, tp + 0.4));
+    }
+    return d;
+  }
+
+  // ---------- Rendu : état = fonction pure du temps ----------
+  function render(t) {
+    t = clamp(t, 0, DURATION);
+    var sig = textW($("link")) + "|" + textW($("cap0")) + "|" + textW($("wSupprimer"));
+    if (sig !== lastSig) { lastSig = sig; build(); }
+
+    // Étiquette d'ouverture, masquée par le bord du point
+    var introOut = outCubic(seg(t, 0.15, 0.75)), introIn = inCubic(seg(t, 1.05, 1.38));
+    var open = introOut * (1 - introIn);
+    $("introLabel").setAttribute("x", DOT.cx + 30 - (1 - open) * 18); $("introLabel").setAttribute("y", DOT.cy);
+    setRect($("clipIntroR"), { x: DOT.cx + 12, y: DOT.cy - 60, w: 400 * open, h: 120, r: 0 });
+
+    // Anneau principal
+    var rt = track(t, ringTrack, lr), ring = rt.v;
+    var dy = 0;
+    arcs.forEach(function (a) { if (t > a.t0 && t < a.t1) dy += a.a * Math.sin(Math.PI * seg(t, a.t0, a.t1)); });
+    ring = shift(ring, 0, dy);
+    var ringEl = $("ring");
+    setRect(ringEl, ring);
+    ringEl.setAttribute("fill-opacity", 1 - inOut(seg(t, 1.38, 1.62)));
+    show(ringEl, !(t > WRAP0 && t < WRAP1));
+
+    // Boucle de Tab : l'anneau sort par le bord droit et rentre par le bord gauche de la fenêtre
+    var inWrap = t > WRAP0 && t < WRAP1;
+    show($("wrapOut"), inWrap); show($("wrapIn"), inWrap);
+    if (inWrap) {
+      var pOut = inCubic(seg(t, WRAP0, WRAP0 + 0.36));
+      var pIn = backOut(1.2)(seg(t, WRAP0 + 0.24, WRAP1));
+      setRect($("wrapOut"), shift(R_S, pOut * (PANEL.x + PANEL.w - R_S.x + 12), 0));
+      setRect($("wrapIn"), shift(R_A, (1 - pIn) * -(R_A.x + R_A.w - PANEL.x + 12), 0));
+    }
+
+    // Bouton d'ouverture : contraction d'une copie de l'anneau
+    var pb = backOut(0.9)(seg(t, 2.05, 2.55));
+    var opener = $("opener");
+    show(opener, t >= 2.05);
+    if (t >= 2.05) {
+      setRect(opener, lr(R_OPEN, OPENER, pb));
+      opener.setAttribute("fill", "#ffffff");
+      opener.setAttribute("fill-opacity", clamp(pb, 0, 1));
+      opener.setAttribute("stroke", mix("#e8590c", "#333333", pb));
+      opener.setAttribute("stroke-width", lerp(7, 3, clamp(pb, 0, 1)));
+    }
+    var pl = inOut(seg(t, 2.3, 2.75));
+    setRect($("clipOpenerLabelR"), { x: OPENER.x + OPENER.w / 2 - pl * OPENER.w / 2, y: OPENER.y, w: pl * OPENER.w, h: OPENER.h, r: 0 });
+    $("openerLabel").setAttribute("x", OPENER.x + OPENER.w / 2); $("openerLabel").setAttribute("y", LBL_Y);
+
+    // Page : expansion d'une copie du bouton, qui dévoile son contenu
+    var pc = backInOut(0.4)(seg(t, 2.45, 3.1));
+    var cardR = lr(OPENER, CARD, pc);
+    show($("card"), t >= 2.45); setRect($("card"), cardR); setRect($("clipCardR"), t >= 2.45 ? cardR : { x: 0, y: 0, w: 0, h: 0, r: 0 });
+
+    // Arrière-plan inerte
+    $("overlay").setAttribute("opacity", 0.5 * openClose(t, 4.2, 5.0, 10.75, 11.5));
+
+    // Fenêtre
+    var dlgOn = t >= 4.2 && t < 11.6;
+    show($("dialog"), dlgOn);
+    if (dlgOn) {
+      var pp = openClose(t, 4.2, 5.1, 10.75, 11.55, backInOut(0.35));
+      var panelR = lr(OPENER, PANEL, pp);
+      setRect($("panel"), panelR);
+      $("panel").setAttribute("stroke", "#333333");
+      $("panel").setAttribute("stroke-width", lerp(3, 0, clamp(pp * 2.5, 0, 1)));
+      $("shadowFx").setAttribute("flood-opacity", 0.55 * clamp(pp, 0, 1));
+      setRect($("clipPanelR"), panelR);
+
+      // Bouton unique qui se divise en Annuler / Supprimer
+      var pChip = openClose(t, 4.25, 5.0, 10.85, 11.55, backInOut(0.35));
+      var pSplit = openClose(t, 4.95, 5.4, 10.6, 10.95, backOut(1.0));
+      var chipR = lr(OPENER, CHIP, pChip);
+      var aR = lr(chipR, BTN_A, pSplit), sR = lr(chipR, BTN_S, pSplit);
+      var bA = $("btnA"), bS = $("btnS");
+      setRect(bA, aR); setRect(bS, sR);
+      bA.setAttribute("fill", "#ffffff"); bA.setAttribute("stroke", "#333333"); bA.setAttribute("stroke-width", 3);
+      var red = clamp(pSplit, 0, 1);
+      bS.setAttribute("fill", mix("#ffffff", "#b3261e", red)); bS.setAttribute("stroke", mix("#333333", "#b3261e", red)); bS.setAttribute("stroke-width", 3);
+      var pLbl = openClose(t, 5.1, 5.45, 10.5, 10.75, outCubic);
+      setRect($("clipBtnAR"), aR); setRect($("clipBtnSR"), sR);
+      $("lblA").setAttribute("x", aR.x + aR.w / 2); $("lblA").setAttribute("y", aR.y + aR.h / 2 + (1 - pLbl) * 70);
+      $("lblS").setAttribute("x", sR.x + sR.w / 2); $("lblS").setAttribute("y", sR.y + sR.h / 2 + (1 - pLbl) * 70);
+
+      // Mots : « Supprimer mon compte » devient « Supprimer votre compte ? »
+      // Les mots suivent le repère de la fenêtre (même progression) : ils restent dedans.
+      var pw = pp;
+      var pr = openClose(t, 4.55, 4.95, 10.9, 11.3, inOut);
+      var sc = lerp(S0, titleScale, pw);
+      var x0 = panelR.x + lerp(LBL_X0 - OPENER.x, TITLE_X - PANEL.x, pw);
+      var y0 = panelR.y + lerp(LBL_Y - OPENER.y, TITLE_Y - PANEL.y, pw);
+      var slotW = lerp(W.mon, W.votre, pr);
+      var xs = x0, xm = xs + (W.sup + wSp) * sc, xc = xm + (slotW + wSp) * sc, xq = xc + (W.compte + wSp) * sc;
+      var place = function (id, x, y) { $(id).setAttribute("transform", "translate(" + x + "," + y + ") scale(" + sc + ")"); };
+      place("wSupprimer", xs, y0);
+      var rollH = 72 * sc;
+      place("wMon", xm, y0 - pr * rollH);
+      place("wVotre", xm, y0 + (1 - pr) * rollH);
+      place("wCompte", xc, y0);
+      place("wQ", xq, y0 + (1 - pr) * rollH);
+      setRect($("clipSlot1R"), { x: xm - 4, y: y0 - 31 * sc, w: Math.max(W.mon, W.votre) * sc + 8, h: 62 * sc, r: 0 });
+      setRect($("clipSlot2R"), { x: xq - 4, y: y0 - 31 * sc, w: W.q * sc + 12, h: 62 * sc, r: 0 });
+    }
+
+    // Touche et légende
+    var barOn = t >= 2.9;
+    show($("bar"), barOn);
+    if (barOn) {
+      var bt = track(t, barTrack, lr), b = bt.v;
+      if (t < 3.55) { // goutte : étirement dans le sens du déplacement
+        var s = Math.sin(Math.PI * seg(t, 2.9, 3.55));
+        var cx = b.x + b.w / 2, cy = b.y + b.h / 2, nw = b.w * (1 - 0.18 * s), nh = b.h * (1 + 0.3 * s);
+        b = { x: cx - nw / 2, y: cy - nh / 2, w: nw, h: nh, r: b.r };
+      }
+      var flood = inOut(seg(t, 3.35, 3.65));
+      var bar = $("bar");
+      setRect(bar, b);
+      bar.setAttribute("fill", "#f3f5f8"); bar.setAttribute("fill-opacity", flood);
+      bar.setAttribute("stroke", mix("#e8590c", "#f3f5f8", flood)); bar.setAttribute("stroke-width", lerp(7, 3, flood));
+      setRect($("clipBarR"), inset(b, 4, b.r));
+
+      var key = $("key");
+      var keyOn = t >= 3.45;
+      show(key, keyOn);
+      var keyHome = { x: b.x + KEY_PAD, y: b.y + KEY_PAD, w: KEY_W, h: b.h - 2 * KEY_PAD, r: 16 };
+      var pk = backOut(1.0)(seg(t, 3.45, 3.8));
+      var kR = lr(b, keyHome, pk);
+      var dep = pressDepth(t);
+      kR = { x: kR.x + dep * 4, y: kR.y + dep * 7, w: kR.w - dep * 8, h: kR.h - dep * 9, r: kR.r };
+      if (keyOn) {
+        setRect(key, kR);
+        key.setAttribute("fill", mix("#f3f5f8", "#17212d", pk));
+        key.setAttribute("stroke", "#17212d"); key.setAttribute("stroke-width", 0);
+      }
+      setRect($("clipKeyR"), keyOn ? kR : { x: 0, y: 0, w: 0, h: 0, r: 0 });
+      var kcx = kR.x + kR.w / 2, kcy = kR.y + kR.h / 2;
+      keyLabels.forEach(function (k) {
+        var pin = outCubic(seg(t, k.in, k.in + 0.3)), pout = inCubic(seg(t, k.out, k.out + 0.3));
+        var y = kcy + (1 - pin) * 70 - pout * 70;
+        k.el.setAttribute("x", kcx); k.el.setAttribute("y", y);
+        k.el.setAttribute("font-size", 34 - dep * 2);
+      });
+
+      caps.forEach(function (c, i) {
+        var w = capWindows[i];
+        var on = t >= w[0] && t < w[1];
+        show(c, on);
+        if (on) {
+          var pin = outCubic(seg(t, w[0], w[0] + 0.7));
+          c.setAttribute("x", keyHome.x + KEY_W + 34 + (1 - pin) * 40);
+          c.setAttribute("y", b.y + b.h / 2);
+        }
+      });
+    }
+  }
+
+  // ---------- Contrat de minuterie HyperFrames ----------
+  var state = { time: 0, paused: true, scale: 1 };
+  var tl = {
+    duration: function () { return DURATION; },
+    totalDuration: function () { return DURATION; },
+    seek: function (t) { state.time = clamp(+t || 0, 0, DURATION); render(state.time); return tl; },
+    totalTime: function (t) { if (t === undefined) return state.time; return tl.seek(t); },
+    time: function (t) { if (t === undefined) return state.time; return tl.seek(t); },
+    progress: function (p) { if (p === undefined) return state.time / DURATION; return tl.seek(p * DURATION); },
+    pause: function () { state.paused = true; return tl; },
+    play: function () { state.paused = false; return tl; },
+    paused: function (v) { if (v === undefined) return state.paused; state.paused = !!v; return tl; },
+    timeScale: function (v) { if (v === undefined) return state.scale; state.scale = v; return tl; },
+    isActive: function () { return !state.paused; },
+    render: render
+  };
+  window.__timelines = window.__timelines || {};
+  window.__timelines["focus-modale"] = tl;
+  render(0);
+})();
+</script>
+</body>
+</html>
