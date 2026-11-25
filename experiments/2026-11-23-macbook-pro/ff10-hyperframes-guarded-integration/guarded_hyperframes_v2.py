@@ -27,6 +27,22 @@ TERM_GRACE, STOP_DEADLINE = 3.0, 15.0
 # Un rendu de film court dure une à deux minutes : au-delà de ce délai, il est tenu pour bloqué.
 RENDER_TIMEOUT = float(os.environ.get("FF_RENDER_TIMEOUT_S", "1800"))
 
+# Aucune connexion sortante pendant le rendu, sauf vers la machine elle-même : HyperFrames sert la
+# composition par un serveur local. Sans cela, il demande la police Inter à Google Fonts dès qu'une
+# composition nomme Arial ; mesure du 25 novembre 2026 (ticket 65) : le film 47 rendu sans réseau
+# redonne son empreinte approuvée. Un rendu qui aurait besoin du réseau échoue au lieu de télécharger.
+NO_NETWORK_PROFILE = ('(version 1)(allow default)(deny network-outbound)'
+                      '(allow network-outbound (remote ip "localhost:*"))'
+                      '(allow network-outbound (remote unix-socket))')
+
+def render_command(snapshot, rendered):
+    """Commande de rendu HyperFrames 0.8.33, enfermée dans le bac à sable sans réseau."""
+    sandbox = shutil.which("sandbox-exec")
+    if sandbox is None:
+        raise ValueError("no_network_sandbox_unavailable")
+    return [sandbox, "-p", NO_NETWORK_PROFILE, "npx", "--yes", "hyperframes@0.8.33", "render",
+            str(snapshot), "--output="+str(rendered), "--workers=2", "--no-best-effort"]
+
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -147,8 +163,7 @@ def guarded_render(args, preflight_fn, media, config, output_validator):
         # Keep all render inputs private to this invocation. An external mutation
         # of the original project cannot change the bytes HyperFrames reads.
         rendered=work/"rendered.mp4"
-        cmd=["npx","--yes","hyperframes@0.8.33","render",str(snapshot),
-             "--output="+str(rendered),"--workers=2","--no-best-effort"]
+        cmd=render_command(snapshot, rendered)
         token=uuid.uuid4().hex
         child=subprocess.Popen(cmd,start_new_session=True,stdout=subprocess.DEVNULL,
                                stderr=subprocess.PIPE,env=dict(os.environ,**{TOKEN_NAME:token}))
