@@ -49,6 +49,8 @@ Consignées sans être corrigées, comme le demande le brief. Pour chacune : bes
 7. **Prononciation non vérifiable par l'agent.** Preuve : seuls des modèles de transcription anglais sont présents (`faster-whisper` `.en`). « Tab » et « Échap » restent à écouter (ticket 36).
 8. **Avertissement de HyperFrames.** `timeline_track_too_dense` (7 éléments sur une piste) : sans effet sur le rendu, rien à faire.
 
+Suites données le même jour : les constats 1 et 2 sont repris dans la chaîne (`film-chain/place_cues.py` et `film-chain/witness_reference.py`), qui redonnent exactement les valeurs de ce film ; les deux scripts écrits pour lui sont retirés. Le constat 4 est corrigé dans `check_manifest.py`. Le constat 3 est tranché : télémétrie coupée par Alex sur le MacBook Pro (`hyperframes telemetry disable`).
+
 ## Ce qui reste à faire
 
 - Fait : visionnage et approbation éditoriale par Alex (« très bien », puis « oui » à la question d'approbation). Médias copiés dans `~/Claude-worktrees/frameforge-medias-approuves/2026-11-25/`, empreintes vérifiées par `shasum -c`.

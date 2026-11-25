@@ -32,6 +32,9 @@ COPIED = (
     "ff04-room-booking-film",
     "ff10-second-web-demo-transfer",
     "ff10-web-workflow-entrypoint",
+    # Témoin de test_outils_fiche : sans lui, la suite échouerait au chargement et chaque mutant
+    # serait compté comme vu.
+    "ff47-film-fenetres-modales",
 )
 SUITES = (
     (
@@ -45,6 +48,7 @@ SUITES = (
             "test_interruption",
             "test_review_findings",
             "test_codex_findings",
+            "test_outils_fiche",
         ),
     ),
     (

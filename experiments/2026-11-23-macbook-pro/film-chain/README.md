@@ -8,6 +8,9 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `build_from_fiche.py` : génère depuis la fiche la composition, les sous-titres SRT et VTT et la transcription. L'habillage est en dur et dépend de `manifest_version` : la version 1 garde le bandeau d'origine, octet pour octet ; la version 2 demande deux champs de plus dans `film`, `title` (titre d'ouverture, affiché sans être dit, repris en tête de la transcription) et `capture_zoom` (de 1 à 1,5, capture agrandie depuis le haut, le reste est rogné), et met les sous-titres en cartouche.
 - `film_guard.py` : garde de rendu. Précontrôle des entrées figées, contrôle de la fiche, validation du film avant dépôt.
 - `repin.py` : refige les empreintes d'un film après un changement voulu. `--check` n'écrit rien.
+- `place_cues.py` : pose les repères de la fiche (phrases, sous-titres, durée du film) depuis les durées des clips mesurées par ffprobe. Refuse la fiche d'un film déjà rendu.
+- `witness_reference.py` : rend le brouillon témoin (HyperFrames 0.8.33, mêmes options que le garde, télémétrie coupée) et écrit `output-reference.json` ; `--from` part d'un témoin déjà rendu. Refuse la fiche d'un film déjà rendu et n'écrase pas un témoin.
+- `test_outils_fiche.py` : les deux outils redonnent les valeurs posées à la main pour le film 47, et leurs refus ; un fichier d'empreintes absent donne un FAIL du contrôle de fiche.
 - `capture_lib.cjs` : navigateur, pointeur visible, horloge, journal et conversion des captures.
 - `test_repin.py` : tests de `repin.py`.
 - `test_capture_lib.py` : le dépôt d'une capture n'écrase rien et n'écrit rien à travers un lien, avec un faux navigateur et le vrai ffmpeg.
@@ -37,10 +40,10 @@ Deux dossiers gardent leur propre garde, écrit avant `film-chain` : ils ne sont
 
 1. Écrire la fiche avec les phrases, statut `DRAFT`, sans empreinte de film.
 2. Produire les clips de narration et mesurer leurs durées.
-3. Poser les repères dans la fiche, puis `python3 build_from_fiche.py CHEMIN_DE_LA_FICHE`.
+3. `python3 place_cues.py CHEMIN_DE_LA_FICHE` (écarts réglables : `--first`, `--gap`, `--pad`, `--tail`), puis `python3 build_from_fiche.py CHEMIN_DE_LA_FICHE`.
 4. Écrire `capture.cjs` et capturer.
 5. Écrire le fichier d'empreintes et le `render_guarded.py` du film, puis `python3 repin.py DOSSIER`.
-6. Rendre un brouillon témoin, le qualifier, écrire la référence de sortie, refiger.
+6. `python3 witness_reference.py DOSSIER` rend le brouillon témoin et écrit la référence de sortie ; regarder le témoin (planche d'images), puis refiger.
 7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Le garde écrit un reçu à côté du film (`…mp4.receipt.json`, non versionné) : `--record-output` refuse un film sans reçu, ou dont une entrée a changé depuis le rendu. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 

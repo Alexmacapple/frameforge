@@ -313,14 +313,23 @@ def check_data(data, root, events=None):
     )
 
     # La composition n'est pas exigée ici : son contenu est confronté à la fiche plus bas.
-    pins = json.loads((root / data["pins_ref"]).read_text())
+    # Un fichier d'empreintes absent ou illisible est un échec du contrôle, pas une trace Python.
+    try:
+        pins = json.loads((root / data["pins_ref"]).read_text())
+        unreadable = (
+            [] if isinstance(pins, dict) else [f"{data['pins_ref']} : objet attendu"]
+        )
+    except (OSError, ValueError):
+        pins, unreadable = {}, [f"{data['pins_ref']} absent ou illisible"]
+    if unreadable:
+        pins = {}
     refs = [
         data["capture"]["media_ref"],
         film["transcript_ref"],
         *film["caption_refs"],
         *[n["audio_ref"] for n in narrations],
     ]
-    problems = [
+    problems = unreadable or [
         f"{ref} n'est pas figé par {data['pins_ref']}"
         for ref in refs
         if ref not in pins
