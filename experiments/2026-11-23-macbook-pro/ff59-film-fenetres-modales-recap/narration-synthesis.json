@@ -1,0 +1,50 @@
+{
+  "voice": "ff_siwis",
+  "lang": "f",
+  "speed": 1.2,
+  "seed": 20261123,
+  "clips": [
+    {
+      "audio_ref": "voice1.wav",
+      "text": "Version fautive. On clique sur Supprimer mon compte. La fenêtre s'ouvre, mais le focus reste derrière, sur le bouton de la page.",
+      "duration_s": 7.15,
+      "sha256": "8b79b0d021b5b3896dfda9b5826526355977858af770de2185242853dea7a15b"
+    },
+    {
+      "audio_ref": "voice2.wav",
+      "text": "On appuie sur Tab. Le focus part sur le lien Consulter l'aide, derrière la fenêtre. On ne sait plus où l'on est.",
+      "duration_s": 6.125,
+      "sha256": "075eb4829f907c7c6831483d66eeac42f15d229f9a016ff9a3b6a540005b812d"
+    },
+    {
+      "audio_ref": "voice3.wav",
+      "text": "On appuie sur Échap. Rien ne se passe, la fenêtre reste ouverte. On la ferme à la souris, avec Annuler.",
+      "duration_s": 5.75,
+      "sha256": "8e65f62de8cf186fc162acf0ee43523e910b13ee651e319498a214888d52ae11"
+    },
+    {
+      "audio_ref": "voice4.wav",
+      "text": "Version corrigée. On clique de nouveau sur Supprimer mon compte. Le focus entre dans la fenêtre, sur Annuler, l'action la moins risquée.",
+      "duration_s": 7.1,
+      "sha256": "83bb2b7ac2608a874ae43c6fe9552060d0a00b6b897110ffa2fae1d45f7c4a85"
+    },
+    {
+      "audio_ref": "voice5.wav",
+      "text": "Deux appuis sur Tab. Le focus passe sur Supprimer, puis revient sur Annuler. Il reste dans la fenêtre.",
+      "duration_s": 5.725,
+      "sha256": "1a93d893b39cdfde23d7356f6f53f7fda4a466f207fef21c0316f8b794cf3c2a"
+    },
+    {
+      "audio_ref": "voice6.wav",
+      "text": "On appuie sur Échap. La fenêtre se ferme, et le focus revient sur le bouton qui l'avait ouverte.",
+      "duration_s": 5.55,
+      "sha256": "453e3eca74c816310f933149c55b86fe62b0781d3bf7c3d2cae30995c3adba7b"
+    },
+    {
+      "audio_ref": "voice7.wav",
+      "text": "Un dernier appui sur Tab mène à l'étape suivante. Le parcours reprend là où il s'était arrêté.",
+      "duration_s": 5.275,
+      "sha256": "cf1d4f3a12caeaf235eccbdc25c6ea8246897de29af889338c8f01c33c643fad"
+    }
+  ]
+}

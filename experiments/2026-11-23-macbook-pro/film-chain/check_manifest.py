@@ -20,9 +20,23 @@ from html import unescape
 from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_from_fiche import TITLE_END, TITLE_START, caption_cues
+from build_from_fiche import (
+    INSERT_ID,
+    TITLE_END,
+    TITLE_START,
+    caption_cues,
+    capture_end,
+    insert_windows,
+)
 
-SHOT_TYPES = {"fixed", "continuous_action", "title_card", "honest_cut", "result"}
+SHOT_TYPES = {
+    "fixed",
+    "continuous_action",
+    "title_card",
+    "honest_cut",
+    "result",
+    "insert",
+}
 EVIDENCE = {"observed", "reasoned", "planned", "unverified", "failed"}
 APPROVAL = {"DRAFT", "REVIEWED", "APPROVED_FOR_RELEASE", "REVOKED"}
 FIELDS = {
@@ -65,6 +79,11 @@ TITLE = re.compile(
     r'<div id="title"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
 VIDEO = re.compile(r'<video[^>]*\ssrc="([^"]+)"')
+VIDEO_DURATION = re.compile(r'<video[^>]*\sdata-duration="([\d.]+)"')
+INSERT = re.compile(
+    r'<div id="insert\d+"[^>]*data-composition-id="([^"]+)"[^>]*'
+    r'data-composition-src="([^"]+)"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"'
+)
 CAPTION = re.compile(
     r'<div id="caption\d+"[^>]*data-start="([\d.]+)"[^>]*data-duration="([\d.]+)"[^>]*>([^<]*)<'
 )
@@ -241,10 +260,11 @@ def schema_problems(data):
 
     if same(data, "root", "fiche"):
         version = data["manifest_version"]
-        # Version 3 : les champs de la version 2, et des sous-titres découpés.
-        if type(version) is not int or version not in (1, 2, 3):
+        # Version 3 : les champs de la version 2, et des sous-titres découpés. Version 4 : la
+        # version 3, et une scène « insert » possible en fin de film.
+        if type(version) is not int or version not in (1, 2, 3, 4):
             problems.append(f"version de fiche inconnue : {version!r}")
-        v2 = FIELDS["film_v2"] if version in (2, 3) else frozenset()
+        v2 = FIELDS["film_v2"] if version in (2, 3, 4) else frozenset()
         if same(data["film"], "film", "film", v2):
             same(data["film"]["approval"], "approval", "film.approval")
             if v2:
@@ -262,7 +282,16 @@ def schema_problems(data):
         same(data["source"], "source", "source")
         same(data["capture"], "capture", "capture")
         for i, scene in enumerate(data["scenes"]):
-            if same(scene, "scene", f"scène {i + 1}"):
+            # Un insert désigne en plus le fichier de sa sous-composition.
+            insert = isinstance(scene, dict) and scene.get("shot_type") == "insert"
+            if insert and version != 4:
+                problems.append(f"scène {i + 1} : plan insert réservé à la version 4")
+            more = frozenset({"insert_ref"}) if insert else frozenset()
+            if insert and not is_ref(scene.get("insert_ref")):
+                problems.append(
+                    f"scène {i + 1} : fichier d'insert hors du dossier du film"
+                )
+            if same(scene, "scene", f"scène {i + 1}", more):
                 for part in ("result", "narration", "caption"):
                     same(scene[part], part, f"scène {i + 1}.{part}")
     return problems
@@ -324,11 +353,13 @@ def check_data(data, root, events=None):
         pins, unreadable = {}, [f"{data['pins_ref']} absent ou illisible"]
     if unreadable:
         pins = {}
+    inserted = [s for s in scenes if s["shot_type"] == "insert"]
     refs = [
         data["capture"]["media_ref"],
         film["transcript_ref"],
         *film["caption_refs"],
         *[n["audio_ref"] for n in narrations],
+        *[s["insert_ref"] for s in inserted],
     ]
     problems = unreadable or [
         f"{ref} n'est pas figé par {data['pins_ref']}"
@@ -396,6 +427,22 @@ def check_data(data, root, events=None):
         data["capture"]["media_ref"]
     ] or page.count("<video") != 1:
         problems.append("la composition ne montre pas la seule capture de la fiche")
+    # La capture s'arrête quand l'insert commence ; l'insert occupe la fin du film.
+    if not any(near(d, capture_end(data)) for d in VIDEO_DURATION.findall(page)):
+        problems.append("durée de la capture différente de la fiche")
+    shown_inserts = [
+        (i[0], unescape(i[1]), float(i[2]), float(i[3])) for i in INSERT.findall(page)
+    ]
+    wanted_inserts = [(INSERT_ID, *w) for w in insert_windows(data)]
+    if (
+        page.count("data-composition-src") != len(shown_inserts)
+        or len(shown_inserts) != len(wanted_inserts)
+        or any(
+            s[:2] != w[:2] or not near(s[2], w[2]) or not near(s[3], w[3])
+            for s, w in zip(shown_inserts, wanted_inserts)
+        )
+    ):
+        problems.append("insert de la composition différent de la fiche")
     if len(audio) != len(scenes) or any(
         a[0] != n["audio_ref"]
         or not near(a[1], n["start_s"])
@@ -445,6 +492,33 @@ def check_data(data, root, events=None):
         previous_end = end
     verdict("timeline", problems)
 
+    # Un insert ne filme rien : il schématise ce que les scènes filmées ont observé. Il vient donc
+    # après elles, sans geste ni résultat, et son fichier déclare l'identifiant que le film lui donne.
+    if data["manifest_version"] == 4:
+        problems = []
+        if len(inserted) > 1:
+            problems.append("un seul insert par film")
+        filmed = [i for i, s in enumerate(scenes) if s["shot_type"] != "insert"]
+        for i, s in enumerate(scenes):
+            if s["shot_type"] != "insert":
+                continue
+            if filmed and i < filmed[-1]:
+                problems.append(
+                    f"{s['scene_id']} : un insert vient après toutes les scènes filmées"
+                )
+            if s["gesture_events"] or any(v is not None for v in s["result"].values()):
+                problems.append(f"{s['scene_id']} : un insert n'a ni geste ni résultat")
+            if s["evidence_status"] != "reasoned":
+                problems.append(f"{s['scene_id']} : un insert est déclaré reasoned")
+            path = root / s["insert_ref"]
+            if not path.is_file():
+                problems.append(f"{s['insert_ref']} absent")
+            elif f'data-composition-id="{INSERT_ID}"' not in path.read_text():
+                problems.append(
+                    f'{s["insert_ref"]} ne déclare pas data-composition-id="{INSERT_ID}"'
+                )
+        verdict("inserts", problems)
+
     # Un journal absent, illisible ou de forme inattendue n'est pas lu : il est signalé, et rien
     # n'est tenu pour observé.
     journal = []
@@ -458,6 +532,8 @@ def check_data(data, root, events=None):
     times = {e["name"]: e["script_s"] for e in events["events"]} if events else {}
     problems, untimed = list(journal), []
     for s in scenes:
+        if s["shot_type"] == "insert":
+            continue
         names = s["gesture_events"]
         if events is None or not names or s["result"]["event"] is None:
             untimed.append(s["scene_id"])
@@ -520,7 +596,7 @@ def check_data(data, root, events=None):
         problems += [
             f"{s['scene_id']} : scène non observée dans un film {status}"
             for s in scenes
-            if s["evidence_status"] != "observed"
+            if s["evidence_status"] != "observed" and s["shot_type"] != "insert"
         ]
     # Sans journal lisible, des scènes qui se disent observées ne sont pas vérifiées. Pour un
     # brouillon c'est un manque ; pour un film approuvé c'est un échec (décision du 24 novembre

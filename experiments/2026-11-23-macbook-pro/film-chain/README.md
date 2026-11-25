@@ -5,9 +5,10 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 ## Contenu
 
 - `check_manifest.py` : confronte la fiche d'un film (`provenance-manifest.json`) aux fichiers qu'elle cite. Code de sortie 0, 1 (au moins un FAIL) ou 2 (des UNVERIFIED).
-- `build_from_fiche.py` : génère depuis la fiche la composition, les sous-titres SRT et VTT et la transcription. L'habillage est en dur et dépend de `manifest_version` : la version 1 garde le bandeau d'origine, octet pour octet ; la version 2 demande deux champs de plus dans `film`, `title` (titre d'ouverture, affiché sans être dit, repris en tête de la transcription) et `capture_zoom` (de 1 à 1,5, capture agrandie depuis le haut, le reste est rogné), et met les sous-titres en cartouche. La version 3 garde les champs et l'habillage de la version 2 et découpe chaque phrase en sous-titres de 2 lignes de 42 caractères au plus : coupure aux fins de phrase, puis aux virgules, entre deux mots en dernier recours ; la fenêtre de la phrase est partagée au prorata des caractères. Le débit de lecture ne change pas (16 à 18 caractères par seconde pour le film 47) : il dépend de la voix.
+- `build_from_fiche.py` : génère depuis la fiche la composition, les sous-titres SRT et VTT et la transcription. L'habillage est en dur et dépend de `manifest_version` : la version 1 garde le bandeau d'origine, octet pour octet ; la version 2 demande deux champs de plus dans `film`, `title` (titre d'ouverture, affiché sans être dit, repris en tête de la transcription) et `capture_zoom` (de 1 à 1,5, capture agrandie depuis le haut, le reste est rogné), et met les sous-titres en cartouche. La version 3 garde les champs et l'habillage de la version 2 et découpe chaque phrase en sous-titres de 2 lignes de 42 caractères au plus : coupure aux fins de phrase, puis aux virgules, entre deux mots en dernier recours ; la fenêtre de la phrase est partagée au prorata des caractères. Le débit de lecture ne change pas (16 à 18 caractères par seconde pour le film 47) : il dépend de la voix. La version 4 garde la version 3 et accepte une scène `insert` en fin de film : au plus une, après toutes les scènes filmées, sans geste ni résultat, statut `reasoned`, champ `insert_ref` vers une sous-composition HyperFrames rangée dans `compositions/` et qui déclare `data-composition-id="insert"` et sa timeline. La capture s'arrête quand l'insert commence ; le fichier de l'insert est figé et compté parmi les médias du garde.
 - `contact_sheet.py` : planche de 12 images d'un film rendu, à regarder avant l'approbation, écrite à côté de la vidéo (`<film>-planche.png`). Sans légende, faute de `drawtext` dans le ffmpeg local : les instants des images sont rendus dans la sortie JSON, rangée par rangée. N'écrase pas une planche existante.
 - `test_soustitres_v3.py` : découpage et minutage des sous-titres en version 3, sur la fiche du film 47 ; films déjà rendus inchangés ; planche sur une vidéo de synthèse.
+- `test_inserts_v4.py` : insert de fin de film en version 4, sur la fiche du film 47 ; chaque motif de refus, et l'insert compté parmi les médias du garde.
 - `film_guard.py` : garde de rendu. Précontrôle des entrées figées, contrôle de la fiche, validation du film avant dépôt.
 - `repin.py` : refige les empreintes d'un film après un changement voulu. `--check` n'écrit rien.
 - `place_cues.py` : pose les repères de la fiche (phrases, sous-titres, durée du film) depuis les durées des clips mesurées par ffprobe. Refuse la fiche d'un film déjà rendu.
@@ -40,7 +41,7 @@ Deux dossiers gardent leur propre garde, écrit avant `film-chain` : ils ne sont
 
 ## Fabriquer un film neuf, dans l'ordre
 
-1. Écrire la fiche avec les phrases, statut `DRAFT`, sans empreinte de film, en version 3.
+1. Écrire la fiche avec les phrases, statut `DRAFT`, sans empreinte de film, en version 3 (version 4 si le film finit par un insert animé).
 2. Produire les clips de narration et mesurer leurs durées.
 3. `python3 place_cues.py CHEMIN_DE_LA_FICHE` (écarts réglables : `--first`, `--gap`, `--pad`, `--tail`), puis `python3 build_from_fiche.py CHEMIN_DE_LA_FICHE`.
 4. Écrire `capture.cjs` et capturer.

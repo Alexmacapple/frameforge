@@ -50,6 +50,7 @@ SUITES = (
             "test_codex_findings",
             "test_outils_fiche",
             "test_soustitres_v3",
+            "test_inserts_v4",
         ),
     ),
     (

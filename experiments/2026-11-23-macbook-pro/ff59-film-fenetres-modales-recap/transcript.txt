@@ -1,0 +1,9 @@
+Fenêtres modales : le focus au clavier
+Version fautive. On clique sur Supprimer mon compte. La fenêtre s'ouvre, mais le focus reste derrière, sur le bouton de la page.
+On appuie sur Tab. Le focus part sur le lien Consulter l'aide, derrière la fenêtre. On ne sait plus où l'on est.
+On appuie sur Échap. Rien ne se passe, la fenêtre reste ouverte. On la ferme à la souris, avec Annuler.
+Version corrigée. On clique de nouveau sur Supprimer mon compte. Le focus entre dans la fenêtre, sur Annuler, l'action la moins risquée.
+Deux appuis sur Tab. Le focus passe sur Supprimer, puis revient sur Annuler. Il reste dans la fenêtre.
+On appuie sur Échap. La fenêtre se ferme, et le focus revient sur le bouton qui l'avait ouverte.
+Un dernier appui sur Tab mène à l'étape suivante. Le parcours reprend là où il s'était arrêté.
+À l'ouverture, le focus entre dans la fenêtre. Tab le fait tourner entre Annuler et Supprimer, sans en sortir. Échap ferme la fenêtre et rend le focus au bouton de départ.

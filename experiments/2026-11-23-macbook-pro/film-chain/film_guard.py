@@ -152,9 +152,12 @@ class FilmGuard:
 
     def differs_from_fiche(self, fiche):
         """Ce que le garde déclare autrement que la fiche : empreintes, film de sortie, médias."""
-        cited = {fiche["capture"]["media_ref"]} | {
-            scene["narration"]["audio_ref"] for scene in fiche["scenes"]
-        }
+        cited = (
+            {fiche["capture"]["media_ref"]}
+            | {scene["narration"]["audio_ref"] for scene in fiche["scenes"]}
+            # Le fichier d'un insert est une entrée du rendu, comme la capture et les voix.
+            | {s["insert_ref"] for s in fiche["scenes"] if s["shot_type"] == "insert"}
+        )
         checks = (
             ("pins_ref", fiche["pins_ref"] != self.pins_ref),
             ("output", self.root / fiche["film"]["output_ref"] != self.output),

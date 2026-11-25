@@ -1,0 +1,1 @@
+{"name":"ff59-film-fenetres-modales-recap","private":true,"type":"module","scripts":{"render":"HYPERFRAMES_NO_TELEMETRY=1 DO_NOT_TRACK=1 python3 -B render_guarded.py","publish":"echo Publication interdite && exit 2"}}

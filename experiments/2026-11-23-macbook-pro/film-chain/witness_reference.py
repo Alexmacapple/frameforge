@@ -60,6 +60,8 @@ def render_witness(film):
         work.mkdir()
         for name in (*guard.config, *guard.media):
             if (film / name).is_file():
+                # Une entrée peut être rangée dans un sous-dossier (insert dans compositions/).
+                (work / name).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(film / name, work / name)
         rendered = Path(temp) / "rendered.mp4"
         subprocess.run(

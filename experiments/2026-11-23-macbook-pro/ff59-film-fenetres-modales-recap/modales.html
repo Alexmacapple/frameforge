@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Fenêtres modales et focus clavier — fixture locale</title>
+<style>
+body{font:32px Arial,sans-serif;background:#f6f7fa;color:#17212d;margin:0;padding:60px 80px}
+h1{margin:0 0 34px;font-size:46px}
+.part{width:820px;background:white;padding:30px 40px;border:2px solid #ccc;border-radius:18px;margin:0 0 30px}
+.part h2{margin:0 0 20px;font-size:34px}
+.part p{margin:0 0 22px;font-size:28px;color:#3a4654}
+button{font:inherit;padding:16px 30px;border-radius:10px;border:3px solid #333;background:white;color:#17212d}
+button.danger{background:#b3261e;border-color:#b3261e;color:white}
+a{color:#0b57d0;margin-left:26px}
+/* Focus très visible, au clic comme au clavier : c'est lui que le film montre. */
+:focus{outline:7px solid #e8590c;outline-offset:5px}
+/* Version fautive : un simple bloc affiché, sans gestion du focus ni du clavier. */
+#bad-overlay{position:fixed;inset:0;background:rgba(23,33,45,.35);display:none}
+#bad-overlay.open{display:block}
+.panel{position:fixed;left:970px;top:200px;width:800px;margin:0;background:white;color:#17212d;
+  padding:40px 46px;border:0;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.panel h2{margin:0 0 18px;font-size:38px}
+.panel p{margin:0 0 30px;font-size:28px}
+.panel .actions{display:flex;gap:24px}
+dialog.panel::backdrop{background:rgba(23,33,45,.35)}
+.tag{display:inline-block;font-size:22px;font-weight:700;padding:4px 12px;border-radius:6px;margin-bottom:14px}
+.tag.bad{background:#fde2e1;color:#8c1d18}
+.tag.good{background:#dcf2e3;color:#14532d}
+</style></head>
+<body>
+<h1>Supprimer son compte</h1>
+<section class="part">
+<h2>Version fautive</h2>
+<p>La fenêtre s'affiche, rien d'autre n'est géré.</p>
+<button type="button" id="open-bad">Supprimer mon compte</button><a id="help-link" href="#aide">Consulter l'aide</a>
+</section>
+<section class="part">
+<h2>Version corrigée</h2>
+<p>Le focus entre, reste, puis revient.</p>
+<button type="button" id="open-good">Supprimer mon compte</button><a id="next-step" href="#suite">Étape suivante</a>
+</section>
+
+<div id="bad-overlay"><div class="panel" id="bad-dialog">
+<span class="tag bad">Version fautive</span>
+<h2>Supprimer votre compte ?</h2>
+<p>Cette action est définitive.</p>
+<div class="actions"><button type="button" id="bad-cancel">Annuler</button><button type="button" class="danger" id="bad-delete">Supprimer</button></div>
+</div></div>
+
+<dialog class="panel" id="good-dialog" aria-labelledby="good-title" aria-describedby="good-desc">
+<span class="tag good">Version corrigée</span>
+<h2 id="good-title">Supprimer votre compte ?</h2>
+<p id="good-desc">Cette action est définitive.</p>
+<div class="actions"><button type="button" id="good-cancel">Annuler</button><button type="button" class="danger" id="good-delete">Supprimer</button></div>
+</dialog>
+
+<script>
+// Version fautive : affichage seul. Ni focus initial, ni maintien, ni Échap, ni retour.
+const badOverlay = document.querySelector('#bad-overlay');
+document.querySelector('#open-bad').addEventListener('click', () => badOverlay.classList.add('open'));
+document.querySelector('#bad-cancel').addEventListener('click', () => badOverlay.classList.remove('open'));
+document.querySelector('#bad-delete').addEventListener('click', () => badOverlay.classList.remove('open'));
+
+// Version corrigée : dialogue modal natif (arrière-plan inerte), focus initial sur l'action la
+// moins risquée, Tab et Maj+Tab bouclent dans la fenêtre, Échap ferme, le focus revient au bouton.
+const good = document.querySelector('#good-dialog');
+const opener = document.querySelector('#open-good');
+const first = document.querySelector('#good-cancel');
+const last = document.querySelector('#good-delete');
+opener.addEventListener('click', () => { good.showModal(); first.focus(); });
+good.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+good.addEventListener('close', () => opener.focus());
+first.addEventListener('click', () => good.close());
+last.addEventListener('click', () => good.close());
+</script>
+</body></html>

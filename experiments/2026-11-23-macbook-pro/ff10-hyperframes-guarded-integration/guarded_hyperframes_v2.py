@@ -130,6 +130,8 @@ def guarded_render(args, preflight_fn, media, config, output_validator):
         for name in config + media:
             src=project/name
             if src.exists():
+                # Une entrée peut être rangée dans un sous-dossier (insert dans compositions/).
+                (snapshot/name).parent.mkdir(parents=True,exist_ok=True)
                 shutil.copyfile(src,snapshot/name)
         baseline_snapshot=work/"baseline.html"
         shutil.copyfile(baseline,baseline_snapshot)

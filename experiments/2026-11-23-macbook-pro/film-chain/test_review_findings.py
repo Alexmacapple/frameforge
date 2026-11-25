@@ -115,8 +115,8 @@ class ShapeTests(FilmCopy):
                 self.assertIn("valeur de forme inattendue", results[0]["detail"])
                 self.assertIn(field, results[0]["detail"])
 
-    def test_version_must_be_the_integer_1_2_or_3(self):
-        for version in (True, 1.0, 2.0, 3.0, "1", 4, 0, None):
+    def test_version_must_be_the_integer_1_to_4(self):
+        for version in (True, 1.0, 2.0, 3.0, 4.0, "1", 5, 0, None):
             with self.subTest(version=version):
                 self.expect(
                     "schema",
