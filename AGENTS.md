@@ -3,6 +3,9 @@
 ## Mission
 Construire le plus petit système permettant de produire une vidéo réelle, narrée et vérifiable. Préserver les objectifs et exclusions du brief.
 
+## Reprise du projet
+Au début de chaque session, lire [REPRISE.md](REPRISE.md), vérifier l'état Git local et distant, les issues référencées et les décisions humaines récentes. Reprendre le chantier prioritaire sans recommencer les travaux déjà prouvés. En fin de session, actualiser REPRISE.md localement avec preuves, SHA, blocages et prochaine action ; toute publication distante reste soumise à approbation explicite. Les issues restent la source de vérité du suivi et PLAN.md conserve la trajectoire et l'historique.
+
 ## Avant de coder
 1. Lire README, WHY, INTENT, SPEC, PLAN.
 2. Identifier la fonction existante dans HyperFrames, agent-browser ou ShipGuard avant toute implémentation.
