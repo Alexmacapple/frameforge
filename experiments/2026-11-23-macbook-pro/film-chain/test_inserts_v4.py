@@ -177,6 +177,26 @@ class V4Film(unittest.TestCase):
         got = self.details()
         self.assertEqual(got["composition"][0], "FAIL")
 
+    def test_insert_decale_dans_la_composition_est_refuse(self):
+        # Seul l'insert change : la capture garde sa durée, l'écart ne vient que de lui.
+        page = self.root / "index.html"
+        page.write_text(
+            page.read_text().replace(
+                f'data-composition-src="{INSERT_REF}" data-start="{b.number(START)}"',
+                f'data-composition-src="{INSERT_REF}" data-start="{b.number(START + 1)}"',
+            )
+        )
+        got = self.details()
+        self.assertEqual(got["composition"][0], "FAIL")
+        self.assertIn("insert de la composition", got["composition"][1])
+
+    def test_fichier_d_insert_hors_du_dossier(self):
+        self.expect(
+            "schema",
+            "hors du dossier du film",
+            lambda d: d["scenes"][-1].update(insert_ref="../ailleurs/recap.html"),
+        )
+
     def test_l_insert_doit_etre_fige(self):
         got = self.details()
         self.assertIn(INSERT_REF, got["pinned_media"][1])
