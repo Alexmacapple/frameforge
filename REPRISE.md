@@ -1,6 +1,6 @@
 # REPRISE — FrameForge
 
-Dernière mise à jour : 26 novembre 2026, MacBook Pro et Mac Studio. Vérifier HEAD et la synchronisation au démarrage. Vérifier HEAD au démarrage.
+Dernière mise à jour : 26 novembre 2026, MacBook Pro et Mac Studio. Vérifier HEAD et la synchronisation au démarrage.
 
 ## Prochaine action
 Faire les deux écoutes humaines du film de réservation : [#35](https://github.com/Alexmacapple/frameforge/issues/35) (une personne qui n'a jamais vu le film) et [#36](https://github.com/Alexmacapple/frameforge/issues/36) (voix comparée aux sous-titres), avec `experiments/2026-11-23-macbook-pro/ff04-room-booking-film/LISTENING-SHEET.md` et `media/room-booking-son-seul.m4a`. Même feuille prête pour les fenêtres modales (`ff59-film-fenetres-modales-recap/LISTENING-SHEET.md`) ; sa partie B y est déclarée conforme par Alex le 25 novembre, sa partie A reste à faire. [#61](https://github.com/Alexmacapple/frameforge/issues/61) (prononciation par transcription française) attend ces écoutes.
