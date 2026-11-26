@@ -1,6 +1,6 @@
 # REPRISE — FrameForge
 
-Dernière mise à jour : 25 novembre 2026, fin de session, MacBook Pro. `main` à `7216e90`, synchronisée avec GitHub, arbre propre. Vérifier HEAD au démarrage.
+Dernière mise à jour : 26 novembre 2026, MacBook Pro et Mac Studio. Vérifier HEAD et la synchronisation au démarrage. Vérifier HEAD au démarrage.
 
 ## Prochaine action
 Faire les deux écoutes humaines du film de réservation : [#35](https://github.com/Alexmacapple/frameforge/issues/35) (une personne qui n'a jamais vu le film) et [#36](https://github.com/Alexmacapple/frameforge/issues/36) (voix comparée aux sous-titres), avec `experiments/2026-11-23-macbook-pro/ff04-room-booking-film/LISTENING-SHEET.md` et `media/room-booking-son-seul.m4a`. Même feuille prête pour les fenêtres modales (`ff59-film-fenetres-modales-recap/LISTENING-SHEET.md`) ; sa partie B y est déclarée conforme par Alex le 25 novembre, sa partie A reste à faire. [#61](https://github.com/Alexmacapple/frameforge/issues/61) (prononciation par transcription française) attend ces écoutes.
@@ -14,7 +14,8 @@ Faire les deux écoutes humaines du film de réservation : [#35](https://github.
 - Télémétrie HyperFrames coupée sur le MacBook Pro.
 
 ## Points à surveiller
-- Mac Studio : HyperFrames jamais lancé. Au premier usage, couper sa télémétrie, et vérifier que `npx` a HyperFrames 0.8.33 en local (`~/.npm/_npx`) : le rendu n'a plus de réseau pour le télécharger.
+- Mac Studio, équipé le 26 novembre 2026 : dépôt cloné au même chemin, médias non versionnés copiés (742 fichiers, empreintes identiques), HyperFrames 0.8.33 installé, télémétrie coupée (`config`), mêmes octets que le MacBook pour Node 24.22.1 (`~/.local/bin`) et chrome-headless-shell 152.0.7977.30. `.venv-voice` non copié : à recréer avant toute synthèse de voix.
+- [#67](https://github.com/Alexmacapple/frameforge/issues/67) : un film rendu sur le Mac Studio (macOS 27.0) n'est pas le film approuvé sur le MacBook (macOS 26.5.2) ; même son, images différentes là où il y a du texte. Seul le MacBook reproduit les films approuvés ; le garde refuse tout autre résultat. Décision à prendre (même macOS ou rendu en conteneur).
 - `sandbox-exec` est marqué obsolète par Apple : vérifier qu'il fonctionne après chaque mise à jour de macOS (`test_rendu_hors_ligne.py`).
 - Disque du MacBook Pro plein à 99 % le 25 novembre, ramené à 89 % : un rendu de 66 s demande environ 16 Go temporaires.
 - Contrôle par mutation : dernier passage complet sur la PR #64 (104/106, deux trous comblés par des tests vérifiés un à un) ; à relancer après la prochaine série de changements du garde.
