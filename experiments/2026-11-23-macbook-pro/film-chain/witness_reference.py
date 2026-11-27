@@ -29,6 +29,7 @@ from pathlib import Path
 CHAIN = Path(__file__).resolve().parent
 sys.path.insert(0, str(CHAIN))
 film_guard = importlib.import_module("film_guard")
+composition_check = importlib.import_module("composition_check")
 FPS = 30
 # Même commande que le garde : HyperFrames 0.8.33, mêmes options, sans réseau sortant.
 render_command = film_guard.wrapper.render_command
@@ -50,6 +51,16 @@ def load_guard(film):
     return module.GUARD
 
 
+def snapshot(film, guard, work):
+    """Copie dans `work` les seules entrées que déclare le garde du film."""
+    work.mkdir()
+    for name in (*guard.config, *guard.media):
+        if (film / name).is_file():
+            # Une entrée peut être rangée dans un sous-dossier (insert dans compositions/).
+            (work / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(film / name, work / name)
+
+
 def render_witness(film):
     guard = load_guard(film)
     target = film / "media" / (guard.output.stem + "-draft.mp4")
@@ -58,12 +69,11 @@ def render_witness(film):
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".temoin-", dir=target.parent) as temp:
         work = Path(temp) / "project"
-        work.mkdir()
-        for name in (*guard.config, *guard.media):
-            if (film / name).is_file():
-                # Une entrée peut être rangée dans un sous-dossier (insert dans compositions/).
-                (work / name).parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(film / name, work / name)
+        snapshot(film, guard, work)
+        # Refus avant tout rendu : un texte illisible ou qui déborde se voit sans rendre (issue 70).
+        reasons = composition_check.run(work)
+        if reasons:
+            raise ValueError("composition refusée : " + ", ".join(reasons))
         rendered = Path(temp) / "rendered.mp4"
         subprocess.run(
             render_command(work, rendered),

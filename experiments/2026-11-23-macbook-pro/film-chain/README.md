@@ -14,6 +14,8 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `repin.py` : refige les empreintes d'un film après un changement voulu. `--check` n'écrit rien.
 - `place_cues.py` : pose les repères de la fiche (phrases, sous-titres, durée du film) depuis les durées des clips mesurées par ffprobe. Refuse la fiche d'un film déjà rendu.
 - `witness_reference.py` : rend le brouillon témoin (HyperFrames 0.8.33, mêmes options que le garde, télémétrie coupée) et écrit `output-reference.json` ; `--from` part d'un témoin déjà rendu. Refuse la fiche d'un film déjà rendu et n'écrase pas un témoin.
+- `composition_check.py` : contrôle la composition sans la rendre, par `hyperframes check` 0.8.33 dans le bac à sable sans réseau, sur une copie des seules entrées du garde. Refuse une erreur de lint ou d'exécution, un texte qui déborde, un texte illisible, et toute mesure absente. `witness_reference.py` le lance avant de rendre le témoin ; il se lance aussi seul sur le dossier d'un film (code 0, 1 ou 2). Le verdict vient des compteurs du rapport : HyperFrames répond « ok » et sort en code 0 avec des sous-titres illisibles (mesure du 27 novembre 2026, issue 70). Environ 80 secondes par film.
+- `test_composition_check.py` : chaque motif de refus sur des rapports construits ; le témoin n'est pas rendu si la composition est refusée ; le vrai HyperFrames sur des copies du film 47 (saine, sous-titres illisibles, seconde composition à la racine).
 - `test_outils_fiche.py` : les deux outils redonnent les valeurs posées à la main pour le film 47, et leurs refus ; un fichier d'empreintes absent donne un FAIL du contrôle de fiche.
 - `capture_lib.cjs` : navigateur, pointeur visible, horloge, journal et conversion des captures.
 - `test_repin.py` : tests de `repin.py`.
@@ -47,7 +49,7 @@ Deux dossiers gardent leur propre garde, écrit avant `film-chain` : ils ne sont
 3. `python3 place_cues.py CHEMIN_DE_LA_FICHE` (écarts réglables : `--first`, `--gap`, `--pad`, `--tail`), puis `python3 build_from_fiche.py CHEMIN_DE_LA_FICHE`.
 4. Écrire `capture.cjs` et capturer.
 5. Écrire le fichier d'empreintes et le `render_guarded.py` du film, puis `python3 repin.py DOSSIER`.
-6. `python3 witness_reference.py DOSSIER` rend le brouillon témoin et écrit la référence de sortie ; regarder le témoin (`python3 contact_sheet.py VIDEO`), puis refiger.
+6. `python3 witness_reference.py DOSSIER` contrôle la composition (refus sans rendu si un texte est illisible ou déborde), rend le brouillon témoin et écrit la référence de sortie ; regarder le témoin (`python3 contact_sheet.py VIDEO`), puis refiger.
 7. `python3 render_guarded.py`, puis `python3 repin.py DOSSIER --record-output`, puis rendre de nouveau. Le garde écrit un reçu à côté du film (`…mp4.receipt.json`, non versionné) : `--record-output` refuse un film sans reçu, ou dont une entrée a changé depuis le rendu. Dès que la fiche porte l'empreinte d'un film, le garde refuse tout rendu qui ne redonne pas ce film, fichier entier. Pour rendre de nouveau, déplacer d'abord le film existant ailleurs : le garde ne l'écrase pas.
 8. Faire regarder et écouter le film ; consigner l'approbation avec son empreinte.
 
@@ -92,4 +94,5 @@ HF_HUB_OFFLINE=1 .venv-voice/bin/python CHEMIN_DU_FILM/synthesize_kokoro.py
 - **Le garde d'un film nomme ses fichiers en clair.** `repin.py` lit `pins_ref`, `reference_ref` et `output` dans l'appel qui construit `GUARD`, sans exécuter le fichier : un nom passé par une variable est refusé.
 - **Rien n'est écrit à travers un lien symbolique.** Le générateur et la capture refusent un fichier ou un sous-dossier qui est un lien, et un nom qui sort du dossier du film.
 - **Un film présent sans son reçu de rendu bloque le rendu suivant.** Cela arrive si le rendu est arrêté entre le dépôt du film et l'écriture du reçu. Le garde répond `…_output_without_receipt` : déplacer le film ailleurs, puis rendre de nouveau.
+- **Le contrôle de composition ne mesure que le texte de la composition.** Titre et sous-titres, relevés à quelques instants du film, au seuil de HyperFrames (3 pour 1) ; l'interface filmée dans la capture n'est pas mesurée. Il se lance sur la copie isolée, jamais sur le dossier du film : `baseline.html` à côté d'`index.html` y fait deux compositions à la racine, et HyperFrames ne mesure alors plus rien.
 - **Aucun contrôle automatique ne voit un pointeur qui masque un résultat.** Regarder une planche d'images de la capture.
