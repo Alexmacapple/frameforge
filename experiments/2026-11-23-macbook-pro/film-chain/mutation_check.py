@@ -52,7 +52,9 @@ SUITES = (
             "test_soustitres_v3",
             "test_inserts_v4",
             "test_rendu_hors_ligne",
-            "test_composition_check",
+            # test_composition_check n'est pas rejoué ici : aucun mutant ne touche
+            # composition_check.py ni witness_reference.py, et ses trois tests avec le vrai
+            # HyperFrames ajouteraient près de quatre minutes à chacun des mutants.
         ),
     ),
     (
