@@ -52,6 +52,7 @@ SUITES = (
             "test_soustitres_v3",
             "test_inserts_v4",
             "test_rendu_hors_ligne",
+            "test_composition_check",
         ),
     ),
     (
