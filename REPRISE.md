@@ -1,9 +1,15 @@
 # REPRISE — FrameForge
 
-Dernière mise à jour : 26 novembre 2026, MacBook Pro et Mac Studio. Vérifier HEAD et la synchronisation au démarrage.
+Dernière mise à jour : 27 novembre 2026, session sur le Mac Studio, MacBook Pro joint par SSH ; les deux à `3a26215` avant cette mise à jour. Vérifier HEAD et la synchronisation au démarrage.
 
 ## Prochaine action
 Faire les deux écoutes humaines du film de réservation : [#35](https://github.com/Alexmacapple/frameforge/issues/35) (une personne qui n'a jamais vu le film) et [#36](https://github.com/Alexmacapple/frameforge/issues/36) (voix comparée aux sous-titres), avec `experiments/2026-11-23-macbook-pro/ff04-room-booking-film/LISTENING-SHEET.md` et `media/room-booking-son-seul.m4a`. Même feuille prête pour les fenêtres modales (`ff59-film-fenetres-modales-recap/LISTENING-SHEET.md`) ; sa partie B y est déclarée conforme par Alex le 25 novembre, sa partie A reste à faire. [#61](https://github.com/Alexmacapple/frameforge/issues/61) (prononciation par transcription française) attend ces écoutes.
+
+## Fait le 27 novembre 2026
+- #69 fermé : veille OpenMontage (AGPL-3.0, SHA `2e003e65`), aucun composant adopté ; rapport `research/openmontage-analyse-2026-11-27.md`.
+- #70 fermé : `composition_check.py` lance `hyperframes check` 0.8.33 avant le brouillon témoin et refuse un texte illisible ou qui déborde, sans rendre (PR #71). Verdict lu dans les compteurs du rapport : HyperFrames répond « ok » et sort en code 0 avec des sous-titres illisibles. Les quatre films de la chaîne sont acceptés.
+- PR #72 : la suite de ce contrôle est retirée du contrôle par mutation, qu'elle aurait fait durer plus de 7 heures. Contrôle par mutation rejoué sur le MacBook Pro : 106 mutants, aucun survivant, 66 minutes.
+- #61 commenté : forme de résultat à viser, et commande `transcribe` de HyperFrames 0.8.33 à regarder d'abord (non essayée).
 
 ## Fait le 25 novembre 2026
 - #47 : film des fenêtres modales produit et approuvé (PR #57, `d10c50b8…0845`). Le ticket reste ouvert : à fermer après relecture de ses critères.
@@ -18,7 +24,10 @@ Faire les deux écoutes humaines du film de réservation : [#35](https://github.
 - [#67](https://github.com/Alexmacapple/frameforge/issues/67) : un film rendu sur le Mac Studio (macOS 27.0) n'est pas le film approuvé sur le MacBook (macOS 26.5.2) ; même son, images différentes là où il y a du texte. Seul le MacBook reproduit les films approuvés ; le garde refuse tout autre résultat. Décision à prendre (même macOS ou rendu en conteneur).
 - `sandbox-exec` est marqué obsolète par Apple : vérifier qu'il fonctionne après chaque mise à jour de macOS (`test_rendu_hors_ligne.py`).
 - Disque du MacBook Pro plein à 99 % le 25 novembre, ramené à 89 % : un rendu de 66 s demande environ 16 Go temporaires.
-- Contrôle par mutation : dernier passage complet sur la PR #64 (104/106, deux trous comblés par des tests vérifiés un à un) ; à relancer après la prochaine série de changements du garde.
+- Contrôle par mutation : dernier passage complet le 27 novembre 2026 sur la PR #72 (106/106, 66 minutes, le README de film-chain en annonce encore 45) ; à relancer après la prochaine série de changements du garde. Il ne couvre pas `composition_check.py` ni `witness_reference.py` : leurs refus ne sont pas mutés.
+- Contrôle de composition : aucun cas réel de débordement de texte n'a été produit ; les textes ne sont relevés qu'à quelques instants du film ; l'interface filmée n'est pas mesurée ; environ 80 secondes de plus avant chaque témoin.
+- Mac Studio : 11 tests des suites de film-chain échouent (5 échecs, 6 erreurs), sur `main` comme avec les changements du 27 novembre ; les 240 passent sur le MacBook Pro. Cause non cherchée, à rapprocher de #67.
+- Le MacBook Pro accepte la clé SSH du Mac Studio depuis le 27 novembre 2026 (`ssh macbook-pro`, autorisation ajoutée par Alex).
 - #40/#41, #44, #46, thèmes #5–#12/#15 : consulter leur état courant.
 
 ## Règles
