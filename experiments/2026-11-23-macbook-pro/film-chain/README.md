@@ -28,7 +28,7 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `test_film_guard.py` : films trafiqués, précontrôle et forme du film, joués sur chaque film.
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
-- `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. Il rejoue toutes les suites pour chacun des 95 contrôles : environ 45 minutes sur ce Mac au 24 novembre 2026. À lancer en arrière-plan, une fois après une série de changements du garde plutôt qu'à chaque PR ; il ne modifie rien dans le dépôt. Ne rien modifier dans `film-chain` pendant sa première minute, le temps qu'il copie les fichiers.
+- `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. Il rejoue toutes les suites pour chacun des 106 contrôles : 66 minutes sur le MacBook Pro au 27 novembre 2026. À lancer en arrière-plan, une fois après une série de changements du garde plutôt qu'à chaque PR ; il ne modifie rien dans le dépôt. Ne rien modifier dans `film-chain` pendant sa première minute, le temps qu'il copie les fichiers.
 
 Les tests propres à un film (gestes, fichiers générés) restent dans son dossier.
 
@@ -96,4 +96,5 @@ HF_HUB_OFFLINE=1 .venv-voice/bin/python CHEMIN_DU_FILM/synthesize_kokoro.py
 - **Rien n'est écrit à travers un lien symbolique.** Le générateur et la capture refusent un fichier ou un sous-dossier qui est un lien, et un nom qui sort du dossier du film.
 - **Un film présent sans son reçu de rendu bloque le rendu suivant.** Cela arrive si le rendu est arrêté entre le dépôt du film et l'écriture du reçu. Le garde répond `…_output_without_receipt` : déplacer le film ailleurs, puis rendre de nouveau.
 - **Le contrôle de composition ne mesure que le texte de la composition.** Titre et sous-titres, relevés à quelques instants du film, au seuil de HyperFrames (3 pour 1) ; l'interface filmée dans la capture n'est pas mesurée. Il se lance sur la copie isolée, jamais sur le dossier du film : `baseline.html` à côté d'`index.html` y fait deux compositions à la racine, et HyperFrames ne mesure alors plus rien.
+- **FFmpeg fait partie de l'environnement de rendu et n'est pas figé.** Relire un film existant ne dépend plus de sa version : l'empreinte des paquets écarte la ligne `#software` (ticket 73). Mais HyperFrames écrit le film avec le FFmpeg de la machine, et le film porte sa version (`encoder` dans `expected_format_tags`) : un rendu fait après une mise à jour de FFmpeg ne redonnera pas le film approuvé. Les films approuvés au 27 novembre 2026 sortent de FFmpeg 9.0.1.
 - **Aucun contrôle automatique ne voit un pointeur qui masque un résultat.** Regarder une planche d'images de la capture.

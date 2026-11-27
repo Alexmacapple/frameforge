@@ -6,13 +6,13 @@ réencodage à partir du brouillon témoin du film, donc avec les mêmes images 
 
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
-import shutil
 import tempfile
 import unittest
-from unittest import mock
 from pathlib import Path
+from unittest import mock
 
 CHAIN = Path(__file__).resolve().parent
 sys.path.insert(0, str(CHAIN))
@@ -207,11 +207,15 @@ class PreflightTests(unittest.TestCase):
             with self.subTest(film=name), tempfile.TemporaryDirectory() as tmp:
                 module, _ = load(name)
                 root = copied_inputs(module, tmp)
-                self.assertTrue(module.preflight(root / "baseline.html", root / "index.html"))
+                self.assertTrue(
+                    module.preflight(root / "baseline.html", root / "index.html")
+                )
 
     def test_changed_composition_refused(self):
         def alter(module, root):
-            (root / "index.html").write_text((root / "index.html").read_text() + "<!-- -->")
+            (root / "index.html").write_text(
+                (root / "index.html").read_text() + "<!-- -->"
+            )
 
         self.refused("reference_or_candidate_changed", alter)
 
@@ -249,24 +253,57 @@ class InvalidOutputTests(unittest.TestCase):
                     module.validate_output(target)
 
     def test_smaller_picture_refused(self):
-        self.refused("output_video_invalid", "-vf", "scale=1280:720", "-c:v", "libx264", "-preset", "ultrafast",
-                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+        self.refused(
+            "output_video_invalid",
+            "-vf",
+            "scale=1280:720",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "copy",
+        )
 
     def test_other_frame_rate_refused(self):
-        self.refused("output_framerate_invalid", "-vf",
-            "fps=20", "-c:v", "libx264", "-preset", "ultrafast",
-                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+        self.refused(
+            "output_framerate_invalid",
+            "-vf",
+            "fps=20",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "copy",
+        )
 
     def test_other_audio_codec_refused(self):
-        self.refused("output_audio_invalid", "-c:v", "copy", "-c:a",
-            "libmp3lame")
+        self.refused("output_audio_invalid", "-c:v", "copy", "-c:a", "libmp3lame")
 
     def test_reencoded_picture_refused(self):
-        self.refused("output_video_changed", "-vf", "hue=s=0", "-c:v", "libx264", "-preset", "ultrafast",
-                     "-pix_fmt", "yuv420p", "-c:a", "copy")
+        self.refused(
+            "output_video_changed",
+            "-vf",
+            "hue=s=0",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "copy",
+        )
 
     def test_reencoded_sound_refused(self):
-        self.refused("output_audio_changed", "-c:v", "copy", "-af", "volume=0.5", "-c:a", "aac")
+        self.refused(
+            "output_audio_changed", "-c:v", "copy", "-af", "volume=0.5", "-c:a", "aac"
+        )
 
 
 class ApprovedFilmTests(unittest.TestCase):
@@ -279,7 +316,9 @@ class ApprovedFilmTests(unittest.TestCase):
                 fiche = module.load_fiche()
                 fiche["film"]["output_sha256"] = "0" * 64
                 with mock.patch.object(module, "load_fiche", return_value=fiche):
-                    with self.assertRaisesRegex(ValueError, "output_differs_from_approved_film"):
+                    with self.assertRaisesRegex(
+                        ValueError, "output_differs_from_approved_film"
+                    ):
                         module.validate_output(draft)
 
     def test_draft_without_fingerprint_is_not_compared(self):
@@ -301,6 +340,51 @@ class ApprovedFilmTests(unittest.TestCase):
                 with mock.patch.object(module, "load_fiche", return_value=fiche):
                     with self.assertRaisesRegex(ValueError, "fiche_revoked"):
                         module.preflight(root / "baseline.html", root / "index.html")
+
+
+class PacketsDigestTests(unittest.TestCase):
+    """L'empreinte des paquets décrit le film, pas la machine qui le lit (ticket 73)."""
+
+    LISTING = (
+        b"#format: frame checksums\n"
+        b"#version: 2\n"
+        b"#hash: MD5\n"
+        b"#extradata 0,                              50, 59e4119499474f892756c4b2090c2f12\n"
+        b"#software: Lavf63.1.101\n"
+        b"#tb 0: 1/15360\n"
+        b"#media_type 0: video\n"
+        b"#codec_id 0: h264\n"
+        b"#dimensions 0: 1920x1080\n"
+        b"#stream#, dts,        pts, duration,     size, hash\n"
+        b"0,          0,          0,      512,    91231, 0123456789abcdef0123456789abcdef\n"
+        b"0,        512,        512,      512,     1204, fedcba9876543210fedcba9876543210\n"
+    )
+
+    def digest(self, old=b"", new=b""):
+        self.assertIn(old, self.LISTING)
+        return film_guard.packets_digest(self.LISTING.replace(old, new))
+
+    def test_other_ffmpeg_version_gives_the_same_digest(self):
+        self.assertEqual(self.digest(), self.digest(b"Lavf63.1.101", b"Lavf63.1.102"))
+
+    def test_shifted_packet_changes_the_digest(self):
+        self.assertNotEqual(
+            self.digest(), self.digest(b"512,        512,", b"512,        600,")
+        )
+
+    def test_other_packet_content_changes_the_digest(self):
+        self.assertNotEqual(self.digest(), self.digest(b"fedcba98", b"00000000"))
+
+    def test_other_stream_header_changes_the_digest(self):
+        self.assertNotEqual(self.digest(), self.digest(b"1/15360", b"1/90000"))
+        self.assertNotEqual(self.digest(), self.digest(b"59e41194", b"00000000"))
+
+    def test_packet_that_only_looks_like_the_version_line_still_counts(self):
+        # Seule une ligne qui commence par « #software: » est écartée.
+        self.assertNotEqual(
+            self.digest(),
+            self.digest(b"#tb 0: 1/15360\n", b"#tb 0: 1/15360 #software: x\n"),
+        )
 
 
 if __name__ == "__main__":
