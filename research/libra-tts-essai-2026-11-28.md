@@ -43,6 +43,22 @@ Le 28 novembre 2026, Alex a écouté les huit voix sur la même phrase (« On ap
 
 Voix à proposer d'abord : `nina` et `sam`. Jugement sur une seule phrase ; ce qui gêne dans les voix moins appréciées (accent, rythme, ton) n'a pas été précisé.
 
+## Niveau sonore mesuré
+
+Le 28 novembre 2026, sur le Mac Studio, FFmpeg 9.0.2, sans rien modifier : `ffmpeg -i CLIP -af loudnorm=I=-16:TP=-1:LRA=11:print_format=json -f null -`, valeurs `input_i` (niveau intégré) et `input_tp` (crête vraie).
+
+- **Kokoro, clips approuvés.** Réservation, 3 clips : de −23,2 à −21,9 LUFS. Fenêtres modales, 7 clips : de −23,4 à −23,0 LUFS. Crête vraie de −7,9 à −5,0 dBTP.
+- **Libra-TTS, voix `nina`, mêmes phrases, 8 clips.** De −19,2 à −15,4 LUFS, moyenne −17,0. Crête vraie de −2,1 à +0,02 dBTP.
+- **Libra-TTS, huit voix, une même phrase.** `sofia` −23,6 ; `bob` −19,7 ; `sam` −19,3 ; `maya` −18,5 ; `omar` −17,9 ; `jon` −17,6 ; `nina` −17,6 ; `aliya` −16,8 LUFS.
+
+Trois constats :
+
+1. Libra-TTS avec `nina` sort environ 6 LU plus fort que Kokoro : un film en Libra-TTS serait nettement plus fort que les films approuvés.
+2. D'un clip à l'autre, `nina` varie de 3,8 LU, contre 0,4 LU pour Kokoro dans le film des fenêtres modales : dans un même film, certaines phrases sonneraient plus fort que d'autres.
+3. Les crêtes de `nina` frôlent ou dépassent 0 dBTP (+0,02 sur la première phrase de la réservation), sans marge pour l'encodage AAC du film. Kokoro garde au moins 5 dB de marge.
+
+Limites : niveau intégré mesuré sur des clips de 2 à 11 secondes, où la mesure est moins stable que sur un programme long ; l'écart de 6 LU dépasse largement cette incertitude, celui entre deux clips proches non. L'effet à l'oreille n'a pas été jugé. Aucune correction n'est appliquée : aligner le niveau change le son et demande une décision.
+
 ## Limites
 
 - Reproductibilité vérifiée sur un seul Mac, dans une seule session : ni après redémarrage, ni sur le MacBook Pro (macOS 26.5.2), ni avec une autre version de `mlx`.
