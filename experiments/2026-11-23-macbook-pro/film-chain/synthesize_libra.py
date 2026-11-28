@@ -19,7 +19,9 @@ les mêmes clips à l'octet près ; ce n'est pas vérifié d'une machine à l'au
 import argparse
 import hashlib
 import json
+import math
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -39,6 +41,11 @@ MODEL_SHA256 = {
 DEFAULT_MODEL = Path.home() / ".cache" / "frameforge" / "libra-tts" / MODEL_REVISION
 VOICES = ("nina", "sofia", "aliya", "omar", "jon", "bob", "maya", "sam")
 LANG, SEED, REPORT = "fr", 0, "narration-synthesis.json"
+# Niveau des clips Kokoro des films approuvés, mesuré le 28 novembre 2026 (de -23,4 à -21,9 LUFS) :
+# Libra-TTS sort environ 6 LU plus fort, et de 4 LU d'une phrase à l'autre.
+TARGET_LUFS = -23.0
+MAX_TRUE_PEAK_DBTP = -1.0
+SILENT_LUFS = -50.0
 
 
 def sha(path):
@@ -79,6 +86,93 @@ def clips(film):
     return out
 
 
+def measure(path):
+    """Niveau intégré (LUFS) et crête vraie (dBTP) d'un clip, lus par FFmpeg sans rien écrire."""
+    done = subprocess.run(
+        [
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-i",
+            str(path),
+            "-vn",
+            "-af",
+            "loudnorm=print_format=json",
+            "-f",
+            "null",
+            "-",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    try:
+        text = done.stderr
+        data = json.loads(text[text.rindex("{") : text.rindex("}") + 1])
+        return float(data["input_i"]), float(data["input_tp"])
+    except (ValueError, KeyError) as exc:
+        raise ValueError(f"niveau_illisible:{Path(path).name}") from exc
+
+
+def level(target, ref):
+    """Ramène le clip au niveau visé par un réglage de volume seul : ni compression, ni filtre.
+
+    Le gain est le même pour tout le clip. Il ne monte jamais au point de porter la crête
+    au-dessus du plafond. Le clip est réécrit à côté puis remplace l'original d'un seul geste.
+    """
+    source_lufs, source_peak = measure(target)
+    if source_lufs < SILENT_LUFS:
+        raise ValueError(f"clip_muet:{ref}")
+    wanted = TARGET_LUFS - source_lufs
+    allowed = MAX_TRUE_PEAK_DBTP - source_peak
+    # Arrondi vers le bas, au dixième : la crête ne dépasse jamais, et deux mesures voisines
+    # donnent le même clip.
+    gain = math.floor(min(wanted, allowed) * 10) / 10
+    partial = target.with_name(f".{target.name}.niveau.wav")
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-nostdin",
+                "-v",
+                "error",
+                "-y",
+                "-i",
+                str(target),
+                "-af",
+                f"volume={gain}dB",
+                "-c:a",
+                "pcm_s16le",
+                # Sans ces options, le clip porterait la version du FFmpeg qui l'a écrit (ticket 73).
+                "-map_metadata",
+                "-1",
+                "-fflags",
+                "+bitexact",
+                "-flags:a",
+                "+bitexact",
+                str(partial),
+            ],
+            check=True,
+            timeout=120,
+        )
+        os.replace(partial, target)
+    except subprocess.SubprocessError as exc:
+        raise ValueError(f"niveau_non_regle:{ref}") from exc
+    finally:
+        partial.unlink(missing_ok=True)
+    lufs, peak = measure(target)
+    if peak > MAX_TRUE_PEAK_DBTP:
+        raise ValueError(f"crete_trop_haute:{ref}")
+    return {
+        "source_lufs": source_lufs,
+        "gain_db": gain,
+        "peak_limited": allowed < wanted,
+        "lufs": lufs,
+        "true_peak_dbtp": peak,
+    }
+
+
 class LibraEngine:
     """Le vrai moteur, chargé seulement une fois tous les contrôles passés."""
 
@@ -109,17 +203,20 @@ def synthesize(film, model, voice, load=LibraEngine, expected=None):
         "voice": voice,
         "lang": LANG,
         "seed": SEED,
+        "target_lufs": TARGET_LUFS,
         "clips": [],
     }
     for text, ref, target in todo:
         duration = engine.write(target, text, voice)
         if not duration or not target.is_file():
             raise ValueError(f"aucun_son:{ref}")
+        levels = level(target, ref)
         report["clips"].append(
             {
                 "audio_ref": ref,
                 "text": text,
                 "duration_s": round(duration, 3),
+                **levels,
                 "sha256": sha(target),
             }
         )

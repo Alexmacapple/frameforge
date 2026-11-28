@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 CHAIN = Path(__file__).resolve().parent
@@ -47,19 +48,53 @@ def fake_model(root, content=b"poids"):
     return root, expected
 
 
-class FakeEngine:
-    """Écrit le texte à la place du son, et compte ses appels."""
+def tone(target, source="sine=frequency=220:duration=2", volume="0.5"):
+    """Écrit un vrai fichier son, fabriqué par FFmpeg, à la place d'une voix."""
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            source,
+            "-af",
+            f"volume={volume}",
+            "-ar",
+            "24000",
+            "-ac",
+            "1",
+            "-c:a",
+            "pcm_s16le",
+            str(target),
+        ],
+        check=True,
+    )
 
-    def __init__(self):
+
+class FakeEngine:
+    """Écrit un son de synthèse à la place de la voix, et compte ses appels.
+
+    volumes donne le volume de chaque clip, dans l'ordre : un moteur qui ne sort pas deux phrases
+    au même niveau, comme Libra-TTS.
+    La source « sine » de FFmpeg sort à un huitième de l'amplitude : volume 6 donne un son fort.
+    """
+
+    def __init__(self, volumes=("6", "6"), source="sine=frequency=220:duration=2"):
         self.calls = []
+        self.volumes = list(volumes)
+        self.source = source
 
     def write(self, target, text, voice):
         self.calls.append((target.name, voice))
-        target.write_bytes(text.encode())
-        return 1.5
+        tone(target, self.source, self.volumes[len(self.calls) - 1])
+        return 2.0
 
 
-class RefusalTests(unittest.TestCase):
+class FilmCase(unittest.TestCase):
+    """Un film réduit à sa fiche, un modèle factice et un faux moteur."""
+
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -90,6 +125,8 @@ class RefusalTests(unittest.TestCase):
             self.run_synthesis(**changes)
         self.assertEqual(self.engine.calls, [])
 
+
+class RefusalTests(FilmCase):
     def test_untouched_film_is_synthesized_and_reported(self):
         report = self.run_synthesis()
         self.assertEqual(
@@ -174,6 +211,107 @@ class RefusalTests(unittest.TestCase):
         self.assertIn("tokenizer.json", libra.MODEL_SHA256)
         for digest in libra.MODEL_SHA256.values():
             self.assertRegex(digest, r"^[0-9a-f]{64}$")
+
+
+class LevelTests(FilmCase):
+    """Chaque clip est ramené au niveau de Kokoro par un réglage de volume seul."""
+
+    def clip(self, report, rank):
+        return report["clips"][rank]
+
+    def test_loud_clip_is_brought_down_to_the_target(self):
+        report = self.run_synthesis()
+        for clip in report["clips"]:
+            self.assertLess(clip["gain_db"], -3)
+            self.assertGreater(clip["source_lufs"], libra.TARGET_LUFS + 3)
+            self.assertAlmostEqual(clip["lufs"], libra.TARGET_LUFS, delta=0.5)
+            self.assertLessEqual(clip["true_peak_dbtp"], libra.MAX_TRUE_PEAK_DBTP)
+
+    def test_clips_of_different_levels_end_at_the_same_level(self):
+        self.engine = FakeEngine(volumes=("6", "1"))
+        report = self.run_synthesis()
+        before = [c["source_lufs"] for c in report["clips"]]
+        after = [c["lufs"] for c in report["clips"]]
+        self.assertGreater(abs(before[0] - before[1]), 10)
+        self.assertLess(abs(after[0] - after[1]), 0.5)
+
+    def test_reported_level_is_the_level_of_the_clip_on_disk(self):
+        report = self.run_synthesis()
+        for clip in report["clips"]:
+            lufs, peak = libra.measure(self.film / clip["audio_ref"])
+            self.assertEqual((clip["lufs"], clip["true_peak_dbtp"]), (lufs, peak))
+
+    def test_quiet_clip_is_raised_only_as_far_as_its_peaks_allow(self):
+        # Des pointes fortes sur un fond faible : monter au niveau visé ferait saturer.
+        spiky = "aevalsrc=if(lt(mod(t\\,0.25)\\,0.002)\\,0.9\\,0.004*sin(2*PI*220*t)):d=2:s=24000"
+        self.engine = FakeEngine(source=spiky, volumes=("1.0", "1.0"))
+        report = self.run_synthesis()
+        clip = self.clip(report, 0)
+        self.assertTrue(clip["peak_limited"])
+        self.assertLess(clip["lufs"], libra.TARGET_LUFS - 1)
+        self.assertLessEqual(clip["true_peak_dbtp"], libra.MAX_TRUE_PEAK_DBTP)
+
+    def test_silent_clip_is_refused_and_no_report_is_written(self):
+        self.engine = FakeEngine(volumes=("6", "0"))
+        with self.assertRaisesRegex(ValueError, "clip_muet:voice2.wav"):
+            self.run_synthesis()
+        self.assertNotIn("narration-synthesis.json", self.written())
+
+    def test_clip_does_not_name_the_ffmpeg_that_wrote_it(self):
+        # Sinon le même clip changerait d'empreinte avec la version de FFmpeg (ticket 73).
+        self.run_synthesis()
+        for name in ("voice1.wav", "voice2.wav"):
+            self.assertNotIn(b"Lavf", (self.film / name).read_bytes())
+
+    def test_nothing_but_clips_and_report_is_left_in_the_film(self):
+        self.run_synthesis()
+        self.assertEqual(
+            self.written(), ["narration-synthesis.json", "voice1.wav", "voice2.wav"]
+        )
+
+    def test_clip_that_is_not_sound_is_refused(self):
+        class NotSound(FakeEngine):
+            def write(self, target, text, voice):
+                self.calls.append((target.name, voice))
+                target.write_bytes(text.encode())
+                return 2.0
+
+        self.engine = NotSound()
+        with self.assertRaisesRegex(ValueError, "niveau_illisible:voice1.wav"):
+            self.run_synthesis()
+        self.assertNotIn("narration-synthesis.json", self.written())
+
+    def test_failed_volume_change_is_refused_and_leaves_no_partial_file(self):
+        real_run = subprocess.run
+
+        def run(command, **options):
+            # Le réglage de niveau, pas le son d'essai : lui seul écrit un gain en décibels.
+            if any(str(part).endswith("dB") for part in command):
+                raise subprocess.CalledProcessError(1, command)
+            return real_run(command, **options)
+
+        with mock.patch.object(libra.subprocess, "run", side_effect=run):
+            with self.assertRaisesRegex(ValueError, "niveau_non_regle:voice1.wav"):
+                self.run_synthesis()
+        self.assertEqual(self.written(), ["voice1.wav"])
+
+    def test_peak_still_too_high_after_the_change_is_refused(self):
+        # Ne doit pas arriver, le gain étant plafonné : si cela arrive, le clip n'est pas rapporté.
+        with mock.patch.object(
+            libra, "measure", side_effect=[(-10.0, -3.0), (-23.0, -0.5)]
+        ):
+            with self.assertRaisesRegex(ValueError, "crete_trop_haute:voice1.wav"):
+                self.run_synthesis()
+        self.assertNotIn("narration-synthesis.json", self.written())
+
+    def test_same_sound_gives_the_same_clip_twice(self):
+        self.run_synthesis()
+        first = (self.film / "voice1.wav").read_bytes()
+        for name in self.written():
+            (self.film / name).unlink()
+        self.engine = FakeEngine()
+        self.run_synthesis()
+        self.assertEqual((self.film / "voice1.wav").read_bytes(), first)
 
 
 @unittest.skipUnless(
