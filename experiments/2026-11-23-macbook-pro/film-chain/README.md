@@ -29,6 +29,7 @@ Créé le 23 novembre 2026 en regroupant ce que deux films partageaient : le for
 - `test_fiche_checks.py` : chaque motif de refus du contrôle de fiche, joué sur chaque film.
 - `test_habillage_v2.py` : la version 1 génère les fichiers d'avant ; ce que la version 2 ajoute, motif par motif.
 - `mutation_check.py` : supprime chaque contrôle l'un après l'autre et signale ceux dont aucun test ne s'aperçoit. Il rejoue toutes les suites pour chacun des 106 contrôles : 66 minutes sur le MacBook Pro au 27 novembre 2026. À lancer en arrière-plan, une fois après une série de changements du garde plutôt qu'à chaque PR ; il ne modifie rien dans le dépôt. Ne rien modifier dans `film-chain` pendant sa première minute, le temps qu'il copie les fichiers.
+- `synthesize_libra.py`, `libra-requirements.txt` : seconde voix de synthèse, Libra-TTS, pour un film neuf (voir « Installer la seconde voix »). `test_synthesize_libra.py` : ses refus, testés sans le modèle, et une vraie synthèse sans réseau, sautée si Libra-TTS n'est pas installé sur le Mac.
 
 Les tests propres à un film (gestes, fichiers générés) restent dans son dossier.
 
@@ -84,6 +85,34 @@ HF_HUB_OFFLINE=1 .venv-voice/bin/python CHEMIN_DU_FILM/synthesize_kokoro.py
 - Le modèle (`hexgrad/Kokoro-82M`) est lu dans le cache local de Hugging Face. Sur une machine neuve, lancer une première fois sans `HF_HUB_OFFLINE=1` pour le télécharger.
 - `voice-requirements.txt` est figé pour Python 3.12 sur macOS Apple Silicon (macOS 14 ou plus récent, exigence de `torch`).
 - Vérifié le 24 novembre 2026 en resynthétisant hors film les trois phrases de la réservation : deux clips sur trois ressortent identiques à l'octet aux clips approuvés, le premier diffère, comme avant la réinstallation. Un clip approuvé ne se resynthétise donc pas : il se conserve.
+
+## Installer la seconde voix, Libra-TTS
+
+Seconde voix possible pour un film neuf, décidée par Alex le 28 novembre 2026 après écoute (ticket 75, essai dans `research/libra-tts-essai-2026-11-28.md`). Les films approuvés restent en Kokoro : leurs clips sont figés et ne se resynthétisent pas. Le garde et la fiche ne distinguent pas les deux voix ; la fiche ne cite que des clips.
+
+Tout est figé : le code de `ekambrar100/Libra-TTS` au commit `2642632…7a09`, ses 23 paquets par empreintes dans `libra-requirements.txt`, et le modèle `Ekam/Libra-TTS` à la révision `a29b9e64…8c92`, dont `synthesize_libra.py` contrôle les sept fichiers par empreinte avant de le charger. Depuis la racine du dépôt :
+
+```bash
+uv venv .venv-libra --python 3.12
+uv pip install --python .venv-libra/bin/python --require-hashes -r experiments/2026-11-23-macbook-pro/film-chain/libra-requirements.txt
+.venv-libra/bin/hf download Ekam/Libra-TTS config.json tokenizer.json model.safetensors codec.safetensors \
+  frontend/en_acronyms.txt frontend/en_lexicon.tsv frontend/zh_rare_tokens.json \
+  --revision a29b9e64155bffd08966f180502ca412cb358c92 \
+  --local-dir ~/.cache/frameforge/libra-tts/a29b9e64155bffd08966f180502ca412cb358c92
+```
+
+Puis, pour synthétiser les phrases de la fiche d'un film neuf :
+
+```bash
+.venv-libra/bin/python experiments/2026-11-23-macbook-pro/film-chain/synthesize_libra.py CHEMIN_DU_FILM --voice nina
+```
+
+- Huit voix : `nina` (par défaut), `sofia`, `aliya`, `maya`, `omar`, `jon`, `bob`, `sam`. Seule `nina` a été écoutée. Langue `fr`, graine 0, moteur MLX ; les styles de lecture du modèle ne sont pas exposés.
+- `.venv-libra/` pèse environ 300 Mo et le modèle 950 Mo ; ni l'un ni l'autre n'est suivi par Git. Le téléchargement est la seule étape qui demande le réseau.
+- Le script refuse d'écraser un clip ou un `narration-synthesis.json` déjà présent : pour recommencer, déplacer d'abord les clips. Il ne peut donc pas remplacer la voix d'un film approuvé.
+- Libra-TTS n'a pas de réglage de vitesse : les durées des clips diffèrent de celles de Kokoro (réglé à 1,2), et les instants de la fiche sont à reposer.
+- Vérifié le 28 novembre 2026 sur le Mac Studio (macOS 27.0), réseau coupé par `sandbox-exec` : les trois phrases de la réservation ressortent identiques à l'octet d'un passage à l'autre, et identiques aux clips de l'essai, produits par un autre environnement installé séparément. Non vérifié : sur le MacBook Pro, et après une mise à jour de macOS.
+- Projet publié le 19 novembre 2026, un seul auteur, aucune version publiée : rien ne garantit son suivi. Tant que les empreintes ci-dessus tiennent, la synthèse ne dépend pas de lui.
 
 ## Pièges constatés
 

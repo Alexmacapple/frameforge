@@ -1,0 +1,224 @@
+"""Synthèse Libra-TTS : refus avant toute écriture, et une vraie synthèse si l'outil est installé.
+
+Les refus se testent sans le modèle, avec un faux moteur. La vraie synthèse demande `.venv-libra`
+et le modèle figé (voir le README) ; sans eux, elle est sautée.
+"""
+
+import hashlib
+import importlib
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+CHAIN = Path(__file__).resolve().parent
+sys.path.insert(0, str(CHAIN))
+libra = importlib.import_module("synthesize_libra")
+
+SENTENCES = (
+    "La salle Érable est choisie parmi les trois salles.",
+    "L'option vidéoprojecteur est cochée.",
+)
+VENV_PYTHON = CHAIN.parents[2] / ".venv-libra" / "bin" / "python"
+
+
+def film(root, refs=("voice1.wav", "voice2.wav")):
+    """Dossier de film réduit à sa fiche : une scène par phrase."""
+    scenes = [
+        {"narration": {"text": text, "audio_ref": ref}}
+        for text, ref in zip(SENTENCES, refs)
+    ]
+    (root / "provenance-manifest.json").write_text(
+        json.dumps({"scenes": scenes}, ensure_ascii=False)
+    )
+    return root
+
+
+def fake_model(root, content=b"poids"):
+    """Dossier de modèle factice, et les empreintes qui lui correspondent."""
+    root.mkdir()
+    expected = {}
+    for name in libra.MODEL_SHA256:
+        (root / name).parent.mkdir(exist_ok=True)
+        (root / name).write_bytes(content + name.encode())
+        expected[name] = hashlib.sha256(content + name.encode()).hexdigest()
+    return root, expected
+
+
+class FakeEngine:
+    """Écrit le texte à la place du son, et compte ses appels."""
+
+    def __init__(self):
+        self.calls = []
+
+    def write(self, target, text, voice):
+        self.calls.append((target.name, voice))
+        target.write_bytes(text.encode())
+        return 1.5
+
+
+class RefusalTests(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.model, self.expected = fake_model(self.root / "modele")
+        (self.root / "film").mkdir()
+        self.film = film(self.root / "film")
+        self.engine = FakeEngine()
+
+    def run_synthesis(self, **changes):
+        options = {
+            "film": self.film,
+            "model": self.model,
+            "voice": "nina",
+            "load": lambda model: self.engine,
+            "expected": self.expected,
+        }
+        options.update(changes)
+        return libra.synthesize(**options)
+
+    def written(self):
+        return sorted(
+            p.name for p in self.film.iterdir() if p.name != "provenance-manifest.json"
+        )
+
+    def refused(self, reason, **changes):
+        with self.assertRaisesRegex(ValueError, reason):
+            self.run_synthesis(**changes)
+        self.assertEqual(self.engine.calls, [])
+
+    def test_untouched_film_is_synthesized_and_reported(self):
+        report = self.run_synthesis()
+        self.assertEqual(
+            self.engine.calls, [("voice1.wav", "nina"), ("voice2.wav", "nina")]
+        )
+        self.assertEqual(
+            self.written(), ["narration-synthesis.json", "voice1.wav", "voice2.wav"]
+        )
+        on_disk = json.loads((self.film / "narration-synthesis.json").read_text())
+        self.assertEqual(on_disk, report)
+        self.assertEqual(report["engine"], "libra-tts")
+        self.assertEqual(report["model_revision"], libra.MODEL_REVISION)
+        self.assertEqual(report["code_commit"], libra.CODE_COMMIT)
+        self.assertEqual([c["text"] for c in report["clips"]], list(SENTENCES))
+        for clip in report["clips"]:
+            self.assertEqual(
+                clip["sha256"],
+                hashlib.sha256(
+                    (self.film / clip["audio_ref"]).read_bytes()
+                ).hexdigest(),
+            )
+
+    def test_existing_clip_is_never_overwritten(self):
+        (self.film / "voice2.wav").write_bytes(b"clip approuve")
+        self.refused("clip_deja_present:voice2.wav")
+        self.assertEqual((self.film / "voice2.wav").read_bytes(), b"clip approuve")
+        # Le premier clip, lui, était libre : rien n'est écrit tant que tout n'est pas libre.
+        self.assertEqual(self.written(), ["voice2.wav"])
+
+    def test_existing_report_is_never_overwritten(self):
+        (self.film / "narration-synthesis.json").write_text("{}")
+        self.refused("rapport_deja_present")
+        self.assertEqual((self.film / "narration-synthesis.json").read_text(), "{}")
+
+    def test_clip_outside_the_film_is_refused(self):
+        for ref in ("../voice1.wav", "media/voice1.wav", "/tmp/voice1.wav", ""):
+            with self.subTest(ref=ref):
+                film(self.film, refs=(ref, "voice2.wav"))
+                self.refused("nom_de_clip_refuse")
+
+    def test_clip_through_a_link_is_refused(self):
+        (self.film / "voice1.wav").symlink_to(self.root / "ailleurs.wav")
+        self.refused("clip_deja_present:voice1.wav")
+        self.assertFalse((self.root / "ailleurs.wav").exists())
+
+    def test_two_scenes_naming_the_same_clip_are_refused(self):
+        film(self.film, refs=("voice1.wav", "voice1.wav"))
+        self.refused("clip_cite_deux_fois:voice1.wav")
+
+    def test_unknown_voice_is_refused(self):
+        self.refused("voix_inconnue:siwis", voice="siwis")
+
+    def test_model_with_other_weights_is_refused(self):
+        name = min(libra.MODEL_SHA256)
+        (self.model / name).write_bytes(b"autres poids")
+        self.refused(f"modele_different:{name}")
+
+    def test_model_with_a_missing_file_is_refused(self):
+        name = max(libra.MODEL_SHA256)
+        (self.model / name).unlink()
+        self.refused(f"modele_absent:{name}")
+
+    def test_film_without_fiche_is_refused(self):
+        (self.film / "provenance-manifest.json").unlink()
+        self.refused("fiche_absente")
+
+    def test_engine_that_writes_nothing_is_a_failure(self):
+        class Mute(FakeEngine):
+            def write(self, target, text, voice):
+                self.calls.append((target.name, voice))
+                return 0.0
+
+        self.engine = Mute()
+        with self.assertRaisesRegex(ValueError, "aucun_son:voice1.wav"):
+            self.run_synthesis()
+        self.assertNotIn("narration-synthesis.json", self.written())
+
+    def test_every_file_the_engine_reads_is_frozen(self):
+        # Poids, configuration, découpage du texte et lexiques : sept fichiers, sept empreintes.
+        self.assertEqual(len(libra.MODEL_SHA256), 7)
+        self.assertIn("model.safetensors", libra.MODEL_SHA256)
+        self.assertIn("tokenizer.json", libra.MODEL_SHA256)
+        for digest in libra.MODEL_SHA256.values():
+            self.assertRegex(digest, r"^[0-9a-f]{64}$")
+
+
+@unittest.skipUnless(
+    VENV_PYTHON.is_file() and (libra.DEFAULT_MODEL / "config.json").is_file(),
+    "Libra-TTS non installé sur ce Mac (.venv-libra ou modèle absent)",
+)
+class RealSynthesisTests(unittest.TestCase):
+    def synthesize(self, root):
+        return subprocess.run(
+            [
+                "sandbox-exec",
+                "-p",
+                "(version 1)(allow default)(deny network*)",
+                str(VENV_PYTHON),
+                str(CHAIN / "synthesize_libra.py"),
+                str(film(root)),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+
+    def test_same_clips_twice_without_network(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            first, second = self.synthesize(Path(a)), self.synthesize(Path(b))
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            for name in ("voice1.wav", "voice2.wav"):
+                clip = Path(a, name).read_bytes()
+                self.assertGreater(len(clip), 24000)
+                self.assertEqual(clip, Path(b, name).read_bytes())
+            report = json.loads(Path(a, "narration-synthesis.json").read_text())
+            self.assertEqual(report["voice"], "nina")
+            self.assertTrue(all(c["duration_s"] > 1 for c in report["clips"]))
+
+    def test_second_run_on_the_same_film_is_refused(self):
+        with tempfile.TemporaryDirectory() as a:
+            self.assertEqual(self.synthesize(Path(a)).returncode, 0)
+            before = Path(a, "voice1.wav").read_bytes()
+            again = self.synthesize(Path(a))
+            self.assertEqual(again.returncode, 1, again.stdout + again.stderr)
+            self.assertIn("rapport_deja_present", again.stdout)
+            self.assertEqual(Path(a, "voice1.wav").read_bytes(), before)
+
+
+if __name__ == "__main__":
+    unittest.main()
