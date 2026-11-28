@@ -10,7 +10,8 @@ entrées que déclare render_guarded.py, sous media/<film>-draft.mp4 ; un témoi
 fonctions mêmes du garde : empreintes du flux vidéo, du son et des paquets, étiquettes du conteneur.
 
 Refusé, sans rien écrire : une fiche qui porte déjà l'empreinte d'un film rendu (sa référence fige
-ce film), un témoin dont la durée ou la cadence diffère de la fiche. La référence décrit le témoin,
+ce film), un témoin dont la durée ou la cadence diffère de la fiche. Refusé aussi, par
+content_check.py : un témoin muet, noir, figé, ou dont une phrase de la fiche n'a pas de voix. La référence décrit le témoin,
 elle ne l'approuve pas : le regarder avant de refiger. Créé le 25 novembre 2026 depuis le script écrit
 à la main pour le film 47.
 """
@@ -30,6 +31,7 @@ CHAIN = Path(__file__).resolve().parent
 sys.path.insert(0, str(CHAIN))
 film_guard = importlib.import_module("film_guard")
 composition_check = importlib.import_module("composition_check")
+content_check = importlib.import_module("content_check")
 FPS = 30
 # Même commande que le garde : HyperFrames 0.8.33, mêmes options, sans réseau sortant.
 render_command = film_guard.wrapper.render_command
@@ -162,6 +164,10 @@ def main():
                 "fiche d'un film déjà rendu : sa référence fige ce film, rien n'est écrit"
             )
         draft = args.draft.resolve() if args.draft else render_witness(film)
+        # Un témoin muet, noir ou amputé d'une voix ne doit pas devenir la norme du film (ticket 78).
+        reasons = content_check.run(film, draft)
+        if reasons:
+            raise ValueError("témoin refusé : " + ", ".join(reasons))
         ref = reference(film, draft)
     except (
         OSError,
