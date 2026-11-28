@@ -1,9 +1,14 @@
 # REPRISE — FrameForge
 
-Dernière mise à jour : 28 novembre 2026, session sur le Mac Studio. Studio à `fa48ae1` avant cette mise à jour ; le MacBook Pro, injoignable en SSH à la clôture, est resté sur la branche `fix/empreinte-paquets-sans-version-ffmpeg` à `89f6760` : le remettre sur `main` (`git switch main`, puis `git pull --ff-only`). Vérifier HEAD et la synchronisation au démarrage.
+Dernière mise à jour : 28 novembre 2026, session sur le Mac Studio. Studio à `9ae531f` avant cette mise à jour ; le MacBook Pro, injoignable en SSH à la clôture, est resté sur la branche `fix/empreinte-paquets-sans-version-ffmpeg` à `89f6760` : le remettre sur `main` (`git switch main`, puis `git pull --ff-only`). Vérifier HEAD et la synchronisation au démarrage.
 
 ## Prochaine action
-Faire les deux écoutes humaines du film de réservation : [#35](https://github.com/Alexmacapple/frameforge/issues/35) (une personne qui n'a jamais vu le film) et [#36](https://github.com/Alexmacapple/frameforge/issues/36) (voix comparée aux sous-titres), avec `experiments/2026-11-23-macbook-pro/ff04-room-booking-film/LISTENING-SHEET.md` et `media/room-booking-son-seul.m4a`. Même feuille prête pour les fenêtres modales (`ff59-film-fenetres-modales-recap/LISTENING-SHEET.md`) ; sa partie B y est déclarée conforme par Alex le 25 novembre, sa partie A reste à faire. [#61](https://github.com/Alexmacapple/frameforge/issues/61) (prononciation par transcription française) attend ces écoutes.
+Faire l'écoute [#35](https://github.com/Alexmacapple/frameforge/issues/35) du film de réservation par une personne qui n'a jamais vu le film (la partie B, [#36](https://github.com/Alexmacapple/frameforge/issues/36), est déclarée conforme depuis le 28 novembre), avec `experiments/2026-11-23-macbook-pro/ff04-room-booking-film/LISTENING-SHEET.md` et `media/room-booking-son-seul.m4a`. Même feuille prête pour les fenêtres modales (`ff59-film-fenetres-modales-recap/LISTENING-SHEET.md`) ; sa partie B y est déclarée conforme par Alex le 25 novembre, sa partie A reste à faire. [#61](https://github.com/Alexmacapple/frameforge/issues/61) (prononciation par transcription française) attend ces écoutes.
+
+## Fait le 28 novembre 2026
+- Libra-TTS est une seconde voix possible pour un film neuf (PR #76, ticket [#75](https://github.com/Alexmacapple/frameforge/issues/75) laissé ouvert) : `film-chain/synthesize_libra.py`, paquets et modèle figés par empreintes, installés sur le Mac Studio seulement (`.venv-libra`, modèle dans `~/.cache/frameforge/libra-tts/`). Décision d'Alex après écoute de la voix `nina`. Kokoro reste la voix par défaut et celle des films approuvés. Pour demander cette voix : dire « voix Libra » (ou « voix Nina ») en commandant le film. Essai : `research/libra-tts-essai-2026-11-28.md`.
+- #36 : partie B de l'écoute du film de réservation déclarée conforme par Alex (`ff04-room-booking-film/LISTENING-2026-11-28.md`) ; ticket laissé ouvert, sa fermeture revient à Alex.
+- Veille rea-video : aucune intégration (`research/rea-video-analyse-2026-11-28.md`).
 
 ## Fait le 27 novembre 2026
 - #69 fermé : veille OpenMontage (AGPL-3.0, SHA `2e003e65`), aucun composant adopté ; rapport `research/openmontage-analyse-2026-11-27.md`.
@@ -21,6 +26,7 @@ Faire les deux écoutes humaines du film de réservation : [#35](https://github.
 - Télémétrie HyperFrames coupée sur le MacBook Pro.
 
 ## Points à surveiller
+- Libra-TTS : non installé ni vérifié sur le MacBook Pro (procédure dans le README de film-chain) ; on ne sait pas si les clips y ressortent identiques à ceux du Studio. Aucun film n'a encore été produit avec cette voix ; elle n'a pas de réglage de vitesse, les instants de la fiche sont à reposer. Seule `nina` a été écoutée, sur huit voix.
 - Mac Studio, équipé le 26 novembre 2026 : dépôt cloné au même chemin, médias non versionnés copiés (742 fichiers, empreintes identiques), HyperFrames 0.8.33 installé, télémétrie coupée (`config`), mêmes octets que le MacBook pour Node 24.22.1 (`~/.local/bin`) et chrome-headless-shell 152.0.7977.30. `.venv-voice` non copié : à recréer avant toute synthèse de voix.
 - [#67](https://github.com/Alexmacapple/frameforge/issues/67) : un film rendu sur le Mac Studio (macOS 27.0) n'est pas le film approuvé sur le MacBook (macOS 26.5.2) ; même son, images différentes là où il y a du texte. Seul le MacBook reproduit les films approuvés ; le garde refuse tout autre résultat. Décision à prendre (même macOS ou rendu en conteneur).
 - `sandbox-exec` est marqué obsolète par Apple : vérifier qu'il fonctionne après chaque mise à jour de macOS (`test_rendu_hors_ligne.py`).
