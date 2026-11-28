@@ -12,7 +12,7 @@ Libra-TTS lit nos phrases en français, en local et réseau coupé, et deux synt
   - `model.safetensors` : `f57fbe7cf62a429e470a7b90b4ad5ca4405ae909d17db6f641c5b9cec1ed9ec2` (614 Mo)
   - `codec.safetensors` : `6e943a7e31d72f3d51e012562756af941a7a01b60eb42c9a32f4fc166d62c00c` (373 Mo)
 - Code : `ekambrar100/Libra-TTS`, commit `2642632179db91866041ba1a90d0988705217a09`, version 0.1.1, Apache-2.0.
-- Environnement : Python 3.12, 25 paquets, dont `mlx` 0.32.5, `numpy` 2.5.5, `tokenizers` 0.23.3, `huggingface-hub` 2.5.0, `soundfile` 0.14.0. Versions non figées par empreinte dans cet essai.
+- Environnement : Python 3.12, 23 paquets, dont `mlx` 0.32.5, `numpy` 2.5.5, `tokenizers` 0.23.3, `huggingface-hub` 2.5.0, `soundfile` 0.14.0. Versions non figées par empreinte dans cet essai.
 
 ## Ce qui a été fait
 
