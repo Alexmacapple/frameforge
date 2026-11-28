@@ -8,10 +8,10 @@ Faire l'écoute [#35](https://github.com/Alexmacapple/frameforge/issues/35) du f
 ## Fait le 28 novembre 2026
 - Libra-TTS est une seconde voix possible pour un film neuf (PR #76, ticket [#75](https://github.com/Alexmacapple/frameforge/issues/75) laissé ouvert) : `film-chain/synthesize_libra.py`, paquets et modèle figés par empreintes, installés sur le Mac Studio seulement (`.venv-libra`, modèle dans `~/.cache/frameforge/libra-tts/`). Décision d'Alex après écoute de la voix `nina`. Kokoro reste la voix par défaut et celle des films approuvés. Pour demander cette voix : dire « voix Libra » (ou « voix Nina ») en commandant le film. Essai : `research/libra-tts-essai-2026-11-28.md`.
 - PR #77 : chaque clip Libra-TTS est ramené à −23 LUFS, le niveau de Kokoro, par un réglage de volume seul ; Libra-TTS sortait environ 6 LU plus fort, avec 3,8 LU d'écart d'une phrase à l'autre. Écoute d'Alex après réglage : « parfait ». Voix préférées : `nina` et `sam`.
-- #47 relu : ses cinq critères sont satisfaits, preuves dans le ticket ; sa fermeture revient à Alex.
+- #47 relu : ses cinq critères sont satisfaits, preuves dans le ticket ; fermé à la demande d'Alex.
 - #68 : ffmpeg-skill évalué au commit `53b1be1` (`v4.26.0`), à ne pas installer ; trois idées à reprendre avec notre FFmpeg (`research/ffmpeg-skill-analyse-2026-11-28.md`), aucun ticket ouvert, contre-revue indépendante non faite.
 - Hors dépôt : Impeccable passé en 4.11.1 (moteur 0.1.31) sur le Mac Studio, télémétrie coupée ; le MacBook Pro reste en 4.8.0.
-- #36 : partie B de l'écoute du film de réservation déclarée conforme par Alex (`ff04-room-booking-film/LISTENING-2026-11-28.md`) ; ticket laissé ouvert, sa fermeture revient à Alex.
+- #36 : partie B de l'écoute du film de réservation déclarée conforme par Alex (`ff04-room-booking-film/LISTENING-2026-11-28.md`) ; fermé à la demande d'Alex.
 - Veille rea-video : aucune intégration (`research/rea-video-analyse-2026-11-28.md`).
 
 ## Fait le 27 novembre 2026
@@ -22,7 +22,7 @@ Faire l'écoute [#35](https://github.com/Alexmacapple/frameforge/issues/35) du f
 - #73 fermé (PR #74, fusionnée le 28 novembre) : les 11 tests en échec sur le Mac Studio venaient de FFmpeg (9.0.2 sur le Studio, 9.0.1 sur le MacBook), dont la version entrait dans l'empreinte des paquets. La ligne `#software` est écartée du calcul ; `expected_packets_sha256` recalculée dans huit références et refigée par `repin.py`. Suites vertes sur les deux Mac (235, 45 et 9 tests) ; contrôle par mutation sur le MacBook Pro : 106 mutants, aucun survivant, 63 minutes.
 
 ## Fait le 25 novembre 2026
-- #47 : film des fenêtres modales produit et approuvé (PR #57, `d10c50b8…0845`). Le ticket reste ouvert : à fermer après relecture de ses critères.
+- #47 : film des fenêtres modales produit et approuvé (PR #57, `d10c50b8…0845`). Ticket fermé le 28 novembre.
 - #56 fermé (verdict COMPOSE) ; ses manques 1, 2, 4 (PR #58), 5 et 6 (PR #62 : fiche v3 à sous-titres découpés, `contact_sheet.py`) traités.
 - #59 : insert animé jugé utile (PR #63), intégré en fin de film par la fiche v4 (PR #64) ; film `ff59-film-fenetres-modales-recap` approuvé (`3720625a…1af6`), à côté du film 47 inchangé.
 - #65 : le rendu gardé et le brouillon témoin tournent sous `sandbox-exec`, sans réseau sortant (PR #66). La police Inter que HyperFrames demandait à Google n'entrait pas dans l'image.
