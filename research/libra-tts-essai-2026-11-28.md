@@ -28,6 +28,21 @@ Libra-TTS lit nos phrases en français, en local et réseau coupé, et deux synt
 - Durée de synthèse : 0,9 à 3,0 s par phrase (2,96 à 10,96 s de son) ; 11,8 s pour la première, chargement compris.
 - Reproductibilité : huit fichiers sur huit identiques entre les deux passages. Pour mémoire, Kokoro ne redonnait que deux clips sur trois le 24 novembre.
 
+## Écoute des huit voix
+
+Le 28 novembre 2026, Alex a écouté les huit voix sur la même phrase (« On appuie sur Échap. La fenêtre se ferme, et le focus revient sur le bouton qui l'avait ouverte. »), langue `fr`, graine 0, sans style. Ses mots, voix par voix :
+
+- `nina` : « très bien »
+- `sam` : « très bien »
+- `sofia` : « pas mal »
+- `maya` : « pas mal »
+- `omar` : « pas mal »
+- `jon` : « pas mal sans plus »
+- `aliya` : « j'aime moins »
+- `bob` : « bof »
+
+Voix à proposer d'abord : `nina` et `sam`. Jugement sur une seule phrase ; ce qui gêne dans les voix moins appréciées (accent, rythme, ton) n'a pas été précisé.
+
 ## Limites
 
 - Reproductibilité vérifiée sur un seul Mac, dans une seule session : ni après redémarrage, ni sur le MacBook Pro (macOS 26.5.2), ni avec une autre version de `mlx`.
