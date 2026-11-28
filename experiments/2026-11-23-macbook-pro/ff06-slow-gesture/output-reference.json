@@ -3,7 +3,7 @@
   "expected_video_stream_sha256": "ffbcd87ae6c2dfcc42d423330a2db6188ea868560ce4efe5b5ea5ff03e577a8f",
   "expected_duration_s": 20,
   "expected_fps": 30,
-  "expected_packets_sha256": "42b67064cb44beb588b408b85b153453db1f505350e8e3e086fe7a763962e56f",
+  "expected_packets_sha256": "25c0b3f0eca09a1159c0c7647f837784d29dfe79a7558081f5faefee0af8c5a2",
   "expected_format_tags": {
     "minor_version": "512;512",
     "major_brand": "isom;isom",

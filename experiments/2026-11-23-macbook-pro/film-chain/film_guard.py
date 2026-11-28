@@ -62,7 +62,25 @@ def packets_hash(path):
     Complète l'empreinte du flux vidéo, qui ne porte que le contenu des paquets : un film dont les
     images sont décalées dans le temps, ou qui porte un flux de plus, change cette empreinte-ci.
     """
-    out = subprocess.check_output(
+    return packets_digest(packets_listing(path))
+
+
+def packets_digest(listing):
+    """Empreinte de la liste des paquets, sans la ligne qui nomme le FFmpeg qui l'a écrite.
+
+    Cette ligne « #software: Lavf… » change avec la version de FFmpeg de la machine qui lit le
+    film : avec elle, un film intact était refusé après une mise à jour (ticket 73).
+    """
+    kept = [
+        line
+        for line in listing.splitlines(keepends=True)
+        if not line.startswith(b"#software:")
+    ]
+    return hashlib.sha256(b"".join(kept)).hexdigest()
+
+
+def packets_listing(path):
+    return subprocess.check_output(
         [
             "ffmpeg",
             "-v",
@@ -78,7 +96,6 @@ def packets_hash(path):
             "-",
         ]
     )
-    return hashlib.sha256(out).hexdigest()
 
 
 def receipt_path(output):
